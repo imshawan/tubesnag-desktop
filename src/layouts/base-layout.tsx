@@ -1,5 +1,7 @@
 import type React from "react";
 import DragWindowRegion from "@/components/drag-window-region";
+import { DownloadProvider } from "@/context/DownloadContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 export default function BaseLayout({
   children,
@@ -7,9 +9,11 @@ export default function BaseLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <DragWindowRegion title="TubeSnag" />
-      <main className="h-screen p-2 pb-20">{children}</main>
-    </>
+    <ToastProvider>
+      <DownloadProvider>
+        <DragWindowRegion title="TubeSnag" />
+        <main className="h-screen">{children}</main>
+      </DownloadProvider>
+    </ToastProvider>
   );
 }

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog } from "electron";
 import { ipcMain } from "electron/main";
 import {
   installExtension,
@@ -9,6 +9,8 @@ import {
 import { UpdateSourceType, updateElectronApp } from "update-electron-app";
 import { ipcContext } from "@/ipc/context";
 import { IPC_CHANNELS } from "./constants";
+import fs from "fs/promises";
+import IpcMainEvent = Electron.IpcMainEvent;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +19,7 @@ const inDevelopment = process.env.NODE_ENV === "development";
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
   const mainWindow = new BrowserWindow({
-    width: 800,
+    width: 1000,
     height: 600,
     webPreferences: {
       devTools: inDevelopment,
@@ -63,7 +65,7 @@ function checkForUpdates() {
 async function setupORPC() {
   const { rpcHandler } = await import("./ipc/handler");
 
-  ipcMain.on(IPC_CHANNELS.START_ORPC_SERVER, (event) => {
+  ipcMain.on(IPC_CHANNELS.START_ORPC_SERVER, (event: IpcMainEvent) => {
     const [serverPort] = event.ports;
 
     serverPort.start();
@@ -95,3 +97,36 @@ app.on("activate", () => {
   }
 });
 //osX only ends
+
+
+ipcMain.handle('dialog:selectFolder', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openDirectory']
+  })
+  if (canceled) {
+    return null
+  } else {
+    return filePaths[0]
+  }
+});
+
+ipcMain.handle('get-disk-usage', async (event, downloadPath) => {
+  try {
+    // Use the provided downloadPath or default to the home directory
+    const statsPath = downloadPath || require('node:os').homedir();
+    const stats = await fs.statfs(statsPath);
+
+    const total = stats.bsize * stats.blocks;
+    const free = stats.bsize * stats.bfree;
+    const used = total - free;
+
+    return {
+      total: (total / (1024 ** 3)).toFixed(1), // Convert bytes to GB
+      used: (used / (1024 ** 3)).toFixed(1),
+      percentage: Math.round((used / total) * 100)
+    };
+  } catch (error) {
+    console.error("Failed to get disk usage:", error);
+    return null;
+  }
+});

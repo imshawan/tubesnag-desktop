@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { Home, History, Settings, HelpCircle } from "lucide-react";
 import {
   NavigationMenu as NavigationMenuBase,
   NavigationMenuItem,
@@ -7,29 +8,43 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import ExternalLink from "./external-link";
 
 export default function NavigationMenu() {
   const { t } = useTranslation();
 
   return (
     <NavigationMenuBase className="px-2 text-muted-foreground">
-      <NavigationMenuList>
+      <NavigationMenuList className="gap-1">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link to="/">{t("titleHomePage")}</Link>
+            <Link to="/" className="flex items-center gap-2">
+              <Home className="h-4 w-4" />
+              {t("titleHomePage")}
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link to="/second">{t("titleSecondPage")}</Link>
+            <Link to="/downloads" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              Downloads
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <ExternalLink href="https://github.com/imshawan/tubesnag-desktop/blob/main/README.md">
-              {t("documentation")}
-            </ExternalLink>
+            <Link to="/settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link to="/help" className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              Help
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
