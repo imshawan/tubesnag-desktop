@@ -1,5 +1,5 @@
-import { QualityType } from "@/components/DownloadOptionsDialog"
 import { useState, useCallback } from "react"
+import { QualityType } from "../types/index"
 
 export type Status = "pending" | "downloading" | "completed" | "failed"
 

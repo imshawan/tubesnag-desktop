@@ -15,22 +15,15 @@ import {
   AlertCircle,
   Folder,
   Monitor,
-  Check,
   HelpCircle,
-  Shield,
   FileVideo,
   MoreVertical,
-  ChevronLeft,
-  ChevronRight,
-  Play,
   Music,
   Youtube,
-  Film,
-  ChevronDown,
-  Filter
+  Filter,
 } from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, useTransition, useMemo, useRef } from "react";
+import { useEffect, useState, useTransition, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { getAppVersion } from "@/actions/app";
 import ExternalLink from "@/components/external-link";
@@ -47,193 +40,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DownloadOptionsDialog,
-  type DownloadType,
-  type QualityType,
-} from "@/components/DownloadOptionsDialog";
 import { useDownloads } from "@/hooks/useDownloads";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/tailwind";
-
-// --- SUBCOMPONENTS ---
-
-function NavButton({ icon: Icon, label, isActive, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-all duration-200",
-        isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-      )}
-    >
-      <Icon className="size-4" />
-      {label}
-    </button>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, colorClass, subtext }: any) {
-  return (
-    <div className="flex flex-col rounded-xl border border-border/50 bg-card p-5 shadow-sm transition-all hover:shadow-md">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          {label}
-        </span>
-        <Icon className={cn("size-4", colorClass)} />
-      </div>
-      <div className="text-2xl font-bold text-foreground">{value}</div>
-      <div className="text-xs text-muted-foreground mt-1">{subtext}</div>
-    </div>
-  );
-}
-
-function ActionCard({ title, description, icon: Icon, gradient, iconColor, onClick }: any) {
-  return (
-    <button
-      onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border border-border/50 bg-card p-6 text-left transition-all hover:-translate-y-1 hover:shadow-lg"
-    >
-      <div
-        className={cn(
-          "absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-br",
-          gradient
-        )}
-      />
-      <div className="relative z-10 flex flex-col h-full">
-        <div className="mb-4 flex size-10 items-center justify-center rounded-lg bg-background border border-border/50 shadow-sm">
-          <Icon className={cn("size-5", iconColor)} />
-        </div>
-        <h3 className="mb-1 text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-          {title}
-        </h3>
-        <p className="text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors">
-          {description}
-        </p>
-      </div>
-    </button>
-  );
-}
-
-function CustomRadioItem({ value, selectedValue, onChange, label, desc }: any) {
-  const isSelected = value === selectedValue;
-  return (
-    <div
-      onClick={() => onChange(value)}
-      className={cn(
-        "flex cursor-pointer items-start space-x-3 rounded-lg border p-3 transition-all hover:bg-accent",
-        isSelected ? "border-primary bg-primary/5" : "border-transparent"
-      )}
-    >
-      <div className={cn(
-        "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full border border-primary",
-        isSelected ? "bg-primary text-primary-foreground" : "opacity-50"
-      )}>
-        {isSelected && <Check className="size-3" />}
-      </div>
-      <div className="space-y-1">
-        <p className="font-medium leading-none text-sm">{label}</p>
-        <p className="text-xs text-muted-foreground">{desc}</p>
-      </div>
-    </div>
-  );
-}
-
-// --- COMMAND PALETTE COMPONENT ---
-function CommandPalette({ isOpen, onClose, data, onSelect }: any) {
-  const [query, setQuery] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery("");
-    }
-  }, [isOpen]);
-
-  const filtered = data.filter((item: any) =>
-    item.title.toLowerCase().includes(query.toLowerCase()) ||
-    item.channel.toLowerCase().includes(query.toLowerCase())
-  );
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 px-4 pt-20 backdrop-blur-sm transition-all animate-in fade-in duration-200">
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
-      <div className="relative z-50 flex w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border/50 bg-popover shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="flex items-center border-b border-border/40 px-4">
-          <Search className="mr-2 size-5 text-muted-foreground opacity-50" />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex h-14 w-full rounded-md bg-transparent py-3 text-lg outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Type to search downloads..."
-          />
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">ESC</kbd>
-            <span>to close</span>
-          </div>
-        </div>
-
-        <ScrollArea className="h-[350px] w-full">
-          <div className="p-2">
-            {filtered.length === 0 ? (
-              <div className="py-14 text-center text-sm text-muted-foreground">
-                No results found.
-              </div>
-            ) : (
-              <div className="space-y-1">
-                <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                  Results ({filtered.length})
-                </div>
-                {filtered.map((item: any) => (
-                  <button
-                    key={item.id}
-                    onClick={() => { onSelect(item); onClose(); }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground group"
-                  >
-                    <div className={cn(
-                      "flex size-10 shrink-0 items-center justify-center rounded-md border border-border/50",
-                      item.type === "audio" ? "bg-purple-500/10 text-purple-500" : "bg-blue-500/10 text-blue-500"
-                    )}>
-                      {item.type === "audio" ? <Music className="size-5" /> : <Film className="size-5" />}
-                    </div>
-                    <div className="flex flex-1 flex-col overflow-hidden">
-                      <span className="truncate font-medium">{item.title}</span>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{item.channel}</span>
-                        <span>•</span>
-                        <span>{item.size}</span>
-                        <span>•</span>
-                        <span className={cn(
-                          item.status === "completed" ? "text-emerald-500" :
-                            item.status === "failed" ? "text-rose-500" : "text-amber-500"
-                        )}>
-                           {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                         </span>
-                      </div>
-                    </div>
-                    <Play className="size-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-    </div>
-  );
-}
-
-// --- MAIN PAGE ---
+import { StorageIndicator } from "@/components/storage-indicator";
+import { AppHeader } from "@/components/app-header";
+import { BulkDownloadDialog } from "@/components/dialogs/bulk-download";
+import { PlaylistDownloadDialog } from "@/components/dialogs/playlist-download";
+import { SingleDownloadDialog } from "@/components/dialogs/single-download";
+import type { DownloadType, QualityType } from "@/types/index";
+import { StatCard } from "@/components/stat-card";
+import { NavButton } from "@/components/nav-button";
+import { GlobalSearch } from "@/components/global-search";
+import { ActionCard } from "@/components/action-card";
+import { RadioItem } from "@/components/radio-item";
+import { Help } from "@/components/tabs/help";
 
 function HomePage() {
   const [appVersion, setAppVersion] = useState("0.0.0");
@@ -243,10 +64,20 @@ function HomePage() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { t } = useTranslation();
 
+  const [activeDialog, setActiveDialog] = useState<
+    "single" | "bulk" | "playlist" | null
+  >(null);
+
   // --- SETTINGS STATE ---
-  const [quality, setQuality] = useState(localStorage.getItem("downloadQuality") || "best");
-  const [downloadPath, setDownloadPath] = useState(localStorage.getItem("downloadPath") || "");
-  const [autoStart, setAutoStart] = useState(localStorage.getItem("autoStart") === "true");
+  const [quality, setQuality] = useState(
+    localStorage.getItem("downloadQuality") || "best",
+  );
+  const [downloadPath, setDownloadPath] = useState(
+    localStorage.getItem("downloadPath") || "",
+  );
+  const [autoStart, setAutoStart] = useState(
+    localStorage.getItem("autoStart") === "true",
+  );
 
   // --- SEARCH, FILTERS & PAGINATION STATE ---
   const [searchOpen, setSearchOpen] = useState(false);
@@ -265,7 +96,11 @@ function HomePage() {
     updateDownload,
   } = useDownloads();
 
-  const [storage, setStorage] = useState({ used: "0", total: "0", percentage: 0 });
+  const [storage, setStorage] = useState({
+    used: "0",
+    total: "0",
+    percentage: 0,
+  });
 
   const updateDiskUsage = async () => {
     if (globalThis.electron && globalThis.electron.getDiskUsage) {
@@ -275,7 +110,7 @@ function HomePage() {
     }
   };
 
-// Update when component mounts or path changes
+  // Update when component mounts or path changes
   useEffect(() => {
     updateDiskUsage();
 
@@ -291,7 +126,9 @@ function HomePage() {
     localStorage.setItem("autoStart", autoStart.toString());
   };
 
-  useEffect(() => { saveSettings() }, [quality, downloadPath, autoStart]);
+  useEffect(() => {
+    saveSettings();
+  }, [quality, downloadPath, autoStart]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -307,7 +144,7 @@ function HomePage() {
 
   useEffect(
     () => startGetAppVersion(() => getAppVersion().then(setAppVersion)),
-    []
+    [],
   );
 
   // --- FILTER LOGIC ---
@@ -316,25 +153,31 @@ function HomePage() {
   }, [realDownloads, itemsPerPage]);
 
   const filteredHistory = useMemo(() => {
-    return realDownloads.filter(item => {
-      const matchesSearch = item.title.toLowerCase().includes(historySearch.toLowerCase()) ||
+    return realDownloads.filter((item) => {
+      const matchesSearch =
+        item.title.toLowerCase().includes(historySearch.toLowerCase()) ||
         item.url.toLowerCase().includes(historySearch.toLowerCase());
-      const matchesStatus = historyFilter === "all" ? true : item.status === historyFilter;
+      const matchesStatus =
+        historyFilter === "all" ? true : item.status === historyFilter;
       return matchesSearch && matchesStatus;
     });
   }, [realDownloads, historySearch, historyFilter]);
 
+  const handleDownloadStart = (
+    urls: string[],
+    selectedQuality: QualityType,
+  ) => {
+    const newDownloads = addDownload(urls, selectedQuality);
 
-  const handleModeSelect = (mode: DownloadType) => {
-    setSelectedMode(mode);
-    setDialogOpen(true);
-  };
-
-  const handleDownloadStart = (type: DownloadType, urls: string[], quality: QualityType) => {
-    const newDownloads = addDownload(urls, quality)
-    setDialogOpen(false);
+    // Simulate initial progress for demo
     setTimeout(() => {
-      updateDownload(newDownloads[0].id, { ...newDownloads[0], title: "New Download Started", progress: 5 })
+      if (newDownloads.length > 0) {
+        updateDownload(newDownloads[0].id, {
+          ...newDownloads[0],
+          title: "Processing Video...",
+          progress: 5,
+        });
+      }
     }, 1000);
   };
 
@@ -368,49 +211,48 @@ function HomePage() {
     }
   };
 
-  const activeDownloadsCount = realDownloads.filter((d) => d.status === "downloading").length;
-  const completedDownloadsCount = realDownloads.filter((d) => d.status === "completed").length;
+  const activeDownloadsCount = realDownloads.filter(
+    (d) => d.status === "downloading",
+  ).length;
+  const completedDownloadsCount = realDownloads.filter(
+    (d) => d.status === "completed",
+  ).length;
 
-  const faqs = [
-    { question: "What video formats are supported?", answer: "TubeSnag supports MP4, WebM, and audio formats. You can download in your preferred quality from 480p to 4K." },
-    { question: "Can I download playlists?", answer: "Yes! You can download entire YouTube playlists at once. Just paste the playlist URL and select the playlist option." },
-    { question: "How do I bulk download?", answer: "Simply paste multiple YouTube URLs separated by commas. TubeSnag will process them all automatically." },
-  ];
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans selection:bg-primary/20">
-
       {/* SIDEBAR */}
       <aside className="flex w-64 flex-col gap-2 relative h-full border-r border-border/40 bg-muted/10 p-4">
-        <div className="flex items-center gap-3 px-2 py-4 mb-4">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-md">
-            <Download className="size-5" />
-          </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight">{t("appName")}</h1>
-            <p className="text-[10px] text-muted-foreground font-mono">v{appVersion}</p>
-          </div>
-        </div>
+        <AppHeader appName={t("appName")} appVersion={appVersion} />
 
         <div className="space-y-1">
-          <NavButton icon={LayoutGrid} label="Dashboard" isActive={activeTab === "dashboard"} onClick={() => setActiveTab("dashboard")} />
-          <NavButton icon={History} label="History" isActive={activeTab === "history"} onClick={() => setActiveTab("history")} />
-          <NavButton icon={Settings} label="Settings" isActive={activeTab === "settings"} onClick={() => setActiveTab("settings")} />
-          <NavButton icon={HelpCircle} label="Help" isActive={activeTab === "help"} onClick={() => setActiveTab("help")} />
+          <NavButton
+            icon={LayoutGrid}
+            label="Dashboard"
+            isActive={activeTab === "dashboard"}
+            onClick={() => setActiveTab("dashboard")}
+          />
+          <NavButton
+            icon={History}
+            label="History"
+            isActive={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
+          />
+          <NavButton
+            icon={Settings}
+            label="Settings"
+            isActive={activeTab === "settings"}
+            onClick={() => setActiveTab("settings")}
+          />
+          <NavButton
+            icon={HelpCircle}
+            label="Help"
+            isActive={activeTab === "help"}
+            onClick={() => setActiveTab("help")}
+          />
         </div>
 
-        <div className="mt-auto mb-8 rounded-xl border border-border/50 bg-card p-4 shadow-sm">
-          <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-            <span>Storage</span>
-            <span>{storage.percentage}%</span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className={`h-full rounded-full bg-primary`} style={{ width: `${storage.percentage}%` }} />
-          </div>
-          <div className="mt-2 text-[10px] text-muted-foreground">
-            {storage.used} GB used of {storage.total} GB
-          </div>
-        </div>
+        <StorageIndicator used={storage.used} total={storage.total} percentage={storage.percentage} />
       </aside>
 
       {/* MAIN CONTENT AREA */}
@@ -429,7 +271,10 @@ function HomePage() {
             </button>
           </div>
           <div className="flex items-center gap-3 pl-4">
-            <ExternalLink href="https://github.com/imshawan" className="text-muted-foreground hover:text-foreground transition-colors">
+            <ExternalLink
+              href="https://github.com/imshawan"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               <Github className="size-5" />
             </ExternalLink>
             <div className="h-4 w-[1px] bg-border" />
@@ -440,28 +285,80 @@ function HomePage() {
 
         <ScrollArea className="flex-1">
           <div className="p-8 pb-20 max-w-6xl mx-auto">
-
             {/* 1. DASHBOARD VIEW */}
             {activeTab === "dashboard" && (
               <div className="flex flex-col gap-8 animate-in fade-in duration-500">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-semibold tracking-tight">Overview</h2>
-                  <p className="text-sm text-muted-foreground">Manage your downloads and active queues.</p>
+                  <h2 className="text-2xl font-semibold tracking-tight">
+                    Overview
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Manage your downloads and active queues.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <StatCard icon={Zap} label="Active Tasks" value={activeDownloadsCount} colorClass="text-amber-500" subtext={activeDownloadsCount > 0 ? "Processing..." : "Idle"} />
-                  <StatCard icon={CheckCircle2} label="Completed" value={completedDownloadsCount} colorClass="text-emerald-500" subtext="All time" />
-                  <StatCard icon={HardDrive} label="Total Size" value="2.4 GB" colorClass="text-blue-500" subtext="Saved locally" />
-                  <StatCard icon={AlertCircle} label="Failed" value={1} colorClass="text-rose-500" subtext="Requires attention" />
+                  <StatCard
+                    icon={Zap}
+                    label="Active Tasks"
+                    value={activeDownloadsCount}
+                    colorClass="text-amber-500"
+                    subtext={
+                      activeDownloadsCount > 0 ? "Processing..." : "Idle"
+                    }
+                  />
+                  <StatCard
+                    icon={CheckCircle2}
+                    label="Completed"
+                    value={completedDownloadsCount}
+                    colorClass="text-emerald-500"
+                    subtext="All time"
+                  />
+                  <StatCard
+                    icon={HardDrive}
+                    label="Total Size"
+                    value="2.4 GB"
+                    colorClass="text-blue-500"
+                    subtext="Saved locally"
+                  />
+                  <StatCard
+                    icon={AlertCircle}
+                    label="Failed"
+                    value={1}
+                    colorClass="text-rose-500"
+                    subtext="Requires attention"
+                  />
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Start New Download</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                    Start New Download
+                  </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <ActionCard title="Single Video" description="Download MP4/MP3" icon={PlayCircle} gradient="from-blue-500/10 to-indigo-500/10" iconColor="text-blue-500" onClick={() => handleModeSelect("single")} />
-                    <ActionCard title="Playlist" description="Batch download series" icon={ListVideo} gradient="from-emerald-500/10 to-teal-500/10" iconColor="text-emerald-500" onClick={() => handleModeSelect("playlist")} />
-                    <ActionCard title="Bulk Import" description="Paste multiple links" icon={Layers} gradient="from-orange-500/10 to-amber-500/10" iconColor="text-orange-500" onClick={() => handleModeSelect("bulk")} />
+                    <ActionCard
+                      title="Single Video"
+                      description="Download MP4/MP3"
+                      icon={PlayCircle}
+                      gradient="from-blue-500/10 to-indigo-500/10"
+                      iconColor="text-blue-500"
+                      onClick={() => setActiveDialog("single")}
+                    />
+                    <ActionCard
+                      title="Playlist"
+                      description="Batch download series"
+                      icon={ListVideo}
+                      gradient="from-emerald-500/10 to-teal-500/10"
+                      iconColor="text-emerald-500"
+                      onClick={() => setActiveDialog("playlist")}
+                    />
+                    <ActionCard
+                      title="Bulk Import"
+                      description="Paste multiple links"
+                      icon={Layers}
+                      gradient="from-orange-500/10 to-amber-500/10"
+                      iconColor="text-orange-500"
+                      onClick={() => setActiveDialog("bulk")}
+                    />
                   </div>
                 </div>
 
@@ -469,7 +366,14 @@ function HomePage() {
                 <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
                   <div className="flex items-center justify-between border-b border-border/50 px-6 py-4 bg-muted/10">
                     <h3 className="font-medium">Recent Activity</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setActiveTab("history")} className="h-7 text-xs text-muted-foreground hover:text-foreground">View All</Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setActiveTab("history")}
+                      className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      View All
+                    </Button>
                   </div>
 
                   <div className="bg-background/50 p-0">
@@ -483,20 +387,32 @@ function HomePage() {
                               onClick={() => handleOpenFile(download)}
                             >
                               <div className="flex items-center gap-4 overflow-hidden">
-                                <div className={cn(
-                                  "flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/50 transition-colors",
-                                  download.status === "failed" ? "bg-rose-500/10 border-rose-500/20" :
-                                    download.status === "downloading" ? "bg-amber-500/10 border-amber-500/20" : "bg-muted group-hover:bg-background"
-                                )}>
-                                  {download.status === "failed" ? <AlertCircle className="size-5 text-rose-500" /> :
-                                    download.type === "audio" ? <Music className="size-5 text-purple-500" /> :
-                                      <Youtube className="size-5 text-red-500" />
-                                  }
+                                <div
+                                  className={cn(
+                                    "flex size-10 shrink-0 items-center justify-center rounded-lg border border-border/50 transition-colors",
+                                    download.status === "failed"
+                                      ? "bg-rose-500/10 border-rose-500/20"
+                                      : download.status === "downloading"
+                                        ? "bg-amber-500/10 border-amber-500/20"
+                                        : "bg-muted group-hover:bg-background",
+                                  )}
+                                >
+                                  {download.status === "failed" ? (
+                                    <AlertCircle className="size-5 text-rose-500" />
+                                  ) : download.type === "audio" ? (
+                                    <Music className="size-5 text-purple-500" />
+                                  ) : (
+                                    <Youtube className="size-5 text-red-500" />
+                                  )}
                                 </div>
                                 <div className="flex flex-col overflow-hidden">
-                                  <span className="font-medium truncate text-sm text-foreground">{download.title || "Unknown Video"}</span>
+                                  <span className="font-medium truncate text-sm text-foreground">
+                                    {download.title || "Unknown Video"}
+                                  </span>
                                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span className="truncate max-w-[150px]">{download.channel}</span>
+                                    <span className="truncate max-w-[150px]">
+                                      {download.channel}
+                                    </span>
                                     <span className="h-1 w-1 rounded-full bg-border" />
                                     <span>{download.quality}</span>
                                   </div>
@@ -507,21 +423,32 @@ function HomePage() {
                                 {download.status === "downloading" ? (
                                   <div className="flex flex-col items-end gap-1 w-24">
                                     <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-                                      <div className="h-full bg-primary rounded-full transition-all duration-300 animate-pulse" style={{ width: `${download.progress}%` }} />
+                                      <div
+                                        className="h-full bg-primary rounded-full transition-all duration-300 animate-pulse"
+                                        style={{
+                                          width: `${download.progress}%`,
+                                        }}
+                                      />
                                     </div>
-                                    <span className="text-[10px] text-primary font-medium">{Math.round(download.progress)}%</span>
+                                    <span className="text-[10px] text-primary font-medium">
+                                      {Math.round(download.progress)}%
+                                    </span>
                                   </div>
                                 ) : download.status === "failed" ? (
                                   <span className="text-xs font-medium text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                                          Failed
-                                        </span>
+                                    Failed
+                                  </span>
                                 ) : (
                                   <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                                          Completed
-                                        </span>
+                                    Completed
+                                  </span>
                                 )}
 
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
                                   <MoreVertical className="size-4" />
                                 </Button>
                               </div>
@@ -545,12 +472,30 @@ function HomePage() {
               <div className="flex flex-col gap-6 animate-in fade-in duration-500">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <h2 className="text-2xl font-semibold tracking-tight">History</h2>
-                    <p className="text-sm text-muted-foreground">View and manage your download history.</p>
+                    <h2 className="text-2xl font-semibold tracking-tight">
+                      History
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      View and manage your download history.
+                    </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={clearCompleted} disabled={completedDownloadsCount === 0}>Clear Completed</Button>
-                    <Button variant="destructive" size="sm" onClick={clearAll} disabled={realDownloads.length === 0}>Clear All</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearCompleted}
+                      disabled={completedDownloadsCount === 0}
+                    >
+                      Clear Completed
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={clearAll}
+                      disabled={realDownloads.length === 0}
+                    >
+                      Clear All
+                    </Button>
                   </div>
                 </div>
 
@@ -568,7 +513,10 @@ function HomePage() {
                         />
                       </div>
                       {/* STATUS FILTER */}
-                      <Select value={historyFilter} onValueChange={setHistoryFilter}>
+                      <Select
+                        value={historyFilter}
+                        onValueChange={setHistoryFilter}
+                      >
                         <SelectTrigger className="h-8 w-[130px] text-xs bg-background">
                           <div className="flex items-center gap-2">
                             <Filter className="size-3 text-muted-foreground" />
@@ -578,12 +526,16 @@ function HomePage() {
                         <SelectContent>
                           <SelectItem value="all">All Status</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
-                          <SelectItem value="downloading">Downloading</SelectItem>
+                          <SelectItem value="downloading">
+                            Downloading
+                          </SelectItem>
                           <SelectItem value="failed">Failed</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">Showing {filteredHistory.length} items</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      Showing {filteredHistory.length} items
+                    </span>
                   </div>
 
                   {filteredHistory.length > 0 ? (
@@ -596,10 +548,16 @@ function HomePage() {
                         >
                           <div className="flex items-center gap-4">
                             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-                              {download.type === "audio" ? <Music className="size-5 text-muted-foreground" /> : <FileVideo className="size-5 text-muted-foreground" />}
+                              {download.type === "audio" ? (
+                                <Music className="size-5 text-muted-foreground" />
+                              ) : (
+                                <FileVideo className="size-5 text-muted-foreground" />
+                              )}
                             </div>
                             <div className="flex flex-col">
-                              <span className="font-medium text-sm">{download.title}</span>
+                              <span className="font-medium text-sm">
+                                {download.title}
+                              </span>
                               <div className="flex gap-2 text-xs text-muted-foreground">
                                 <span>{download.url}</span>
                                 <span>•</span>
@@ -608,7 +566,9 @@ function HomePage() {
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="text-xs text-muted-foreground hidden sm:block">{download.quality} • {download.size}</span>
+                            <span className="text-xs text-muted-foreground hidden sm:block">
+                              {download.quality} • {download.size}
+                            </span>
                             {download.status === "completed" ? (
                               <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[10px] font-medium border border-emerald-500/20">
                                 <CheckCircle2 className="size-3" /> Completed
@@ -619,7 +579,8 @@ function HomePage() {
                               </div>
                             ) : (
                               <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded text-[10px] font-medium border border-amber-500/20">
-                                <Zap className="size-3" /> {Math.round(download.progress)}%
+                                <Zap className="size-3" />{" "}
+                                {Math.round(download.progress)}%
                               </div>
                             )}
                           </div>
@@ -632,7 +593,9 @@ function HomePage() {
                         <Search className="size-6 opacity-50" />
                       </div>
                       <p className="text-sm font-medium">No results found</p>
-                      <p className="text-xs opacity-70 mt-1">Try adjusting your filters or search query.</p>
+                      <p className="text-xs opacity-70 mt-1">
+                        Try adjusting your filters or search query.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -643,28 +606,60 @@ function HomePage() {
             {activeTab === "settings" && (
               <div className="flex flex-col gap-8 animate-in fade-in duration-500 max-w-3xl">
                 <div className="space-y-1">
-                  <h2 className="text-2xl font-semibold tracking-tight">Settings</h2>
-                  <p className="text-sm text-muted-foreground">Customize your download preferences.</p>
+                  <h2 className="text-2xl font-semibold tracking-tight">
+                    Settings
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Customize your download preferences.
+                  </p>
                 </div>
 
                 <div className="space-y-6">
                   <section className="rounded-xl border border-border/50 bg-card p-6">
                     <div className="mb-4 flex items-center gap-2">
                       <Monitor className="size-4 text-primary" />
-                      <h2 className="text-base font-semibold">Download Quality</h2>
+                      <h2 className="text-base font-semibold">
+                        Download Quality
+                      </h2>
                     </div>
                     <div className="grid gap-2">
-                      <CustomRadioItem value="best" selectedValue={quality} onChange={setQuality} label="Best Quality" desc="Highest available resolution and bitrate (4K/8K)" />
-                      <CustomRadioItem value="high" selectedValue={quality} onChange={setQuality} label="High Quality" desc="1080p or best available" />
-                      <CustomRadioItem value="medium" selectedValue={quality} onChange={setQuality} label="Medium Quality" desc="720p or best available" />
-                      <CustomRadioItem value="low" selectedValue={quality} onChange={setQuality} label="Low Quality" desc="480p (Data saver)" />
+                      <RadioItem
+                        value="best"
+                        selectedValue={quality}
+                        onChange={setQuality}
+                        label="Best Quality"
+                        desc="Highest available resolution and bitrate (4K/8K)"
+                      />
+                      <RadioItem
+                        value="high"
+                        selectedValue={quality}
+                        onChange={setQuality}
+                        label="High Quality"
+                        desc="1080p or best available"
+                      />
+                      <RadioItem
+                        value="medium"
+                        selectedValue={quality}
+                        onChange={setQuality}
+                        label="Medium Quality"
+                        desc="720p or best available"
+                      />
+                      <RadioItem
+                        value="low"
+                        selectedValue={quality}
+                        onChange={setQuality}
+                        label="Low Quality"
+                        desc="480p (Data saver)"
+                      />
                     </div>
                   </section>
 
                   <section className="rounded-xl border border-border/50 bg-card p-6">
                     <div className="mb-4 flex items-center gap-2">
                       <Folder className="size-4 text-primary" />
-                      <h2 className="text-base font-semibold">Storage Location</h2>
+                      <h2 className="text-base font-semibold">
+                        Storage Location
+                      </h2>
                     </div>
                     <div className="space-y-3">
                       <Label htmlFor="download-path">Save downloads to</Label>
@@ -676,9 +671,13 @@ function HomePage() {
                           placeholder="C:/Users/Downloads"
                           className="font-mono text-sm bg-muted/30"
                         />
-                        <Button variant="outline" onClick={handleBrowseFolder}>Browse</Button>
+                        <Button variant="outline" onClick={handleBrowseFolder}>
+                          Browse
+                        </Button>
                       </div>
-                      <p className="text-[10px] text-muted-foreground">Changes are auto-saved to config.json</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Changes are auto-saved to config.json
+                      </p>
                     </div>
                   </section>
 
@@ -686,10 +685,18 @@ function HomePage() {
                     <h2 className="text-base font-semibold mb-4">General</h2>
                     <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4">
                       <div className="space-y-0.5">
-                        <Label htmlFor="autostart" className="text-base">Auto-start downloads</Label>
-                        <p className="text-xs text-muted-foreground">Begin downloading immediately when added</p>
+                        <Label htmlFor="autostart" className="text-base">
+                          Auto-start downloads
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Begin downloading immediately when added
+                        </p>
                       </div>
-                      <Switch id="autostart" checked={autoStart} onCheckedChange={setAutoStart} />
+                      <Switch
+                        id="autostart"
+                        checked={autoStart}
+                        onCheckedChange={setAutoStart}
+                      />
                     </div>
                   </section>
                 </div>
@@ -697,87 +704,34 @@ function HomePage() {
             )}
 
             {/* 4. HELP VIEW */}
-            {activeTab === "help" && (
-              <div className="flex flex-col gap-8 animate-in fade-in duration-500 max-w-4xl mx-auto">
-                <div className="text-center space-y-2 mb-4">
-                  <div className="flex items-center justify-center gap-3">
-                    <HelpCircle className="size-8 text-primary" />
-                    <h1 className="text-3xl font-bold">Help & Documentation</h1>
-                  </div>
-                  <p className="text-muted-foreground">Learn how to use TubeSnag and get answers to common questions.</p>
-                </div>
-
-                <div>
-                  <h2 className="text-lg font-semibold mb-4">Key Features</h2>
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <div className="rounded-xl border border-border/50 bg-card p-5">
-                      <Download className="mb-3 size-6 text-primary" />
-                      <h3 className="mb-1 font-semibold">Multiple Modes</h3>
-                      <p className="text-sm text-muted-foreground">Download single videos, bulk URLs, or playlists.</p>
-                    </div>
-                    <div className="rounded-xl border border-border/50 bg-card p-5">
-                      <Zap className="mb-3 size-6 text-primary" />
-                      <h3 className="mb-1 font-semibold">Lightning Fast</h3>
-                      <p className="text-sm text-muted-foreground">High-speed concurrent downloads.</p>
-                    </div>
-                    <div className="rounded-xl border border-border/50 bg-card p-5">
-                      <Shield className="mb-3 size-6 text-primary" />
-                      <h3 className="mb-1 font-semibold">100% Private</h3>
-                      <p className="text-sm text-muted-foreground">No tracking, no data collection.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold">Frequently Asked Questions</h2>
-                  <div className="space-y-3">
-                    {faqs.map((faq, index) => (
-                      <details
-                        key={index}
-                        className="group rounded-xl border border-border/50 bg-card/50 px-5 py-3 transition-all hover:bg-card/80 open:bg-card open:shadow-sm"
-                      >
-                        <summary className="flex cursor-pointer items-center justify-between font-medium outline-none">
-                          {faq.question}
-                          <ChevronDown className="size-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
-                        </summary>
-                        <p className="mt-3 text-sm text-muted-foreground leading-relaxed animate-in slide-in-from-top-2">
-                          {faq.answer}
-                        </p>
-                      </details>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-border/50 bg-primary/5 p-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Need more help? Check out the{" "}
-                    <ExternalLink href="https://github.com/imshawan/tubesnag-desktop" className="font-medium text-primary hover:underline">
-                      GitHub repository
-                    </ExternalLink>
-                    {" "}for additional resources.
-                  </p>
-                </div>
-              </div>
-            )}
-
+            {activeTab === "help" && <Help />}
           </div>
         </ScrollArea>
       </main>
 
       {/* Command Palette Overlay */}
-      <CommandPalette
+      <GlobalSearch
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         data={realDownloads}
         onSelect={handleOpenFile}
       />
 
-      {/* Dialog */}
-      <DownloadOptionsDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
+      {/* Dynamic Dialogs */}
+      <SingleDownloadDialog
+        open={activeDialog === "single"}
+        onOpenChange={(v) => !v && setActiveDialog(null)}
         onDownload={handleDownloadStart}
-        isLoading={false}
+      />
+      <BulkDownloadDialog
+        open={activeDialog === "bulk"}
+        onOpenChange={(v) => !v && setActiveDialog(null)}
+        onDownload={handleDownloadStart}
+      />
+      <PlaylistDownloadDialog
+        open={activeDialog === "playlist"}
+        onOpenChange={(v) => !v && setActiveDialog(null)}
+        onDownload={handleDownloadStart}
       />
     </div>
   );
