@@ -1,22 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import {
-  Check,
-  CheckCircle2,
-  ChevronRight,
-  DownloadCloud,
-  Loader2, Maximize2, Pause, Play,
-  Power,
-  Rocket, Settings,
-  Settings2,
-  Sparkles,
-  Zap
-} from "lucide-react";
-import LangToggle from "@/components/lang-toggle";
-import ToggleTheme from "@/components/toggle-theme";
-import type { DependencyStatus } from "@/types/index";
-import { installDependencies } from "@/utils/setup";
+import {createFileRoute, useNavigate} from "@tanstack/react-router";
+import {useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
+import {Loader2, Maximize2, Pause, Settings, Zap} from "lucide-react";
+import {installDependencies} from "@/utils/setup";
 import {cn} from "@/utils/tailwind";
 
 type SetupStatus = "checking" | "installing" | "complete";
