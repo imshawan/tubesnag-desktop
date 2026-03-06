@@ -6,12 +6,14 @@ import { Switch } from "@/components/ui/switch";
 import { RadioItem } from "@/components/radio-item";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setQuality, setDownloadPath, setAutoStart } from "@/store/slices/settings-slice";
+import { useTranslation } from "react-i18next";
 
 interface SettingsProps {
   onBrowseFolder: () => void;
 }
 
 export function Settings({ onBrowseFolder }: SettingsProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const quality = useAppSelector((state) => state.settings.quality);
   const downloadPath = useAppSelector((state) => state.settings.downloadPath);
@@ -20,44 +22,44 @@ export function Settings({ onBrowseFolder }: SettingsProps) {
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500 max-w-3xl">
       <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight">Settings</h2>
-        <p className="text-sm text-muted-foreground">Customize your download preferences.</p>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("settings.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
 
       <div className="space-y-6">
         <section className="rounded-xl border border-border/50 bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Monitor className="size-4 text-primary" />
-            <h2 className="text-base font-semibold">Download Quality</h2>
+            <h2 className="text-base font-semibold">{t("settings.downloadQuality")}</h2>
           </div>
           <div className="grid gap-2">
             <RadioItem
               value="best"
               selectedValue={quality}
               onChange={(v) => dispatch(setQuality(v))}
-              label="Best Quality"
-              desc="Highest available resolution and bitrate (4K/8K)"
+              label={t("settings.bestQuality")}
+              desc={t("settings.bestQualityDesc")}
             />
             <RadioItem
               value="high"
               selectedValue={quality}
               onChange={(v) => dispatch(setQuality(v))}
-              label="High Quality"
-              desc="1080p or best available"
+              label={t("settings.highQuality")}
+              desc={t("settings.highQualityDesc")}
             />
             <RadioItem
               value="medium"
               selectedValue={quality}
               onChange={(v) => dispatch(setQuality(v))}
-              label="Medium Quality"
-              desc="720p or best available"
+              label={t("settings.mediumQuality")}
+              desc={t("settings.mediumQualityDesc")}
             />
             <RadioItem
               value="low"
               selectedValue={quality}
               onChange={(v) => dispatch(setQuality(v))}
-              label="Low Quality"
-              desc="480p (Data saver)"
+              label={t("settings.lowQuality")}
+              desc={t("settings.lowQualityDesc")}
             />
           </div>
         </section>
@@ -65,10 +67,10 @@ export function Settings({ onBrowseFolder }: SettingsProps) {
         <section className="rounded-xl border border-border/50 bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Folder className="size-4 text-primary" />
-            <h2 className="text-base font-semibold">Storage Location</h2>
+            <h2 className="text-base font-semibold">{t("settings.storageLocation")}</h2>
           </div>
           <div className="space-y-3">
-            <Label htmlFor="download-path">Save downloads to</Label>
+            <Label htmlFor="download-path">{t("settings.saveDownloadsTo")}</Label>
             <div className="flex gap-2">
               <Input
                 id="download-path"
@@ -78,24 +80,24 @@ export function Settings({ onBrowseFolder }: SettingsProps) {
                 className="font-mono text-sm bg-muted/30"
               />
               <Button variant="outline" onClick={onBrowseFolder}>
-                Browse
+                {t("settings.browse")}
               </Button>
             </div>
             <p className="text-[10px] text-muted-foreground">
-              Changes are auto-saved to config.json
+              {t("settings.autoSaved")}
             </p>
           </div>
         </section>
 
         <section className="rounded-xl border border-border/50 bg-card p-6">
-          <h2 className="text-base font-semibold mb-4">General</h2>
+          <h2 className="text-base font-semibold mb-4">{t("settings.general")}</h2>
           <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4">
             <div className="space-y-0.5">
               <Label htmlFor="autostart" className="text-base">
-                Auto-start downloads
+                {t("settings.autoStartDownloads")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Begin downloading immediately when added
+                {t("settings.autoStartDesc")}
               </p>
             </div>
             <Switch

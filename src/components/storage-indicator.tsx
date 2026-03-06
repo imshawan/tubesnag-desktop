@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface StorageIndicatorProps {
   used: string;
   total: string;
@@ -5,10 +7,12 @@ interface StorageIndicatorProps {
 }
 
 export function StorageIndicator({ used, total, percentage }: StorageIndicatorProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="mt-auto mb-8 rounded-xl border border-border/50 bg-card p-4 shadow-sm">
       <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span>Storage</span>
+        <span>{t("storageIndicator.storage")}</span>
         <span>{percentage}%</span>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -18,7 +22,7 @@ export function StorageIndicator({ used, total, percentage }: StorageIndicatorPr
         />
       </div>
       <div className="mt-2 text-[10px] text-muted-foreground">
-        {used} GB used of {total} GB
+        {used} GB {t("storageIndicator.usedOf")} {total} GB
       </div>
     </div>
   );

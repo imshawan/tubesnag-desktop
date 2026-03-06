@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setHistorySearch, setHistoryFilter } from "@/store/slices/app-slice";
+import { useTranslation } from "react-i18next";
 import type { DownloadItem } from "@/hooks/useDownloads";
 
 interface HistoryProps {
@@ -15,6 +16,7 @@ interface HistoryProps {
 }
 
 export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, completedCount }: HistoryProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const historySearch = useAppSelector((state) => state.app.historySearch);
   const historyFilter = useAppSelector((state) => state.app.historyFilter);
@@ -23,15 +25,15 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h2 className="text-2xl font-semibold tracking-tight">History</h2>
-          <p className="text-sm text-muted-foreground">View and manage your download history.</p>
+          <h2 className="text-2xl font-semibold tracking-tight">{t("history.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("history.subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onClearCompleted} disabled={completedCount === 0}>
-            Clear Completed
+            {t("history.clearCompleted")}
           </Button>
           <Button variant="destructive" size="sm" onClick={onClearAll} disabled={downloads.length === 0}>
-            Clear All
+            {t("history.clearAll")}
           </Button>
         </div>
       </div>
@@ -42,7 +44,7 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
               <Input
-                placeholder="Search history..."
+                placeholder={t("history.searchPlaceholder")}
                 value={historySearch}
                 onChange={(e) => dispatch(setHistorySearch(e.target.value))}
                 className="pl-8 h-8 text-xs bg-background"
@@ -52,19 +54,19 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
               <SelectTrigger className="h-8 w-[130px] text-xs bg-background">
                 <div className="flex items-center gap-2">
                   <Filter className="size-3 text-muted-foreground" />
-                  <SelectValue placeholder="Status" />
+                  <SelectValue placeholder={t("history.allStatus")} />
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="downloading">Downloading</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="all">{t("history.allStatus")}</SelectItem>
+                <SelectItem value="completed">{t("history.completed")}</SelectItem>
+                <SelectItem value="downloading">{t("history.downloading")}</SelectItem>
+                <SelectItem value="failed">{t("history.failed")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
-            Showing {downloads.length} items
+            {t("history.showing")} {downloads.length} {t("history.items")}
           </span>
         </div>
 
@@ -99,11 +101,11 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
                   </span>
                   {download.status === "completed" ? (
                     <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[10px] font-medium border border-emerald-500/20">
-                      <CheckCircle2 className="size-3" /> Completed
+                      <CheckCircle2 className="size-3" /> {t("history.completed")}
                     </div>
                   ) : download.status === "failed" ? (
                     <div className="flex items-center gap-1.5 bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-500/20">
-                      <AlertCircle className="size-3" /> Failed
+                      <AlertCircle className="size-3" /> {t("history.failed")}
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded text-[10px] font-medium border border-amber-500/20">
@@ -119,8 +121,8 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
             <div className="bg-muted/50 p-4 rounded-full mb-3">
               <Search className="size-6 opacity-50" />
             </div>
-            <p className="text-sm font-medium">No results found</p>
-            <p className="text-xs opacity-70 mt-1">Try adjusting your filters or search query.</p>
+            <p className="text-sm font-medium">{t("history.noResults")}</p>
+            <p className="text-xs opacity-70 mt-1">{t("history.tryAdjusting")}</p>
           </div>
         )}
       </div>

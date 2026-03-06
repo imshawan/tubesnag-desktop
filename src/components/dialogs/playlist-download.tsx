@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +42,7 @@ export function PlaylistDownloadDialog({
   onDownload,
   isLoading,
 }: PlaylistDownloadDialogProps) {
+  const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [quality, setQuality] = useState<QualityType>("best");
   const [format, setFormat] = useState<FormatType>("mp4");
@@ -60,11 +62,11 @@ export function PlaylistDownloadDialog({
 
   const handleSubmit = () => {
     if (!url.trim()) {
-      setError("URL is required.");
+      setError(t("playlistDownload.errorUrlRequired"));
       return;
     }
     if (!url.includes("list=")) {
-      setError("Invalid playlist URL (missing 'list=').");
+      setError(t("playlistDownload.errorInvalidPlaylist"));
       return;
     }
 
@@ -78,17 +80,17 @@ export function PlaylistDownloadDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ListVideo className="size-5 text-muted-foreground" />
-            Download Playlist
+            {t("playlistDownload.title")}
           </DialogTitle>
           <DialogDescription>
-            Enter a YouTube playlist URL to queue all videos.
+            {t("playlistDownload.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
           {/* URL Input */}
           <div className="grid gap-2">
-            <Label htmlFor="pl-url">Playlist Link</Label>
+            <Label htmlFor="pl-url">{t("playlistDownload.playlistLink")}</Label>
             <div className="relative">
               <div className="absolute left-2.5 top-2.5 text-muted-foreground">
                 <ListVideo className="size-4" />
@@ -117,7 +119,7 @@ export function PlaylistDownloadDialog({
           {/* Settings Grid */}
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label>Quality</Label>
+              <Label>{t("playlistDownload.quality")}</Label>
               <Select
                 value={quality}
                 onValueChange={(v) => setQuality(v as QualityType)}
@@ -128,14 +130,14 @@ export function PlaylistDownloadDialog({
                 <SelectContent>
                   {VIDEO_QUALITIES.map((q) => (
                     <SelectItem key={q.id} value={q.id}>
-                      {q.label}
+                      {q.label()}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label>Format</Label>
+              <Label>{t("playlistDownload.format")}</Label>
               <Select
                 value={format}
                 onValueChange={(v) => setFormat(v as FormatType)}
@@ -146,7 +148,7 @@ export function PlaylistDownloadDialog({
                 <SelectContent>
                   {DOWNLOAD_FORMATS.map((format) => (
                     <SelectItem key={format.value} value={format.value}>
-                      {format.label}
+                      {format.label()}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -163,11 +165,11 @@ export function PlaylistDownloadDialog({
                   htmlFor="reverse-switch"
                   className="text-sm font-medium cursor-pointer"
                 >
-                  Reverse Order
+                  {t("playlistDownload.reverseOrder")}
                 </Label>
               </div>
               <p className="text-[0.8rem] text-muted-foreground pl-5.5">
-                Download oldest videos first
+                {t("playlistDownload.downloadOldestFirst")}
               </p>
             </div>
             <Switch
@@ -180,10 +182,10 @@ export function PlaylistDownloadDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("playlistDownload.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Processing..." : "Process Playlist"}
+            {isLoading ? t("playlistDownload.processing") : t("playlistDownload.processPlaylist")}
           </Button>
         </DialogFooter>
       </DialogContent>

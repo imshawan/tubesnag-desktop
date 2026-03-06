@@ -45,7 +45,6 @@ function HomePage() {
   const { t } = useTranslation();
   const [, startGetAppVersion] = useTransition();
 
-  const appVersion = useAppSelector((state) => state.app.appVersion);
   const activeTab = useAppSelector((state) => state.app.activeTab);
   const activeDialog = useAppSelector((state) => state.app.activeDialog);
   const searchOpen = useAppSelector((state) => state.app.searchOpen);
@@ -118,7 +117,7 @@ function HomePage() {
       if (newDownloads.length > 0) {
         updateDownload(newDownloads[0].id, {
           ...newDownloads[0],
-          title: "Processing Video...",
+          title: t("dashboard.processingVideo"),
           progress: 5,
         });
       }
@@ -127,9 +126,9 @@ function HomePage() {
 
   const handleOpenFile = (download: any) => {
     if (download.status === "completed") {
-      alert(`Opening file from: ${downloadPath}\n\n${download.title}`);
+      alert(`${t("dashboard.openingFile")} ${downloadPath}\n\n${download.title}`);
     } else if (download.status === "failed") {
-      alert("This download failed. Retry?");
+      alert(t("dashboard.downloadFailed"));
     }
   };
 
@@ -141,12 +140,12 @@ function HomePage() {
           dispatch(setDownloadPath(path));
         }
       } else {
-        console.warn("Electron IPC not detected. Using mock path.");
+        console.warn(t("dashboard.electronNotDetected"));
         dispatch(setDownloadPath("C:\\Users\\Electron\\Downloads"));
-        alert("Mock path set! To fix, add 'selectFolder' to your preload.js.");
+        alert(t("dashboard.mockPathSet"));
       }
     } catch (error) {
-      console.error("Failed to select folder:", error);
+      console.error(t("dashboard.failedSelectFolder"), error);
     }
   };
 
@@ -169,7 +168,7 @@ function HomePage() {
               className="group flex h-9 w-full items-center gap-2 rounded-md border border-input bg-background/50 px-3 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <Search className="size-4 shrink-0 opacity-50" />
-              <span className="flex-1 text-left">Search downloads...</span>
+              <span className="flex-1 text-left">{t("dashboard.searchDownloads")}</span>
               <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
                 <span className="text-xs">⌘</span>K
               </kbd>
@@ -194,70 +193,70 @@ function HomePage() {
               <div className="flex flex-col gap-8 animate-in fade-in duration-500">
                 <div className="space-y-1">
                   <h2 className="text-2xl font-semibold tracking-tight">
-                    Overview
+                    {t("dashboard.overview")}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Manage your downloads and active queues.
+                    {t("dashboard.manageDownloads")}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <StatCard
                     icon={Zap}
-                    label="Active Tasks"
+                    label={t("dashboard.activeTasks")}
                     value={activeDownloadsCount}
                     colorClass="text-amber-500"
                     subtext={
-                      activeDownloadsCount > 0 ? "Processing..." : "Idle"
+                      activeDownloadsCount > 0 ? t("dashboard.processing") : t("dashboard.idle")
                     }
                   />
                   <StatCard
                     icon={CheckCircle2}
-                    label="Completed"
+                    label={t("dashboard.completed")}
                     value={completedDownloadsCount}
                     colorClass="text-emerald-500"
-                    subtext="All time"
+                    subtext={t("dashboard.allTime")}
                   />
                   <StatCard
                     icon={HardDrive}
-                    label="Total Size"
+                    label={t("dashboard.totalSize")}
                     value="2.4 GB"
                     colorClass="text-blue-500"
-                    subtext="Saved locally"
+                    subtext={t("dashboard.savedLocally")}
                   />
                   <StatCard
                     icon={AlertCircle}
-                    label="Failed"
+                    label={t("dashboard.failed")}
                     value={1}
                     colorClass="text-rose-500"
-                    subtext="Requires attention"
+                    subtext={t("dashboard.requiresAttention")}
                   />
                 </div>
 
                 <div className="space-y-4">
                   <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                    Start New Download
+                    {t("dashboard.startNewDownload")}
                   </h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <ActionCard
-                      title="Single Video"
-                      description="Download MP4/MP3"
+                      title={t("dashboard.singleVideo")}
+                      description={t("dashboard.downloadMp4Mp3")}
                       icon={PlayCircle}
                       gradient="from-blue-500/10 to-indigo-500/10"
                       iconColor="text-blue-500"
                       onClick={() => dispatch(setActiveDialog("single"))}
                     />
                     <ActionCard
-                      title="Playlist"
-                      description="Batch download series"
+                      title={t("dashboard.playlist")}
+                      description={t("dashboard.batchDownloadSeries")}
                       icon={ListVideo}
                       gradient="from-emerald-500/10 to-teal-500/10"
                       iconColor="text-emerald-500"
                       onClick={() => dispatch(setActiveDialog("playlist"))}
                     />
                     <ActionCard
-                      title="Bulk Import"
-                      description="Paste multiple links"
+                      title={t("dashboard.bulkImport")}
+                      description={t("dashboard.pasteMultipleLinks")}
                       icon={Layers}
                       gradient="from-orange-500/10 to-amber-500/10"
                       iconColor="text-orange-500"
@@ -318,6 +317,8 @@ function HomePage() {
   );
 }
 
-export const Route = createFileRoute("/")({
-  component: HomePage,
-});
+export const Route = createFileRoute("/")(
+  {
+    component: HomePage,
+  }
+);

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollArea } from "./ui/scroll-area";
 import { cn } from "@/utils/tailwind";
 import { Film, Music, Play, Search } from "lucide-react";
@@ -11,6 +12,7 @@ interface GlobalSearchProps {
 }
 
 export function GlobalSearch({ isOpen, onClose, data, onSelect }: GlobalSearchProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -41,13 +43,13 @@ export function GlobalSearch({ isOpen, onClose, data, onSelect }: GlobalSearchPr
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="flex h-14 w-full rounded-md bg-transparent py-3 text-lg outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Type to search downloads..."
+            placeholder={t("globalSearch.placeholder")}
           />
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-              ESC
+              {t("globalSearch.esc")}
             </kbd>
-            <span>to close</span>
+            <span>{t("globalSearch.toClose")}</span>
           </div>
         </div>
 
@@ -55,12 +57,12 @@ export function GlobalSearch({ isOpen, onClose, data, onSelect }: GlobalSearchPr
           <div className="p-2">
             {filtered.length === 0 ? (
               <div className="py-14 text-center text-sm text-muted-foreground">
-                No results found.
+                {t("globalSearch.noResults")}
               </div>
             ) : (
               <div className="space-y-1">
                 <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                  Results ({filtered.length})
+                  {t("globalSearch.results")} ({filtered.length})
                 </div>
                 {filtered.map((item: any) => (
                   <button

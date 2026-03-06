@@ -1,13 +1,11 @@
 import {
-  Film,
-  Check,
-  Link,
   Sparkles,
   Monitor,
   Smartphone,
   Music,
   Tv,
 } from "lucide-react";
+import i18n from "i18next";
 
 export const LOCAL_STORAGE_KEYS = {
   LANGUAGE: "lang",
@@ -21,54 +19,51 @@ export const IPC_CHANNELS = {
 export const VIDEO_QUALITIES = [
   {
     id: "best",
-    label: "Best Available",
-    sub: "Max Resolution",
+    label: () => i18n.t("videoQualities.best.label"),
+    sub: () => i18n.t("videoQualities.best.sub"),
     icon: Sparkles
   },
-  { id: "4k", label: "4K Ultra HD", sub: "2160p HDR", icon: Tv },
+  { id: "4k", label: () => i18n.t("videoQualities.4k.label"), sub: () => i18n.t("videoQualities.4k.sub"), icon: Tv },
   {
     id: "high",
-    label: "High Def",
-    sub: "1080p @ 60fps",
+    label: () => i18n.t("videoQualities.high.label"),
+    sub: () => i18n.t("videoQualities.high.sub"),
     icon: Monitor
   },
   {
     id: "medium",
-    label: "Standard",
-    sub: "720p / Data Saver",
+    label: () => i18n.t("videoQualities.medium.label"),
+    sub: () => i18n.t("videoQualities.medium.sub"),
     icon: Smartphone
   },
   {
     id: "audio",
-    label: "Audio Only",
-    sub: "MP3 / M4A",
+    label: () => i18n.t("videoQualities.audio.label"),
+    sub: () => i18n.t("videoQualities.audio.sub"),
     icon: Music
   },
 ];
 
 export const DOWNLOAD_FORMATS = [
-  { value: "mp4", label: "MP4 (Video)" },
-  { value: "webm", label: "WebM (Video)" },
-  { value: "mkv", label: "MKV (Video)" },
-  { value: "mp3", label: "MP3 (Audio)" },
-  { value: "m4a", label: "M4A (Audio)" },
-  { value: "wav", label: "WAV (Audio)" },
+  { value: "mp4", label: () => i18n.t("downloadFormats.mp4") },
+  { value: "webm", label: () => i18n.t("downloadFormats.webm") },
+  { value: "mkv", label: () => i18n.t("downloadFormats.mkv") },
+  { value: "mp3", label: () => i18n.t("downloadFormats.mp3") },
+  { value: "m4a", label: () => i18n.t("downloadFormats.m4a") },
+  { value: "wav", label: () => i18n.t("downloadFormats.wav") },
 ] as const;
 
 export const faqs = [
     {
-      question: "What video formats are supported?",
-      answer:
-        "TubeSnag supports MP4, WebM, and audio formats. You can download in your preferred quality from 480p to 4K.",
+      question: () => i18n.t("faqs.0.question"),
+      answer: () => i18n.t("faqs.0.answer"),
     },
     {
-      question: "Can I download playlists?",
-      answer:
-        "Yes! You can download entire YouTube playlists at once. Just paste the playlist URL and select the playlist option.",
+      question: () => i18n.t("faqs.1.question"),
+      answer: () => i18n.t("faqs.1.answer"),
     },
     {
-      question: "How do I bulk download?",
-      answer:
-        "Simply paste multiple YouTube URLs separated by commas. TubeSnag will process them all automatically.",
+      question: () => i18n.t("faqs.2.question"),
+      answer: () => i18n.t("faqs.2.answer"),
     },
   ] as const;

@@ -1,4 +1,5 @@
 import { Clock, AlertCircle, Music, Youtube, MoreVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/tailwind";
 import { useAppDispatch } from "@/store/hooks";
@@ -11,19 +12,20 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ downloads, onOpenFile }: RecentActivityProps) {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-border/50 px-6 py-4 bg-muted/10">
-        <h3 className="font-medium">Recent Activity</h3>
+        <h3 className="font-medium">{t("recentActivity.title")}</h3>
         <Button
           variant="ghost"
           size="sm"
           onClick={() => dispatch(setActiveTab("history"))}
           className="h-7 text-xs text-muted-foreground hover:text-foreground"
         >
-          View All
+          {t("recentActivity.viewAll")}
         </Button>
       </div>
 
@@ -58,7 +60,7 @@ export function RecentActivity({ downloads, onOpenFile }: RecentActivityProps) {
                     </div>
                     <div className="flex flex-col overflow-hidden">
                       <span className="font-medium truncate text-sm text-foreground">
-                        {download.title || "Unknown Video"}
+                        {download.title || t("recentActivity.unknownVideo")}
                       </span>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span className="truncate max-w-[150px]">
@@ -85,11 +87,11 @@ export function RecentActivity({ downloads, onOpenFile }: RecentActivityProps) {
                       </div>
                     ) : download.status === "failed" ? (
                       <span className="text-xs font-medium text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                        Failed
+                        {t("history.failed")}
                       </span>
                     ) : (
                       <span className="text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        Completed
+                        {t("history.completed")}
                       </span>
                     )}
                     <Button
@@ -107,7 +109,7 @@ export function RecentActivity({ downloads, onOpenFile }: RecentActivityProps) {
         ) : (
           <div className="flex h-40 flex-col items-center justify-center space-y-2 text-muted-foreground">
             <Clock className="size-6 text-muted-foreground/30" />
-            <p className="text-sm">No recent downloads.</p>
+            <p className="text-sm">{t("recentActivity.noRecentDownloads")}</p>
           </div>
         )}
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ export function BulkDownloadDialog({
   onDownload,
   isLoading,
 }: BulkDownloadDialogProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [quality, setQuality] = useState<QualityType>("best");
   const [error, setError] = useState("");
@@ -57,7 +59,7 @@ export function BulkDownloadDialog({
 
   const handleSubmit = () => {
     if (linkCount === 0) {
-      setError("Please paste at least one link.");
+      setError(t("bulkDownload.errorEmpty"));
       return;
     }
     onDownload(urls, quality);
@@ -70,17 +72,17 @@ export function BulkDownloadDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Layers className="size-5 text-muted-foreground" />
-            Bulk Download
+            {t("bulkDownload.title")}
           </DialogTitle>
           <DialogDescription>
-            Queue multiple videos at once. One link per line.
+            {t("bulkDownload.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="bulk-text">Video Links</Label>
+              <Label htmlFor="bulk-text">{t("bulkDownload.videoLinks")}</Label>
               {/* Link Counter Badge */}
               <div
                 className={cn(
@@ -91,14 +93,14 @@ export function BulkDownloadDialog({
                 )}
               >
                 {linkCount > 0 && <CheckCircle2 className="size-3" />}
-                {linkCount} detected
+                {linkCount} {t("bulkDownload.detected")}
               </div>
             </div>
 
             {/* The Textarea for Bulk Input */}
             <Textarea
               id="bulk-text"
-              placeholder="https://youtu.be/video1&#10;https://youtu.be/video2&#10;https://youtu.be/video3"
+              placeholder="https://youtu.be/video1\nhttps://youtu.be/video2\nhttps://youtu.be/video3"
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
@@ -119,9 +121,9 @@ export function BulkDownloadDialog({
 
           <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/40">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">Target Quality</Label>
+              <Label className="text-sm font-medium">{t("bulkDownload.targetQuality")}</Label>
               <p className="text-[0.8rem] text-muted-foreground">
-                Applies to all videos in this batch
+                {t("bulkDownload.appliesToAll")}
               </p>
             </div>
             <Select
@@ -134,7 +136,7 @@ export function BulkDownloadDialog({
               <SelectContent>
                 {VIDEO_QUALITIES.map((q) => (
                   <SelectItem key={q.id} value={q.id}>
-                    {q.label}
+                    {q.label()}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -142,9 +144,9 @@ export function BulkDownloadDialog({
           </div>
           <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/40">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">Download Format</Label>
+              <Label className="text-sm font-medium">{t("bulkDownload.downloadFormat")}</Label>
               <p className="text-[0.8rem] text-muted-foreground">
-                Applies to all video/audio in this batch
+                {t("bulkDownload.appliesToAllFormat")}
               </p>
             </div>
             <Select
@@ -157,7 +159,7 @@ export function BulkDownloadDialog({
               <SelectContent>
                 {DOWNLOAD_FORMATS.map((format) => (
                   <SelectItem key={format.value} value={format.value}>
-                    {format.label}
+                    {format.label()}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -167,17 +169,17 @@ export function BulkDownloadDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("bulkDownload.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={isLoading || linkCount === 0}
           >
             {isLoading
-              ? "Queueing..."
+              ? t("bulkDownload.queueing")
               : linkCount > 0
-                ? `Download ${linkCount} Videos`
-                : "Download"}
+                ? `${t("bulkDownload.download")} ${linkCount} ${linkCount === 1 ? "Video" : "Videos"}`
+                : t("bulkDownload.download")}
           </Button>
         </DialogFooter>
       </DialogContent>

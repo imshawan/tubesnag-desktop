@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +18,7 @@ interface SingleDownloadDialogProps {
 }
 
 export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading }: SingleDownloadDialogProps) {
+  const { t } = useTranslation()
   const [url, setUrl] = useState("")
   const [quality, setQuality] = useState<QualityType>("best")
   const [error, setError] = useState("")
@@ -24,7 +26,7 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
   useEffect(() => { if (open) { setUrl(""); setError("") } }, [open])
 
   const handleSubmit = () => {
-    if (!url.trim()) { setError("Please paste a link first."); return }
+    if (!url.trim()) { setError(t("singleDownload.errorEmpty")); return }
     onDownload([url], quality)
     onOpenChange(false)
   }
@@ -33,20 +35,20 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle>Download Video</DialogTitle>
+          <DialogTitle>{t("singleDownload.title")}</DialogTitle>
           <DialogDescription>
-            Enter a YouTube URL and select your preferred quality.
+            {t("singleDownload.description")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="single-url">Video Link</Label>
+            <Label htmlFor="single-url">{t("singleDownload.videoLink")}</Label>
             <div className="relative">
               <Link className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input 
                 id="single-url" 
-                placeholder="https://youtu.be/..." 
+                placeholder={t("singleDownload.placeholder")}
                 value={url}
                 onChange={(e) => { setUrl(e.target.value); setError(""); }}
                 className={cn("pl-9", error && "border-destructive focus-visible:ring-destructive")}
@@ -56,7 +58,7 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
           </div>
 
           <div className="grid gap-2">
-            <Label>Quality</Label>
+            <Label>{t("singleDownload.quality")}</Label>
             <RadioGroup value={quality} onValueChange={(v) => setQuality(v as QualityType)} className="grid grid-cols-2 gap-4">
                {VIDEO_QUALITIES.map((q) => (
                    <label
@@ -71,8 +73,8 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
                            <Film className="h-4 w-4 text-muted-foreground" />
                            {quality === q.id && <Check className="h-3 w-3 text-primary" />}
                        </div>
-                       <span className="font-semibold text-sm leading-none">{q.label}</span>
-                       <span className="text-xs text-muted-foreground mt-1">{q.sub}</span>
+                       <span className="font-semibold text-sm leading-none">{q.label()}</span>
+                       <span className="text-xs text-muted-foreground mt-1">{q.sub()}</span>
                    </label>
                ))}
             </RadioGroup>
@@ -80,9 +82,9 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
         </div>
 
         <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>{t("singleDownload.cancel")}</Button>
             <Button onClick={handleSubmit} disabled={isLoading}>
-                {isLoading ? "Starting..." : "Download"}
+                {isLoading ? t("singleDownload.starting") : t("singleDownload.download")}
             </Button>
         </DialogFooter>
       </DialogContent>
