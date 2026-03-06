@@ -35,9 +35,14 @@ export async function toggleTheme() {
 }
 
 export async function syncWithLocalTheme() {
-  const { local } = await getCurrentTheme();
+  const { local, system } = await getCurrentTheme();
   if (!local) {
-    setTheme("system");
+    if (system === "system") {
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      updateDocumentTheme(isDark);
+    } else {
+      updateDocumentTheme(system === "dark");
+    }
     return;
   }
 
