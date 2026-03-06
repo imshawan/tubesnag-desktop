@@ -67,3 +67,15 @@ export const faqs = [
       answer: () => i18n.t("faqs.2.answer"),
     },
   ] as const;
+
+export const DEPENDENCY_CONFIG = {
+  ytDlp: {
+    win32: { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe', filename: 'yt-dlp.exe' },
+    unix: { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp', filename: 'yt-dlp' },
+  },
+  ffmpeg: {
+    win32: { filename: 'ffmpeg.exe' },
+    linux: { filename: 'ffmpeg' },
+    darwin: { filename: 'ffmpeg' },
+  },
+};

@@ -39,6 +39,7 @@ import {
 } from "@/store/slices/app-slice";
 import { setDownloadPath } from "@/store/slices/settings-slice";
 import { RecentActivity } from "@/components/recent-activity";
+import {getDiskUsageStats} from "@/utils/setup";
 
 function HomePage() {
   const dispatch = useAppDispatch();
@@ -62,10 +63,8 @@ function HomePage() {
   } = useDownloads();
 
   const updateDiskUsage = async () => {
-    if (globalThis.electron && globalThis.electron.getDiskUsage) {
-      const data = await globalThis.electron.getDiskUsage(downloadPath);
-      if (data) dispatch(setStorage(data));
-    }
+    const data = await getDiskUsageStats(downloadPath);
+    if (data) dispatch(setStorage(data));
   };
 
   useEffect(() => {
@@ -158,7 +157,13 @@ function HomePage() {
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans selection:bg-primary/20">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+        <div className="absolute -top-40 -right-40 w-[300px] h-[300px] bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-transparent rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-br from-primary/10 to-transparent rounded-full blur-3xl" />
+      </div>
+
       <Sidebar />
+
 
       <main className="flex flex-1 flex-col bg-background relative">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-border/40 px-6 backdrop-blur-sm bg-background/80">

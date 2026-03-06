@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { app, BrowserWindow, dialog } from "electron";
+import { app, BrowserWindow } from "electron";
 import { ipcMain } from "electron/main";
 import {
   installExtension,
@@ -9,8 +9,8 @@ import {
 import { UpdateSourceType, updateElectronApp } from "update-electron-app";
 import { ipcContext } from "@/ipc/context";
 import { IPC_CHANNELS } from "./constants";
-import fs from "fs/promises";
 import IpcMainEvent = Electron.IpcMainEvent;
+import {checkDependencies, getDiskUsage, installDependencies, selectFolder, getPlatform, getAppVersion} from "@/ipc/app/handlers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,8 +73,23 @@ async function setupORPC() {
   });
 }
 
+function setupIpcHandlers() {
+  ipcMain.handle('dialog:selectFolder', selectFolder);
+
+  ipcMain.handle('meta:get-disk-usage', getDiskUsage);
+  ipcMain.handle('meta:get-ffmpeg-config', getDiskUsage);
+  ipcMain.handle('meta:get-ytdlp-config', getDiskUsage);
+
+  ipcMain.handle('setup:check-dependencies', checkDependencies);
+  ipcMain.handle('setup:install-dependencies', installDependencies);
+  
+  ipcMain.handle('app:get-platform', getPlatform);
+  ipcMain.handle('app:get-version', getAppVersion);
+}
+
 app.whenReady().then(async () => {
   try {
+    setupIpcHandlers();
     createWindow();
     await installExtensions();
     checkForUpdates();
@@ -97,36 +112,3 @@ app.on("activate", () => {
   }
 });
 //osX only ends
-
-
-ipcMain.handle('dialog:selectFolder', async () => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
-    properties: ['openDirectory']
-  })
-  if (canceled) {
-    return null
-  } else {
-    return filePaths[0]
-  }
-});
-
-ipcMain.handle('get-disk-usage', async (event, downloadPath) => {
-  try {
-    // Use the provided downloadPath or default to the home directory
-    const statsPath = downloadPath || require('node:os').homedir();
-    const stats = await fs.statfs(statsPath);
-
-    const total = stats.bsize * stats.blocks;
-    const free = stats.bsize * stats.bfree;
-    const used = total - free;
-
-    return {
-      total: (total / (1024 ** 3)).toFixed(1), // Convert bytes to GB
-      used: (used / (1024 ** 3)).toFixed(1),
-      percentage: Math.round((used / total) * 100)
-    };
-  } catch (error) {
-    console.error("Failed to get disk usage:", error);
-    return null;
-  }
-});

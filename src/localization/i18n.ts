@@ -183,6 +183,14 @@ i18n.use(initReactI18next).init({
           noResults: "No results found.",
           results: "Results"
         },
+        setup: {
+          title: "TubeSnag Setup",
+          welcome: "Welcome to TubeSnag",
+          description: "Setting up your environment for the first time. This may take a moment.",
+          checking: "Checking dependencies...",
+          installing: "Installing dependencies...",
+          complete: "Setup complete!"
+        },
       },
     }
   },

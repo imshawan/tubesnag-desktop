@@ -8,6 +8,7 @@ export interface AppState {
   itemsPerPage: number;
   historySearch: string;
   historyFilter: string;
+  setupComplete: boolean;
   storage: {
     used: string;
     total: string;
@@ -23,6 +24,7 @@ const initialState: AppState = {
   itemsPerPage: 5,
   historySearch: "",
   historyFilter: "all",
+  setupComplete: false,
   storage: {
     used: "0",
     total: "0",
@@ -61,6 +63,9 @@ const appSlice = createSlice({
     setStorage: (state, action: PayloadAction<{ used: string; total: string; percentage: number }>) => {
       state.storage = action.payload;
     },
+    setSetupComplete: (state, action: PayloadAction<boolean>) => {
+      state.setupComplete = action.payload;
+    },
   },
 });
 
@@ -74,6 +79,7 @@ export const {
   setHistorySearch,
   setHistoryFilter,
   setStorage,
+  setSetupComplete,
 } = appSlice.actions;
 
 export default appSlice.reducer;

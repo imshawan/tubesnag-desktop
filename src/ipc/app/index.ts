@@ -1,6 +1,9 @@
-import { appVersion, currentPlatfom } from "./handlers";
+import { getDiskUsage, checkDependencies, installDependencies, getPlatform, getAppVersion } from "./handlers";
 
 export const app = {
-  currentPlatfom,
-  appVersion,
+  getDiskUsage,
+  checkDependencies,
+  installDependencies,
+  getPlatform,
+  getAppVersion,
 };
