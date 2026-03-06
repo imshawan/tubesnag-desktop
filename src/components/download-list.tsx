@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/tailwind";
 import type { DownloadItem } from "@/store/slices/downloads-slice";
-import { useState } from "react";
+import {useCallback, useMemo, useState} from "react";
+import {formatBytes} from "@/utils/common";
 
 interface DownloadListProps {
   items: DownloadItem[];
@@ -37,44 +38,47 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
     }
   };
 
-  const renderDownloadRow = (download: DownloadItem, isPlaylistChild = false) => (
-    <div
-      key={download.id}
-      className={cn(
-        "flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors",
-        isPlaylistChild && "pl-12 bg-muted/5"
-      )}
-      onClick={() => onOpenFile(download)}
-    >
-      <div className="flex items-center gap-4">
-        {download.thumbnail ? (
-          <img src={download.thumbnail} alt={download.title} className="size-10 rounded-lg object-cover border border-border/50" />
-        ) : (
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-            {download.type === "audio" ? (
-              <Music className="size-5 text-muted-foreground" />
-            ) : (
-              <FileVideo className="size-5 text-muted-foreground" />
+  const renderDownloadRow = (download: DownloadItem, isPlaylistChild = false) => {
+    const size = useMemo(() => formatBytes(download.size), [download]);
+    return (
+        <div
+            key={download.id}
+            className={cn(
+                "flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors",
+                isPlaylistChild && "pl-12 bg-muted/5"
             )}
+            onClick={() => onOpenFile(download)}
+        >
+          <div className="flex items-center gap-4">
+            {download.thumbnail ? (
+                <img src={download.thumbnail} alt={download.title} className="size-10 rounded-lg object-cover border border-border/50" />
+            ) : (
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
+                  {download.type === "audio" ? (
+                      <Music className="size-5 text-muted-foreground" />
+                  ) : (
+                      <FileVideo className="size-5 text-muted-foreground" />
+                  )}
+                </div>
+            )}
+            <div className="flex flex-col">
+              <span className="font-medium text-sm">{download.title}</span>
+              <div className="flex gap-2 text-xs text-muted-foreground">
+                <span>{download.channel}</span>
+                <span>•</span>
+                <span>{download.date}</span>
+              </div>
+            </div>
           </div>
-        )}
-        <div className="flex flex-col">
-          <span className="font-medium text-sm">{download.title}</span>
-          <div className="flex gap-2 text-xs text-muted-foreground">
-            <span>{download.channel}</span>
-            <span>•</span>
-            <span>{download.date}</span>
+          <div className="flex items-center gap-4">
+        <span className="text-xs text-muted-foreground hidden sm:block">
+          {download.quality} • {size}
+        </span>
+            {renderStatusBadge(download)}
           </div>
         </div>
-      </div>
-      <div className="flex items-center gap-4">
-        <span className="text-xs text-muted-foreground hidden sm:block">
-          {download.quality} • {download.size}
-        </span>
-        {renderStatusBadge(download)}
-      </div>
-    </div>
-  );
+    );
+  }
 
   const DefaultIcon = ({item}: {item: DownloadItem}) => {
     const Icon = item.type === "audio" ? Music : FileVideo;
