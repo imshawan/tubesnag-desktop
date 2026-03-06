@@ -2,6 +2,16 @@
  * Type definitions for TubeSnag Desktop
  */
 
+declare global {
+  interface Window {
+    electron?: {
+      getDiskUsage: (path: string) => Promise<{ used: string; total: string; percentage: number }>;
+      selectFolder: () => Promise<string | null>;
+    };
+  }
+  var electron: Window['electron'];
+}
+
 export type DownloadType = "single" | "bulk" | "playlist"
 export type QualityType = "best" | "high" | "medium" | "low"
 export type DownloadStatus = "pending" | "downloading" | "completed" | "error"
@@ -136,24 +146,17 @@ export interface DownloadItemCardProps {
 
 // Error Types
 export class ValidationError extends Error {
-  constructor(message: string, public errors: string[] = []) {
-    super(message)
-    this.name = "ValidationError"
-  }
+  errors: string[];
+  constructor(message: string, errors?: string[]);
 }
 
 export class DownloadError extends Error {
-  constructor(message: string, public downloadId?: string) {
-    super(message)
-    this.name = "DownloadError"
-  }
+  downloadId?: string;
+  constructor(message: string, downloadId?: string);
 }
 
 export class NetworkError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = "NetworkError"
-  }
+  constructor(message: string);
 }
 
 // Utility Types
@@ -162,38 +165,10 @@ export type VoidFunction = () => void
 export type EventHandler<T = Event> = (event: T) => void
 
 // Type Guards
-export const isValidDownloadType = (value: unknown): value is DownloadType => {
-  return ["single", "bulk", "playlist"].includes(value as string)
-}
-
-export const isValidQualityType = (value: unknown): value is QualityType => {
-  return ["best", "high", "medium", "low"].includes(value as string)
-}
-
-export const isValidDownloadStatus = (
-  value: unknown
-): value is DownloadStatus => {
-  return ["pending", "downloading", "completed", "error"].includes(
-    value as string
-  )
-}
-
-export const isValidToastType = (value: unknown): value is ToastType => {
-  return ["success", "error", "info", "warning"].includes(value as string)
-}
-
-export const isDownloadItem = (value: unknown): value is DownloadItem => {
-  if (typeof value !== "object" || value === null) return false
-  const item = value as Record<string, unknown>
-  return (
-    typeof item.id === "string" &&
-    typeof item.url === "string" &&
-    isValidDownloadStatus(item.status) &&
-    typeof item.progress === "number"
-  )
-}
-
-export const isDownloadHistory = (value: unknown): value is DownloadHistory => {
-  return isDownloadItem(value) && (value as any).downloadedAt instanceof Date
-}
+export function isValidDownloadType(value: unknown): value is DownloadType;
+export function isValidQualityType(value: unknown): value is QualityType;
+export function isValidDownloadStatus(value: unknown): value is DownloadStatus;
+export function isValidToastType(value: unknown): value is ToastType;
+export function isDownloadItem(value: unknown): value is DownloadItem;
+export function isDownloadHistory(value: unknown): value is DownloadHistory;
 

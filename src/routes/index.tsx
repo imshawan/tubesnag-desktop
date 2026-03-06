@@ -56,26 +56,6 @@ import { useDownloads } from "@/hooks/useDownloads";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/tailwind";
 
-// TAURI API IMPORT
-// Ensure you have run: npm install @tauri-apps/api
-import { open } from '@tauri-apps/plugin-dialog';
-
-// --- DUMMY DATA GENERATOR ---
-const MOCK_DATA = [
-  { id: "1", title: "Next.js 14 Full Course 2024 | Build and Deploy a Full Stack App", channel: "Javascript Mastery", url: "https://youtu.be/wm5gMKuwSYk", progress: 100, status: "completed", size: "1.2 GB", quality: "1080p", type: "video", date: "2 mins ago" },
-  { id: "2", title: "lofi hip hop radio - beats to relax/study to", channel: "Lofi Girl", url: "https://youtu.be/jfKfPfyJRdk", progress: 45, status: "downloading", size: "Unknown", quality: "Audio", type: "audio", date: "Just now" },
-  { id: "3", title: "Rust for Beginners - Full Tutorial", channel: "FreeCodeCamp", url: "https://youtu.be/MsocPEZqCJ4", progress: 100, status: "completed", size: "850 MB", quality: "1080p", type: "video", date: "1 hour ago" },
-  { id: "4", title: "Elden Ring: Shadow of the Erdtree - Official Trailer", channel: "Bandai Namco", url: "https://youtu.be/qLZenOn7WUo", progress: 100, status: "completed", size: "240 MB", quality: "4K", type: "video", date: "3 hours ago" },
-  { id: "5", title: "Top 10 Linux Terminal Commands You Must Know", channel: "NetworkChuck", url: "https://youtu.be/lZAoFs75_cs", progress: 12, status: "downloading", size: "120 MB", quality: "1080p", type: "video", date: "Just now" },
-  { id: "6", title: "System Design Interview - Rate Limiter", channel: "ByteByteGo", url: "https://youtu.be/FU4WlwfS3G0", progress: 100, status: "completed", size: "180 MB", quality: "1080p", type: "video", date: "Yesterday" },
-  { id: "7", title: "Deep Learning for Coders with fastai & PyTorch", channel: "Jeremy Howard", url: "https://youtu.be/8SF_h3xF3cE", progress: 0, status: "failed", size: "0 B", quality: "1080p", type: "video", date: "Yesterday" },
-  { id: "8", title: "React vs Vue - Which is better in 2024?", channel: "Fireship", url: "https://youtu.be/lkIFF4maKMU", progress: 100, status: "completed", size: "45 MB", quality: "1080p", type: "video", date: "2 days ago" },
-  { id: "9", title: "Kubernetes Explained in 100 Seconds", channel: "Fireship", url: "https://youtu.be/PVLmVZ33JH8", progress: 100, status: "completed", size: "25 MB", quality: "1080p", type: "video", date: "2 days ago" },
-  { id: "10", title: "Harvard CS50 - Lecture 1 - C", channel: "CS50", url: "https://youtu.be/zYD7nN17G3E", progress: 100, status: "completed", size: "2.1 GB", quality: "1080p", type: "video", date: "Last week" },
-  { id: "11", title: "Chillstep Mix 2024", channel: "Music Lab", url: "https://youtu.be/xyz123", progress: 100, status: "completed", size: "150 MB", quality: "Audio", type: "audio", date: "Last week" },
-  { id: "12", title: "How to Center a Div", channel: "Kevin Powell", url: "https://youtu.be/abc987", progress: 100, status: "completed", size: "30 MB", quality: "1080p", type: "video", date: "Last month" },
-];
-
 // --- SUBCOMPONENTS ---
 
 function NavButton({ icon: Icon, label, isActive, onClick }: any) {
@@ -258,7 +238,7 @@ function CommandPalette({ isOpen, onClose, data, onSelect }: any) {
 function HomePage() {
   const [appVersion, setAppVersion] = useState("0.0.0");
   const [, startGetAppVersion] = useTransition();
-  const [selectedMode, setSelectedMode] = useState<DownloadType>("video");
+  const [selectedMode, setSelectedMode] = useState<DownloadType>("single");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const { t } = useTranslation();
@@ -279,14 +259,15 @@ function HomePage() {
   // --- DATA ---
   const {
     downloads: realDownloads,
+    clearCompleted,
     addDownload,
+    clearAll,
+    updateDownload,
   } = useDownloads();
 
-  const [displayDownloads, setDisplayDownloads] = useState<any[]>([]);
   const [storage, setStorage] = useState({ used: "0", total: "0", percentage: 0 });
 
   const updateDiskUsage = async () => {
-    // @ts-ignore
     if (globalThis.electron && globalThis.electron.getDiskUsage) {
       // @ts-ignore
       const data = await globalThis.electron.getDiskUsage(downloadPath);
@@ -302,14 +283,6 @@ function HomePage() {
     const interval = setInterval(updateDiskUsage, 30000);
     return () => clearInterval(interval);
   }, [downloadPath]);
-
-  useEffect(() => {
-    if (realDownloads.length === 0) {
-      setDisplayDownloads(MOCK_DATA);
-    } else {
-      setDisplayDownloads(realDownloads);
-    }
-  }, [realDownloads]);
 
   // --- EFFECT: PERSIST SETTINGS ---
   const saveSettings = () => {
@@ -339,17 +312,17 @@ function HomePage() {
 
   // --- FILTER LOGIC ---
   const dashboardDownloads = useMemo(() => {
-    return displayDownloads.slice(0, itemsPerPage);
-  }, [displayDownloads, itemsPerPage]);
+    return realDownloads.slice(0, itemsPerPage);
+  }, [realDownloads, itemsPerPage]);
 
   const filteredHistory = useMemo(() => {
-    return displayDownloads.filter(item => {
+    return realDownloads.filter(item => {
       const matchesSearch = item.title.toLowerCase().includes(historySearch.toLowerCase()) ||
         item.url.toLowerCase().includes(historySearch.toLowerCase());
       const matchesStatus = historyFilter === "all" ? true : item.status === historyFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [displayDownloads, historySearch, historyFilter]);
+  }, [realDownloads, historySearch, historyFilter]);
 
 
   const handleModeSelect = (mode: DownloadType) => {
@@ -358,22 +331,10 @@ function HomePage() {
   };
 
   const handleDownloadStart = (type: DownloadType, urls: string[], quality: QualityType) => {
-    const newDownloads = urls.map((url, i) => ({
-      id: `new-${Date.now()}-${i}`,
-      title: "Fetching metadata...",
-      channel: "Unknown Channel",
-      url: url,
-      progress: 0,
-      status: "downloading",
-      size: "Calculating...",
-      quality: quality,
-      type: "video",
-      date: "Just now"
-    }));
-    setDisplayDownloads(prev => [...newDownloads, ...prev]);
+    const newDownloads = addDownload(urls, quality)
     setDialogOpen(false);
     setTimeout(() => {
-      setDisplayDownloads(prev => prev.map(d => d.id === newDownloads[0].id ? { ...d, title: "New Download Started", progress: 5 } : d));
+      updateDownload(newDownloads[0].id, { ...newDownloads[0], title: "New Download Started", progress: 5 })
     }, 1000);
   };
 
@@ -407,8 +368,8 @@ function HomePage() {
     }
   };
 
-  const activeDownloadsCount = displayDownloads.filter((d) => d.status === "downloading").length;
-  const completedDownloadsCount = displayDownloads.filter((d) => d.status === "completed").length;
+  const activeDownloadsCount = realDownloads.filter((d) => d.status === "downloading").length;
+  const completedDownloadsCount = realDownloads.filter((d) => d.status === "completed").length;
 
   const faqs = [
     { question: "What video formats are supported?", answer: "TubeSnag supports MP4, WebM, and audio formats. You can download in your preferred quality from 480p to 4K." },
@@ -498,7 +459,7 @@ function HomePage() {
                 <div className="space-y-4">
                   <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Start New Download</h3>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <ActionCard title="Single Video" description="Download MP4/MP3" icon={PlayCircle} gradient="from-blue-500/10 to-indigo-500/10" iconColor="text-blue-500" onClick={() => handleModeSelect("video")} />
+                    <ActionCard title="Single Video" description="Download MP4/MP3" icon={PlayCircle} gradient="from-blue-500/10 to-indigo-500/10" iconColor="text-blue-500" onClick={() => handleModeSelect("single")} />
                     <ActionCard title="Playlist" description="Batch download series" icon={ListVideo} gradient="from-emerald-500/10 to-teal-500/10" iconColor="text-emerald-500" onClick={() => handleModeSelect("playlist")} />
                     <ActionCard title="Bulk Import" description="Paste multiple links" icon={Layers} gradient="from-orange-500/10 to-amber-500/10" iconColor="text-orange-500" onClick={() => handleModeSelect("bulk")} />
                   </div>
@@ -589,7 +550,7 @@ function HomePage() {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={clearCompleted} disabled={completedDownloadsCount === 0}>Clear Completed</Button>
-                    <Button variant="destructive" size="sm" onClick={clearAll} disabled={displayDownloads.length === 0}>Clear All</Button>
+                    <Button variant="destructive" size="sm" onClick={clearAll} disabled={realDownloads.length === 0}>Clear All</Button>
                   </div>
                 </div>
 
@@ -807,7 +768,7 @@ function HomePage() {
       <CommandPalette
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
-        data={displayDownloads}
+        data={realDownloads}
         onSelect={handleOpenFile}
       />
 
@@ -817,7 +778,6 @@ function HomePage() {
         onOpenChange={setDialogOpen}
         onDownload={handleDownloadStart}
         isLoading={false}
-        initialTab={selectedMode}
       />
     </div>
   );
