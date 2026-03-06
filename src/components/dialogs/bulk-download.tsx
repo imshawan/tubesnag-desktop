@@ -22,6 +22,7 @@ import { Layers, AlertCircle, CheckCircle2, Check } from "lucide-react";
 import { cn } from "@/utils/tailwind";
 import { FormatType, QualityType } from "@/types/index";
 import { DOWNLOAD_FORMATS, VIDEO_QUALITIES } from "@/constants";
+import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 
 interface BulkDownloadDialogProps {
   open: boolean;
@@ -68,7 +69,7 @@ export function BulkDownloadDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Layers className="size-5 text-muted-foreground" />
@@ -119,32 +120,31 @@ export function BulkDownloadDialog({
             )}
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/40">
-            <div className="space-y-0.5">
-              <Label className="text-sm font-medium">{t("bulkDownload.targetQuality")}</Label>
-              <p className="text-[0.8rem] text-muted-foreground">
-                {t("bulkDownload.appliesToAll")}
-              </p>
-            </div>
-            <Select
-              value={quality}
-              onValueChange={(v) => setQuality(v as QualityType)}
-            >
-              <SelectTrigger className="w-[140px] bg-background">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {VIDEO_QUALITIES.map((q) => (
-                  <SelectItem key={q.id} value={q.id}>
-                    {q.label()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid gap-2">
+            <Label>{t("downloads.quality")}</Label>
+            <RadioGroup value={quality} onValueChange={(v) => setQuality(v as QualityType)} className="grid grid-cols-3 gap-2">
+              {VIDEO_QUALITIES.map((q) => {
+                const Icon = q.icon
+                return (
+                    <label
+                        key={q.id}
+                        className={cn(
+                            "flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary transition-all text-xs font-medium gap-1",
+                            quality === q.id && "border-primary bg-accent"
+                        )}
+                    >
+                      <RadioGroupItem value={q.id} className="sr-only" />
+                      <Icon className="size-4" />
+                      {q.label()}
+                    </label>
+                )
+              })}
+            </RadioGroup>
           </div>
+
           <div className="flex items-center justify-between rounded-lg border p-3 bg-muted/40">
             <div className="space-y-0.5">
-              <Label className="text-sm font-medium">{t("bulkDownload.downloadFormat")}</Label>
+              <Label className="text-sm font-medium">{t("downloads.format")}</Label>
               <p className="text-[0.8rem] text-muted-foreground">
                 {t("bulkDownload.appliesToAllFormat")}
               </p>

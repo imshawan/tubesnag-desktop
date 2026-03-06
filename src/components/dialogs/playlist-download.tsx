@@ -23,6 +23,7 @@ import { ListVideo, AlertCircle, ArrowDownUp } from "lucide-react";
 import { cn } from "@/utils/tailwind";
 import { FormatType, QualityType } from "@/types/index";
 import { DOWNLOAD_FORMATS, VIDEO_QUALITIES } from "@/constants";
+import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 
 interface PlaylistDownloadDialogProps {
   open: boolean;
@@ -76,7 +77,7 @@ export function PlaylistDownloadDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ListVideo className="size-5 text-muted-foreground" />
@@ -116,44 +117,44 @@ export function PlaylistDownloadDialog({
             )}
           </div>
 
-          {/* Settings Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label>{t("playlistDownload.quality")}</Label>
-              <Select
-                value={quality}
-                onValueChange={(v) => setQuality(v as QualityType)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {VIDEO_QUALITIES.map((q) => (
-                    <SelectItem key={q.id} value={q.id}>
+          <div className="grid gap-2">
+            <Label>{t("downloads.quality")}</Label>
+            <RadioGroup value={quality} onValueChange={(v) => setQuality(v as QualityType)} className="grid grid-cols-3 gap-2">
+              {VIDEO_QUALITIES.map((q) => {
+                const Icon = q.icon
+                return (
+                    <label
+                        key={q.id}
+                        className={cn(
+                            "flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary transition-all text-xs font-medium gap-1",
+                            quality === q.id && "border-primary bg-accent"
+                        )}
+                    >
+                      <RadioGroupItem value={q.id} className="sr-only" />
+                      <Icon className="size-4" />
                       {q.label()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>{t("playlistDownload.format")}</Label>
-              <Select
-                value={format}
-                onValueChange={(v) => setFormat(v as FormatType)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DOWNLOAD_FORMATS.map((format) => (
-                    <SelectItem key={format.value} value={format.value}>
-                      {format.label()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                    </label>
+                )
+              })}
+            </RadioGroup>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="format-select">{t("downloads.format")}</Label>
+            <RadioGroup value={format} onValueChange={(v) => setFormat(v as FormatType)} className="grid grid-cols-3 gap-2">
+              {DOWNLOAD_FORMATS.map((f) => (
+                  <label
+                      key={f.value}
+                      className={cn(
+                          "flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary transition-all text-xs font-medium",
+                          format === f.value && "border-primary bg-accent"
+                      )}
+                  >
+                    <RadioGroupItem value={f.value} className="sr-only" />
+                    {f.label()}
+                  </label>
+              ))}
+            </RadioGroup>
           </div>
 
           {/* Reverse Toggle */}

@@ -159,7 +159,7 @@ function HomePage() {
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden font-sans selection:bg-primary/20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
         <div className="absolute -top-40 -right-40 w-[300px] h-[300px] bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-transparent rounded-full blur-[100px] animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-br from-primary/10 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-7/12 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-linear-to-br from-primary/10 to-transparent rounded-full blur-3xl" />
       </div>
 
       <Sidebar />
@@ -186,7 +186,7 @@ function HomePage() {
             >
               <Github className="size-5" />
             </ExternalLink>
-            <div className="h-4 w-[1px] bg-border" />
+            <div className="h-4 w-px bg-border" />
             <LangToggle />
             <ToggleTheme />
           </div>

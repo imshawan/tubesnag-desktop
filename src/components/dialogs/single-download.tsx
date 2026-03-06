@@ -5,15 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Film, Check, Link } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Link } from "lucide-react"
 import { cn } from "@/utils/tailwind"
 import { QualityType } from "@/types/index"
-import { VIDEO_QUALITIES } from "@/constants"
+import { VIDEO_QUALITIES, DOWNLOAD_FORMATS } from "@/constants"
 
 interface SingleDownloadDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onDownload: (urls: string[], quality: QualityType) => void
+  onDownload: (urls: string[], quality: QualityType, format?: string) => void
   isLoading?: boolean
 }
 
@@ -21,19 +22,20 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
   const { t } = useTranslation()
   const [url, setUrl] = useState("")
   const [quality, setQuality] = useState<QualityType>("best")
+  const [format, setFormat] = useState("mp4")
   const [error, setError] = useState("")
 
   useEffect(() => { if (open) { setUrl(""); setError("") } }, [open])
 
   const handleSubmit = () => {
     if (!url.trim()) { setError(t("singleDownload.errorEmpty")); return }
-    onDownload([url], quality)
+    onDownload([url], quality, format)
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px]">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
           <DialogTitle>{t("singleDownload.title")}</DialogTitle>
           <DialogDescription>
@@ -41,7 +43,7 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
+        <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="single-url">{t("singleDownload.videoLink")}</Label>
             <div className="relative">
@@ -58,25 +60,42 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
           </div>
 
           <div className="grid gap-2">
-            <Label>{t("singleDownload.quality")}</Label>
-            <RadioGroup value={quality} onValueChange={(v) => setQuality(v as QualityType)} className="grid grid-cols-2 gap-4">
-               {VIDEO_QUALITIES.map((q) => (
+            <Label>{t("downloads.quality")}</Label>
+            <RadioGroup value={quality} onValueChange={(v) => setQuality(v as QualityType)} className="grid grid-cols-3 gap-2">
+               {VIDEO_QUALITIES.map((q) => {
+                 const Icon = q.icon
+                 return (
                    <label
                     key={q.id}
                     className={cn(
-                        "flex cursor-pointer flex-col justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary transition-all",
+                        "flex cursor-pointer flex-col items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary transition-all text-xs font-medium gap-1",
                         quality === q.id && "border-primary bg-accent"
                     )}
                    >
                        <RadioGroupItem value={q.id} className="sr-only" />
-                       <div className="flex items-center justify-between mb-1">
-                           <Film className="h-4 w-4 text-muted-foreground" />
-                           {quality === q.id && <Check className="h-3 w-3 text-primary" />}
-                       </div>
-                       <span className="font-semibold text-sm leading-none">{q.label()}</span>
-                       <span className="text-xs text-muted-foreground mt-1">{q.sub()}</span>
+                       <Icon className="size-4" />
+                       {q.label()}
                    </label>
-               ))}
+                 )
+               })}
+            </RadioGroup>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="format-select">{t("downloads.format")}</Label>
+            <RadioGroup value={format} onValueChange={setFormat} className="grid grid-cols-3 gap-2">
+              {DOWNLOAD_FORMATS.map((f) => (
+                <label
+                  key={f.value}
+                  className={cn(
+                    "flex cursor-pointer items-center justify-center rounded-md border-2 border-muted bg-transparent p-2 hover:bg-accent peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary transition-all text-xs font-medium",
+                    format === f.value && "border-primary bg-accent"
+                  )}
+                >
+                  <RadioGroupItem value={f.value} className="sr-only" />
+                  {f.label()}
+                </label>
+              ))}
             </RadioGroup>
           </div>
         </div>
