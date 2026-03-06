@@ -1,25 +1,35 @@
-import { Search, Filter, Music, FileVideo, CheckCircle2, AlertCircle, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setHistorySearch, setHistoryFilter } from "@/store/slices/app-slice";
-import { useTranslation } from "react-i18next";
-import type { DownloadItem } from "@/hooks/useDownloads";
+import {Filter, Search} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {useAppDispatch, useAppSelector} from "@/store/hooks";
+import {setHistoryFilter, setHistorySearch, setHistoryTypeFilter} from "@/store/slices/app-slice";
+import {useTranslation} from "react-i18next";
+import type {DownloadItem} from "@/store/slices/downloads-slice";
+import {DownloadList} from "@/components/download-list";
+import {useDownloads} from "@/hooks/useDownloads";
+import {useMemo} from "react";
 
 interface HistoryProps {
-  downloads: DownloadItem[];
   onOpenFile: (download: DownloadItem) => void;
   onClearCompleted: () => void;
   onClearAll: () => void;
   completedCount: number;
 }
 
-export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, completedCount }: HistoryProps) {
+export function History({ onOpenFile, onClearCompleted, onClearAll, completedCount }: HistoryProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { downloads } = useDownloads();
   const historySearch = useAppSelector((state) => state.app.historySearch);
   const historyFilter = useAppSelector((state) => state.app.historyFilter);
+  const historyTypeFilter = useAppSelector((state) => state.app.historyTypeFilter);
+
+  const filteredDownloads = useMemo(() => {
+    return downloads.filter((item) => {
+        return historyTypeFilter === "all" ? true : item.type === historyTypeFilter;
+    });
+  }, [downloads, historyTypeFilter]);
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
@@ -40,7 +50,7 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
 
       <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
         <div className="p-4 border-b border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
               <Input
@@ -64,58 +74,28 @@ export function History({ downloads, onOpenFile, onClearCompleted, onClearAll, c
                 <SelectItem value="failed">{t("history.failed")}</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={historyTypeFilter} onValueChange={(v) => dispatch(setHistoryTypeFilter(v))}>
+              <SelectTrigger className="h-8 w-[130px] text-xs bg-background">
+                <div className="flex items-center gap-2">
+                  <Filter className="size-3 text-muted-foreground" />
+                  <SelectValue placeholder="Type" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="playlist">Playlists</SelectItem>
+                <SelectItem value="video">Videos</SelectItem>
+                <SelectItem value="audio">Audio</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <span className="text-xs text-muted-foreground whitespace-nowrap">
-            {t("history.showing")} {downloads.length} {t("history.items")}
+            {t("history.showing")} {filteredDownloads.length} {t("history.items")}
           </span>
         </div>
 
-        {downloads.length > 0 ? (
-          <div className="divide-y divide-border/40 max-h-[600px] overflow-y-auto">
-            {downloads.map((download) => (
-              <div
-                key={download.id}
-                className="flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors"
-                onClick={() => onOpenFile(download)}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-                    {download.type === "audio" ? (
-                      <Music className="size-5 text-muted-foreground" />
-                    ) : (
-                      <FileVideo className="size-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-medium text-sm">{download.title}</span>
-                    <div className="flex gap-2 text-xs text-muted-foreground">
-                      <span>{download.url}</span>
-                      <span>•</span>
-                      <span>{download.date}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-muted-foreground hidden sm:block">
-                    {download.quality} • {download.size}
-                  </span>
-                  {download.status === "completed" ? (
-                    <div className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[10px] font-medium border border-emerald-500/20">
-                      <CheckCircle2 className="size-3" /> {t("history.completed")}
-                    </div>
-                  ) : download.status === "failed" ? (
-                    <div className="flex items-center gap-1.5 bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-500/20">
-                      <AlertCircle className="size-3" /> {t("history.failed")}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded text-[10px] font-medium border border-amber-500/20">
-                      <Zap className="size-3" /> {Math.round(download.progress)}%
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+        {filteredDownloads.length > 0 ? (
+          <DownloadList items={filteredDownloads} onOpenFile={onOpenFile} />
         ) : (
           <div className="py-16 flex flex-col items-center justify-center text-muted-foreground">
             <div className="bg-muted/50 p-4 rounded-full mb-3">

@@ -271,7 +271,6 @@ function HomePage() {
                 </div>
 
                 <RecentActivity
-                  downloads={dashboardDownloads}
                   onOpenFile={handleOpenFile}
                 />
               </div>
@@ -279,7 +278,6 @@ function HomePage() {
 
             {activeTab === "history" && (
               <HistoryTab
-                downloads={filteredHistory}
                 onOpenFile={handleOpenFile}
                 onClearCompleted={clearCompleted}
                 onClearAll={clearAll}

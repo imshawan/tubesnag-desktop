@@ -15,11 +15,13 @@ export interface UseDownloadReturn {
   removeDownload: (id: string) => void;
   clearCompleted: () => void;
   clearAll: () => void;
+  recentItemsPerPage: number;
 }
 
 export function useDownloads(): UseDownloadReturn {
   const dispatch = useAppDispatch();
   const downloads = useAppSelector((state) => state.downloads.downloads);
+  const recentItemsPerPage = useAppSelector((state) => state.app.recentItemsPerPage);
 
   const isDownloading = useMemo(
     () => downloads.some((d) => d.status === "downloading"),
@@ -50,13 +52,14 @@ export function useDownloads(): UseDownloadReturn {
       quality: quality,
       type: "video",
       date: "Just now",
-    }));
+    })) as DownloadItem[];
   };
 
   return {
     downloads,
     isDownloading,
     totalProgress,
+    recentItemsPerPage,
     addDownload,
     updateDownload: (id: string, updates: Partial<DownloadItem>) =>
       dispatch(updateDownload({ id, updates })),

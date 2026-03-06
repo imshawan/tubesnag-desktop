@@ -6,8 +6,10 @@ export interface AppState {
   activeDialog: "single" | "bulk" | "playlist" | null;
   searchOpen: boolean;
   itemsPerPage: number;
+  recentItemsPerPage: number;
   historySearch: string;
   historyFilter: string;
+  historyTypeFilter: string;
   setupComplete: boolean;
   storage: {
     used: string;
@@ -22,8 +24,10 @@ const initialState: AppState = {
   activeDialog: null,
   searchOpen: false,
   itemsPerPage: 5,
+  recentItemsPerPage: 5,
   historySearch: "",
   historyFilter: "all",
+  historyTypeFilter: "all",
   setupComplete: false,
   storage: {
     used: "0",
@@ -54,11 +58,17 @@ const appSlice = createSlice({
     setItemsPerPage: (state, action: PayloadAction<number>) => {
       state.itemsPerPage = action.payload;
     },
+    setRecentItemsPerPage: (state, action: PayloadAction<number>) => {
+      state.recentItemsPerPage = action.payload;
+    },
     setHistorySearch: (state, action: PayloadAction<string>) => {
       state.historySearch = action.payload;
     },
     setHistoryFilter: (state, action: PayloadAction<string>) => {
       state.historyFilter = action.payload;
+    },
+    setHistoryTypeFilter: (state, action: PayloadAction<string>) => {
+      state.historyTypeFilter = action.payload;
     },
     setStorage: (state, action: PayloadAction<{ used: string; total: string; percentage: number }>) => {
       state.storage = action.payload;
@@ -76,8 +86,10 @@ export const {
   setSearchOpen,
   toggleSearchOpen,
   setItemsPerPage,
+  setRecentItemsPerPage,
   setHistorySearch,
   setHistoryFilter,
+  setHistoryTypeFilter,
   setStorage,
   setSetupComplete,
 } = appSlice.actions;
