@@ -47,13 +47,17 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
       onClick={() => onOpenFile(download)}
     >
       <div className="flex items-center gap-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-          {download.type === "audio" ? (
-            <Music className="size-5 text-muted-foreground" />
-          ) : (
-            <FileVideo className="size-5 text-muted-foreground" />
-          )}
-        </div>
+        {download.thumbnail ? (
+          <img src={download.thumbnail} alt={download.title} className="size-10 rounded-lg object-cover border border-border/50" />
+        ) : (
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
+            {download.type === "audio" ? (
+              <Music className="size-5 text-muted-foreground" />
+            ) : (
+              <FileVideo className="size-5 text-muted-foreground" />
+            )}
+          </div>
+        )}
         <div className="flex flex-col">
           <span className="font-medium text-sm">{download.title}</span>
           <div className="flex gap-2 text-xs text-muted-foreground">
@@ -72,6 +76,15 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
     </div>
   );
 
+  const DefaultIcon = ({item}: {item: DownloadItem}) => {
+    const Icon = item.type === "audio" ? Music : FileVideo;
+    return (
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
+          {<Icon className="size-5 text-muted-foreground" />}
+        </div>
+    )
+  }
+
   return (
     <ScrollArea className={maxHeight}>
       <div className="divide-y divide-border/40">
@@ -82,15 +95,17 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
                 className="flex items-center justify-between p-4 hover:bg-blue-500/5 cursor-pointer transition-colors border-l-4 border-blue-500"
                 onClick={() => setExpandedPlaylist(expandedPlaylist === item.id ? null : item.id)}
               >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/30">
-                    <Layers className="size-5 text-blue-500" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-sm text-blue-600">{item.title}</span>
-                    <span className="text-xs text-muted-foreground">{item.videos?.length || 0} videos</span>
-                  </div>
+              <div className="flex items-center gap-4 flex-1">
+                {item.thumbnail ? (
+                  <img src={item.thumbnail} alt={item.title} className="size-10 rounded-lg object-cover border border-blue-500/30" />
+                ) : (
+                    <DefaultIcon item={item} />
+                )}
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm text-blue-600">{item.title}</span>
+                  <span className="text-xs text-muted-foreground">{item.videos?.length || 0} videos</span>
                 </div>
+              </div>
                 <div className="flex items-center gap-4">
                   <span className="text-xs text-muted-foreground hidden sm:block">
                     {item.quality}
