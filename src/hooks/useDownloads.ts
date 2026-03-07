@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addDownloads, updateDownload, removeDownload, clearCompleted, clearAll } from "@/store/slices/downloads-slice";
 import type { QualityType } from "../types/index";
 import type { DownloadItem } from "@/store/slices/downloads-slice";
+import {generateUUID} from "@/utils/common";
 
 export type { DownloadItem };
 
@@ -40,19 +41,21 @@ export function useDownloads(): UseDownloadReturn {
 
   const addDownload = (urls: string[], quality: QualityType) => {
     dispatch(addDownloads({ urls, quality }));
-    const tempId = `${Date.now()}-${Math.random()}`;
-    return urls.map((url) => ({
-      id: tempId,
-      url,
-      title: "Fetching video info...",
-      channel: "Please wait",
-      status: "pending" as const,
-      progress: 0,
-      size: "Calculating...",
-      quality: quality,
-      type: "video",
-      date: "Just now",
-    })) as DownloadItem[];
+    return urls.map((url) => {
+      const tempId = generateUUID();
+      return {
+        id: tempId,
+        url,
+        title: "Fetching video info...",
+        channel: "Please wait",
+        status: "pending" as const,
+        progress: 0,
+        size: 0,
+        quality: quality,
+        type: "video",
+        date: "Just now",
+      }
+    }) as DownloadItem[];
   };
 
   return {

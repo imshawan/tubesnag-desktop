@@ -28,6 +28,9 @@ declare global {
       fileToDataUrl: (filePath: string) => Promise<string>;
       getPlatform: () => Promise<NodeJS.Platform>;
       getAppVersion: () => Promise<string>;
+      on: (channel: string, listener: (data: any) => void) => void;
+      off: (channel: string, listener: (data: any) => void) => void;
+      invoke: (channel: string, args: any) => Promise<any>;
     };
   }
   var electron: Window['electron'];

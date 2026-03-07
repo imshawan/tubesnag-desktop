@@ -5,37 +5,8 @@ export interface ActiveDownloadsState {
   items: DownloadItem[];
 }
 
-const MOCK_ACTIVE_DOWNLOADS: DownloadItem[] = [
-  {
-    id: "active-1",
-    title: "Next.js 14 Full Course 2024",
-    channel: "Javascript Mastery",
-    url: "https://youtu.be/wm5gMKuwSYk",
-    progress: 45,
-    status: "downloading",
-    size: 1288490189,
-    quality: "1080p",
-    type: "video",
-    date: "Just now",
-    thumbnail: "https://i.ytimg.com/vi/wm5gMKuwSYk/maxresdefault.jpg",
-  },
-  {
-    id: "active-3",
-    title: "lofi hip hop radio - beats to relax/study to",
-    channel: "Lofi Girl",
-    url: "https://youtu.be/jfKfPfyJRdk",
-    progress: 20,
-    status: "downloading",
-    size: 0,
-    quality: "Audio",
-    type: "audio",
-    date: "Just now",
-    thumbnail: "https://i.ytimg.com/vi/jfKfPfyJRdk/maxresdefault.jpg",
-  },
-];
-
 const initialState: ActiveDownloadsState = {
-  items: MOCK_ACTIVE_DOWNLOADS,
+  items: [],
 };
 
 const activeDownloadsSlice = createSlice({
@@ -43,10 +14,10 @@ const activeDownloadsSlice = createSlice({
   initialState,
   reducers: {
     addActiveDownload: (state, action: PayloadAction<DownloadItem>) => {
-      state.items.push(action.payload);
+      state.items.unshift(action.payload);
     },
     updateActiveDownload: (state, action: PayloadAction<{ id: string; updates: Partial<DownloadItem> }>) => {
-      const item = state.items.find((d) => d.id === action.payload.id);
+      const item = state.items.find((d) => d.id === action.payload.id && d.status != "completed");
       if (item) {
         Object.assign(item, action.payload.updates);
       }

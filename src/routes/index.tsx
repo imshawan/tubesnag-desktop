@@ -129,6 +129,7 @@ function HomePage() {
         url,
         outputPath: downloadPath,
         quality: selectedQuality,
+        downloadId: download.id,
         format,
         onProgress: (progress) => {
           console.log(progress)
@@ -168,14 +169,51 @@ function HomePage() {
     }
   };
 
-  const handleDownloadStart = (
+  const handleDownloadStart = async (
     urls: string[],
     selectedQuality: QualityType,
   ) => {
     const newDownloads = addDownload(urls, selectedQuality);
-    newDownloads.forEach((download) => {
+    dispatch(setActiveDialog(null));
+    
+    for (const download of newDownloads) {
       dispatch(addActiveDownload(download));
-    });
+      
+      try {
+        await downloadWithYtdlp({
+          url: download.url,
+          outputPath: downloadPath,
+          quality: selectedQuality,
+          downloadId: download.id,
+          onProgress: (progress) => {
+            dispatch(updateActiveDownload({
+              id: download.id,
+              updates: { progress },
+            }));
+          },
+          onData: (data) => {
+            dispatch(updateActiveDownload({
+              id: download.id,
+              updates: data,
+            }));
+          },
+          onDuplicate: (filename, metadata) => {
+            addToast(`Duplicate: ${filename}`, "warning");
+            console.log("Duplicate found:", metadata);
+            dispatch(updateActiveDownload({
+              id: download.id,
+              updates: { status: "duplicate", ...metadata },
+            }));
+          },
+        });
+      } catch (error) {
+        console.error("Download failed:", error);
+        dispatch(updateActiveDownload({
+          id: download.id,
+          updates: { status: "failed" },
+        }));
+      }
+    }
   };
 
   const handleOpenFile = (download: any) => {

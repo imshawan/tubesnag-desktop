@@ -7,6 +7,7 @@ import fsSync from "fs";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/utils/downloader";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
+import {sanitizeFilename} from "@/utils/download";
 
 export const getYtDlpConfig = () => {
     const platform = process.platform;
@@ -155,14 +156,13 @@ export const getAppVersion = () => {
 }
 
 export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any) => {
-    const { url, outputPath, quality, format } = options;
+    const { url, outputPath, quality, format, downloadId } = options;
     const userDataPath = app.getPath('userData');
     const thumbnailPath = path.join(userDataPath, 'Thumbnails');
     const ytdlpPath = path.join(userDataPath, 'ytdlp');
     const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
     const mainWindow = ipcContext.mainWindow;
-    const tempFile = `.channel_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    console.log("Options: ", options)
+    const tempFile = `.channel_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
     const qualityMap: Record<string, string> = {
         best: 'best',
@@ -184,7 +184,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         '-f', selectedFormat,
         '--print-to-file', '%(channel)s', tempFile,
         '--write-thumbnail',
-        '-o', `thumbnail:${path.join(thumbnailPath, '%(title)s.%(ext)s')}`,
+        '--convert-thumbnail', 'webp',
+        '-o', `thumbnail:${path.join(thumbnailPath, downloadId + '.%(ext)s')}`,
         '-o', path.join(outputPath, '%(title)s.%(ext)s'),
         url
     ];
@@ -196,7 +197,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         let channel = '';
         let lastProgress = 0;
         let metadataSent = false;
-        let thumbnail = '';
+        let duplicateSent = false;
+        let thumbnail = downloadId;
 
         child.stdout.on('data', (data: Buffer) => {
             const text = data.toString();
@@ -211,7 +213,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
 
                 const thumbMatch = line.match(/Writing video thumbnail \\d+ to: (.+)/);
                 if (thumbMatch) {
-                    thumbnail = path.join(thumbnailPath, thumbMatch[1].trim());
+                    let ext = thumbMatch[1].trim().split("").pop();
+                    thumbnail = path.join(thumbnailPath, thumbnail + ext);
                 }
 
                 const destMatch = line.match(/\\[download\\]\\s+Destination:\\s+(.+)/);
@@ -224,7 +227,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                             title,
                             channel: channel || 'Unknown',
                             quality: quality,
-                            size: 0
+                            size: 0,
+                            downloadId
                         }
                     });
                 }
@@ -238,40 +242,47 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                             title,
                             channel: channel || 'Unknown',
                             quality: quality,
-                            size: sizeBytes
+                            size: sizeBytes,
+                            downloadId
                         }
                     });
                 }
 
-                if (line.includes('has already been downloaded')) {
+                if (line.includes('has already been downloaded') && !duplicateSent) {
                     const dupMatch = line.match(/\[download\]\s+(.+?)\s+has already been downloaded/);
                     let dupFilename;
                     if (dupMatch) {
-                        dupFilename = dupMatch[1].trim();
+                        dupFilename = sanitizeFilename(dupMatch[1].trim());
                     }
 
                     const filename = dupFilename || 'unknown';
                     const files = fsSync.readdirSync(outputPath);
-                    const file = files.find(f => f.includes(filename.split('.')[0]));
+                    const sanitizedFiles = files.map(f => ({ original: f, sanitized: sanitizeFilename(f) }));
+                    const fileMatch = sanitizedFiles.find(f => f.sanitized.includes(filename.split('.')[0]));
+                    const file = fileMatch?.original;
 
                     let metadata: any = { filename };
                     if (file) {
                         const filePath = path.join(outputPath, file);
                         const stats = fsSync.statSync(filePath);
-                        thumbnail = path.join(thumbnailPath, `${filename.split('.')[0]}.jpg`);
+                        thumbnail = path.join(thumbnailPath, downloadId + ".webp");
                         metadata = {
                             filename,
                             title: file,
                             size: stats.size,
                             thumbnail,
                             channel: channel || 'Unknown',
+                            downloadId
                         };
                     }
-                    
+
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'duplicate',
-                        data: metadata
+                        data: metadata,
+                        downloadId
                     });
+
+                    duplicateSent = true;
                 }
 
                 const progressMatch = line.match(/\\[\\s*download\\s*\\]\\s+(\\d+(?:\\.\\d+)?)%/);
@@ -281,7 +292,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                         lastProgress = progress;
                         mainWindow?.webContents.send('ytdlp:progress', {
                             type: 'progress',
-                            progress: Math.round(progress)
+                            progress: Math.round(progress),
+                            downloadId
                         });
                     }
                 }
@@ -300,7 +312,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
             if (code === 0 || code === 1) {
                 mainWindow?.webContents.send('ytdlp:progress', {
                     type: 'complete',
-                    data: { status: 'completed', progress: 100, thumbnail }
+                    data: { status: 'completed', progress: 100, thumbnail, downloadId }
                 });
                 resolve({ success: true });
             } else {

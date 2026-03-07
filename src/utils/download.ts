@@ -98,11 +98,12 @@ export function validateUrlList(urls: string[]): { valid: boolean; errors: strin
 /**
  * Get download filename from video title
  */
-export function sanitizeFilename(filename: string): string {
+export function sanitizeFilename(filename: string, maxSize:
+number = 255): string {
   return filename
-    .replace(/[<>:"/\\|?*]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 255)
+      .replace(/[^\w\s.-]/gu, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, maxSize);
 }
 

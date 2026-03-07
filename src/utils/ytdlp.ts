@@ -5,33 +5,39 @@ interface DownloadOptions {
   outputPath: string;
   quality: string;
   format?: string;
+  downloadId: string;
   onProgress?: (progress: number) => void;
   onData?: (data: Partial<DownloadItem>) => void;
   onDuplicate?: (filename: string, metadata: any) => void;
 }
 
 export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void> => {
-  const { url, outputPath, quality, format, onProgress, onData, onDuplicate } = options;
+  const { url, outputPath, quality, format, onProgress, onData, onDuplicate, downloadId } = options;
 
   if (!globalThis.electron) {
     throw new Error("Electron not available");
   }
 
-  const electron = globalThis.electron as any;
+  const electron = globalThis.electron;
 
   return new Promise((resolve, reject) => {
+    let isCompleted = false;
+    let isDuplicated = false;
     const handleProgress = (data: any) => {
       console.log('[ytdlp utility] received:', data);
+
       if (data.type === "progress") {
         onProgress?.(data.progress);
       } else if (data.type === "metadata") {
         onData?.(data.data);
-      } else if (data.type === "duplicate") {
+      } else if (data.type === "duplicate" && !isDuplicated) {
         onDuplicate?.(data.data.filename, data.data);
         onData?.({ status: "duplicate", progress: 100, ...data.data });
-      } else if (data.type === "complete") {
+        isDuplicated = true;
+      } else if (data.type === "complete" && !isCompleted) {
         onData?.(data.data);
         electron.off("ytdlp:progress", handleProgress);
+        isCompleted = true;
         resolve();
       } else if (data.type === "error") {
         electron.off("ytdlp:progress", handleProgress);
@@ -46,6 +52,7 @@ export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void>
       outputPath,
       quality,
       format,
+      downloadId
     }).catch((err: Error) => {
       electron.off("ytdlp:progress", handleProgress);
       reject(err);
