@@ -1,5 +1,7 @@
 # TubeSnag Desktop
 
+> ⚠️ **This project is currently under active development.** Features and APIs may change.
+
 <div align="center">
   <img src="./assets/icon.svg" alt="TubeSnag Logo" width="128" height="128" />
   <p>A modern Electron desktop application for downloading videos, music, and playlists from YouTube using yt-dlp.</p>
