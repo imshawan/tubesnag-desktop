@@ -115,7 +115,7 @@ i18n.use(initReactI18next).init({
           downloadMp4Mp3: "Download MP4/MP3",
           playlist: "Playlist",
           batchDownloadSeries: "Batch download series",
-          bulkImport: "Bulk Import",
+          bulkImport: "Bulk Download",
           pasteMultipleLinks: "Paste multiple links",
           searchDownloads: "Search downloads...",
           processingVideo: "Processing Video...",
