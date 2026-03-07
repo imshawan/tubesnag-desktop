@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { DownloadItem } from "./downloads-slice";
 
 export interface ActiveDownloadsState {
   items: DownloadItem[];
@@ -33,3 +32,6 @@ const activeDownloadsSlice = createSlice({
 
 export const { addActiveDownload, updateActiveDownload, removeActiveDownload, clearActiveDownloads } = activeDownloadsSlice.actions;
 export default activeDownloadsSlice.reducer;
+
+export const selectActiveDownloads =
+    (state: { activeDownloads: ActiveDownloadsState }) => state.activeDownloads.items.filter(e => e.status == "pending");

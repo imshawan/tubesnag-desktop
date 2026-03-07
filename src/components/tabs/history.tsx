@@ -5,7 +5,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {setHistoryFilter, setHistorySearch, setHistoryTypeFilter} from "@/store/slices/app-slice";
 import {useTranslation} from "react-i18next";
-import type {DownloadItem} from "@/store/slices/downloads-slice";
 import {DownloadList} from "@/components/download-list";
 import {useDownloads} from "@/hooks/useDownloads";
 import {useMemo} from "react";

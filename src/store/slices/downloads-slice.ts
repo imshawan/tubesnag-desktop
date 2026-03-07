@@ -1,35 +1,8 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import type {QualityType} from "@/types/index";
-
-export type Status = "pending" | "downloading" | "completed" | "failed" | "duplicate";
-
-export interface DownloadItem {
-    id: string;
-    url: string;
-    title: string;
-    status: Status;
-    progress: number;
-    error?: string;
-    size: number;
-    quality: string;
-    type: "video" | "audio" | "playlist";
-    date: string;
-    channel: string;
-    format?: string;
-    thumbnail?: string;
-    videos?: DownloadItem[];
-}
 
 export interface DownloadsState {
     downloads: DownloadItem[];
 }
-
-export const getGroupedDownloads = (downloads: DownloadItem[]) => {
-    const playlists = downloads.filter((d) => d.type === "playlist");
-    const singles = downloads.filter((d) => d.type !== "playlist");
-
-    return {playlists, singles};
-};
 
 const MOCK_DATA: DownloadItem[] = [
     {
@@ -370,7 +343,7 @@ const downloadsSlice = createSlice({
                     url,
                     title: "Fetching video info...",
                     channel: "Please wait",
-                    status: "pending" as Status,
+                    status: "pending" as DownloadStatus,
                     progress: 0,
                     size: 0,
                     quality: action.payload.quality,
@@ -399,7 +372,7 @@ const downloadsSlice = createSlice({
                     url,
                     title: "Fetching video info...",
                     channel: "Please wait",
-                    status: "pending" as Status,
+                    status: "pending" as DownloadStatus,
                     progress: 0,
                     size: 0,
                     quality: action.payload.quality,

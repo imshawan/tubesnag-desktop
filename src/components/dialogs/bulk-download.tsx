@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/select";
 import { Layers, AlertCircle, CheckCircle2, Check } from "lucide-react";
 import { cn } from "@/utils/tailwind";
-import { FormatType, QualityType } from "@/types/index";
 import { DOWNLOAD_FORMATS, VIDEO_QUALITIES } from "@/constants";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 

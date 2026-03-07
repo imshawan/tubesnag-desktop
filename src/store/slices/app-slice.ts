@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface AppState {
   appVersion: string;
   activeTab: string;
-  activeDialog: "single" | "bulk" | "playlist" | null;
+  activeDialog: DownloadType;
   searchOpen: boolean;
   itemsPerPage: number;
   recentItemsPerPage: number;
@@ -46,7 +46,7 @@ const appSlice = createSlice({
     setActiveTab: (state, action: PayloadAction<string>) => {
       state.activeTab = action.payload;
     },
-    setActiveDialog: (state, action: PayloadAction<"single" | "bulk" | "playlist" | null>) => {
+    setActiveDialog: (state, action: PayloadAction<DownloadType>) => {
       state.activeDialog = action.payload;
     },
     setSearchOpen: (state, action: PayloadAction<boolean>) => {
@@ -95,3 +95,14 @@ export const {
 } = appSlice.actions;
 
 export default appSlice.reducer;
+
+export const selectActiveTab = (state: { app: AppState }) => state.app.activeTab;
+export const selectActiveDialog = (state: { app: AppState }) => state.app.activeDialog;
+export const selectSearchOpen = (state: { app: AppState }) => state.app.searchOpen;
+export const selectItemsPerPage = (state: { app: AppState }) => state.app.itemsPerPage;
+export const selectHistorySearch = (state: { app: AppState }) => state.app.historySearch;
+export const selectHistoryFilter = (state: { app: AppState }) => state.app.historyFilter;
+export const selectHistoryTypeFilter = (state: { app: AppState }) => state.app.historyTypeFilter;
+export const selectStorage = (state: { app: AppState }) => state.app.storage;
+export const selectSetupComplete = (state: { app: AppState }) => state.app.setupComplete;
+export const selectDownloadPath = (state: { settings: { downloadPath: string } }) => state.settings.downloadPath;

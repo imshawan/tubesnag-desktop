@@ -1,9 +1,8 @@
-import { AlertCircle, Music, FileVideo, CheckCircle2, Zap, Layers, ChevronDown, ChevronUp } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/utils/tailwind";
-import type { DownloadItem } from "@/store/slices/downloads-slice";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {AlertCircle, CheckCircle2, ChevronDown, ChevronUp, FileVideo, Music, Zap} from "lucide-react";
+import {useTranslation} from "react-i18next";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {cn} from "@/utils/tailwind";
+import {useEffect, useMemo, useState} from "react";
 import {formatBytes} from "@/utils/common";
 import {fileToDataUrl} from "@/utils/ytdlp";
 

@@ -1,28 +1,20 @@
-import { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import {useEffect, useState} from "react";
+import {useTranslation} from "react-i18next";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ListVideo, AlertCircle, ArrowDownUp } from "lucide-react";
-import { cn } from "@/utils/tailwind";
-import { FormatType, QualityType } from "@/types/index";
-import { DOWNLOAD_FORMATS, VIDEO_QUALITIES } from "@/constants";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Switch} from "@/components/ui/switch";
+import {ArrowDownUp, ListVideo} from "lucide-react";
+import {cn} from "@/utils/tailwind";
+import {DOWNLOAD_FORMATS, VIDEO_QUALITIES} from "@/constants";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 
 interface PlaylistDownloadDialogProps {

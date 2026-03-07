@@ -10,12 +10,6 @@ export interface DependencyStatus {
   ffmpeg: boolean;
 }
 
-export interface DependencyProgress {
-  db: { downloading: boolean; progress: number };
-  ytdlp: { downloading: boolean; progress: number };
-  ffmpeg: { downloading: boolean; progress: number };
-}
-
 declare global {
   interface Window {
     electron?: {
@@ -33,38 +27,35 @@ declare global {
       invoke: (channel: string, args: any) => Promise<any>;
     };
   }
-  var electron: Window['electron'];
-}
 
-export type DownloadType = "single" | "bulk" | "playlist"
-export type QualityType = "best" | "high" | "medium" | "low"
-export type DownloadStatus = "pending" | "downloading" | "completed" | "error"
-export type ToastType = "success" | "error" | "info" | "warning"
-export type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
+  type DownloadType = "single" | "bulk" | "playlist" | null;
+
+  var electron: Window['electron'];
+
+  type DownloadItemType = "video" | "audio" | "playlist";
+  type QualityType = "best" | "high" | "medium" | "low"
+  type DownloadStatus = "pending" | "downloading" | "completed" | "failed" | "duplicate"
+  type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
+
+  interface DownloadItem {
+    id: string;
+    url: string;
+    title: string;
+    status: DownloadStatus;
+    progress: number;
+    error?: string;
+    size: number;
+    quality: string;
+    type: DownloadItemType;
+    date: string;
+    channel: string;
+    format?: string;
+    thumbnail?: string;
+    videos?: DownloadItem[];
+  }
+}
 
 export interface YtDlpConfig {url: string, filename: string}
-
-export interface FfmpegConfig {url: string, filename: string, archiveType: string}
-
-export interface DownloadItem {
-  id: string
-  url: string
-  title?: string
-  status: DownloadStatus
-  progress: number
-  error?: string
-  quality?: QualityType
-  type?: DownloadType
-  startedAt?: Date
-  completedAt?: Date
-  fileSize?: number
-  duration?: number
-}
-
-export interface DownloadHistory extends DownloadItem {
-  downloadedAt: Date
-  filePath?: string
-}
 
 export interface AppSettings {
   quality: QualityType

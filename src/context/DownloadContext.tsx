@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from "react"
-import type { DownloadItem, UseDownloadReturn } from "@/hooks/useDownloads"
+import type { UseDownloadReturn } from "@/hooks/useDownloads"
 import { useDownloads } from "@/hooks/useDownloads"
 
 interface DownloadContextType extends UseDownloadReturn {}

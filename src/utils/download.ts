@@ -54,25 +54,6 @@ export function formatDuration(seconds: number): string {
   return parts.join(" ")
 }
 
-export function getQualityLabel(quality: "best" | "high" | "medium" | "low"): string {
-  const labels = {
-    best: "Best Available",
-    high: "1080p",
-    medium: "720p",
-    low: "480p",
-  }
-  return labels[quality]
-}
-
-export function getDownloadTypeLabel(type: "single" | "bulk" | "playlist"): string {
-  const labels = {
-    single: "Single Video",
-    bulk: "Bulk Download",
-    playlist: "Playlist",
-  }
-  return labels[type]
-}
-
 /**
  * Validate a list of URLs
  */

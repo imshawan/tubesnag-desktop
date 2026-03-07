@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useAppDispatch } from "@/store/hooks";
 import { setActiveTab } from "@/store/slices/app-slice";
-import type { DownloadItem } from "@/store/slices/downloads-slice";
 import { useDownloads } from "@/hooks/useDownloads";
 import { DownloadList } from "@/components/download-list";
 

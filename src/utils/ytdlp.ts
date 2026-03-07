@@ -1,4 +1,3 @@
-import type {DownloadItem} from "@/store/slices/downloads-slice";
 
 interface DownloadOptions {
   url: string;
@@ -23,7 +22,13 @@ export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void>
   return new Promise((resolve, reject) => {
     let isCompleted = false;
     let isDuplicated = false;
+
     const handleProgress = (data: any) => {
+      if (isCompleted) {
+        electron.off("ytdlp:progress", handleProgress);
+        return resolve();
+      }
+
       console.log('[ytdlp utility] received:', data);
 
       if (data.type === "progress") {

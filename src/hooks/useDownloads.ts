@@ -1,11 +1,8 @@
 import { useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { addDownloads, updateDownload, removeDownload, clearCompleted, clearAll } from "@/store/slices/downloads-slice";
-import type { QualityType } from "../types/index";
-import type { DownloadItem } from "@/store/slices/downloads-slice";
+import { addActiveDownload, updateActiveDownload } from "@/store/slices/active-downloads-slice";
 import {generateUUID} from "@/utils/common";
-
-export type { DownloadItem };
 
 export interface UseDownloadReturn {
   downloads: DownloadItem[];
@@ -17,6 +14,8 @@ export interface UseDownloadReturn {
   clearCompleted: () => void;
   clearAll: () => void;
   recentItemsPerPage: number;
+  addActiveDownload: (download: DownloadItem) => void;
+  updateActiveDownload: (id: string, updates: Partial<DownloadItem>) => void;
 }
 
 export function useDownloads(): UseDownloadReturn {
@@ -69,6 +68,8 @@ export function useDownloads(): UseDownloadReturn {
     removeDownload: (id: string) => dispatch(removeDownload(id)),
     clearCompleted: () => dispatch(clearCompleted()),
     clearAll: () => dispatch(clearAll()),
+    addActiveDownload: (download: DownloadItem) => dispatch(addActiveDownload(download)),
+    updateActiveDownload: (id: string, updates: Partial<DownloadItem>) =>
+      dispatch(updateActiveDownload({ id, updates })),
   };
 }
-

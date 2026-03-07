@@ -20,12 +20,12 @@ export const getFfmpegConfig = () => {
 }
 
 const sizeToBytes = (sizeStr: string): number => {
-    const match = sizeStr.match(/([\\d.]+)\\s*([KMGT]i?B|B)/);
+    const match = sizeStr.match(/([\d.]+)\s*([KMGT]iB|[KMGT]B|B)/);
     if (!match) return 0;
-    
+
     const value = parseFloat(match[1]);
     const unit = match[2];
-    
+
     const multipliers: Record<string, number> = {
         'B': 1,
         'KiB': 1024,
@@ -37,7 +37,7 @@ const sizeToBytes = (sizeStr: string): number => {
         'TiB': 1024 ** 4,
         'TB': 1000 ** 4,
     };
-    
+
     return Math.round(value * (multipliers[unit] || 1));
 };
 
@@ -156,7 +156,7 @@ export const getAppVersion = () => {
 }
 
 export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any) => {
-    const { url, outputPath, quality, format, downloadId } = options;
+    const {url, outputPath, quality, format, downloadId} = options;
     const userDataPath = app.getPath('userData');
     const thumbnailPath = path.join(userDataPath, 'Thumbnails');
     const ytdlpPath = path.join(userDataPath, 'ytdlp');
@@ -191,14 +191,19 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
     ];
 
     return new Promise((resolve, reject) => {
-        const { spawn } = require('child_process');
-        const child = spawn(ytDlpExe, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+        const {spawn} = require('child_process');
+        const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
         let title = '';
         let channel = '';
         let lastProgress = 0;
-        let metadataSent = false;
-        let duplicateSent = false;
-        let thumbnail = downloadId;
+        const dataSentState = {
+            metadata: false,
+            thumbnail: false,
+            duplicateStatus: false,
+            size: false,
+            complete: false
+        };
+        let thumbnail = path.join(thumbnailPath, downloadId + ".webp");
 
         child.stdout.on('data', (data: Buffer) => {
             const text = data.toString();
@@ -211,16 +216,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
             lines.forEach((line: string) => {
                 console.log('[yt-dlp]', line);
 
-                const thumbMatch = line.match(/Writing video thumbnail \\d+ to: (.+)/);
-                if (thumbMatch) {
-                    let ext = thumbMatch[1].trim().split("").pop();
-                    thumbnail = path.join(thumbnailPath, thumbnail + ext);
-                }
-
-                const destMatch = line.match(/\\[download\\]\\s+Destination:\\s+(.+)/);
-                if (destMatch && !metadataSent) {
+                const destMatch = line.match(/\[download\]\s+Destination:\s+(.+?)\s*$/);
+                if (destMatch && !dataSentState.metadata) {
                     title = destMatch[1].trim();
-                    metadataSent = true;
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'metadata',
                         data: {
@@ -231,10 +229,11 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                             downloadId
                         }
                     });
+                    dataSentState.metadata = true;
                 }
 
-                const sizeMatch = line.match(/of\\s+([\\d.]+\\s*[KMGT]i?B|[\\d.]+\\s*B)/);
-                if (sizeMatch && metadataSent) {
+                const sizeMatch = line.match(/of\s+([\d.]+\s*[KMGT]iB|[\d.]+\s*[KMGT]B|[\d.]+\s*B)/);
+                if (sizeMatch && !dataSentState.size) {
                     const sizeBytes = sizeToBytes(sizeMatch[1]);
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'metadata',
@@ -246,9 +245,10 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                             downloadId
                         }
                     });
+                    dataSentState.size = true;
                 }
 
-                if (line.includes('has already been downloaded') && !duplicateSent) {
+                if (line.includes('has already been downloaded') && !dataSentState.duplicateStatus) {
                     const dupMatch = line.match(/\[download\]\s+(.+?)\s+has already been downloaded/);
                     let dupFilename;
                     if (dupMatch) {
@@ -257,15 +257,14 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
 
                     const filename = dupFilename || 'unknown';
                     const files = fsSync.readdirSync(outputPath);
-                    const sanitizedFiles = files.map(f => ({ original: f, sanitized: sanitizeFilename(f) }));
+                    const sanitizedFiles = files.map(f => ({original: f, sanitized: sanitizeFilename(f)}));
                     const fileMatch = sanitizedFiles.find(f => f.sanitized.includes(filename.split('.')[0]));
                     const file = fileMatch?.original;
 
-                    let metadata: any = { filename };
+                    let metadata: any = {filename};
                     if (file) {
                         const filePath = path.join(outputPath, file);
                         const stats = fsSync.statSync(filePath);
-                        thumbnail = path.join(thumbnailPath, downloadId + ".webp");
                         metadata = {
                             filename,
                             title: file,
@@ -282,10 +281,10 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                         downloadId
                     });
 
-                    duplicateSent = true;
+                    dataSentState.duplicateStatus = true;
                 }
 
-                const progressMatch = line.match(/\\[\\s*download\\s*\\]\\s+(\\d+(?:\\.\\d+)?)%/);
+                const progressMatch = line.match(/\[\s*download\s*\]\s+(\d+(?:\.\d+)?)%/);
                 if (progressMatch) {
                     const progress = Math.min(100, Math.max(0, parseFloat(progressMatch[1])));
                     if (Math.abs(progress - lastProgress) >= 1) {
@@ -298,31 +297,39 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                     }
                 }
             });
-        });
 
-        child.stderr.on('data', (data: Buffer) => {
-            console.error('[yt-dlp stderr]', data.toString());
-        });
+            child.stderr.on('data', (data: Buffer) => {
+                console.error('[yt-dlp stderr]', data.toString());
+            });
 
-        child.on('close', (code: number) => {
-            console.log('[yt-dlp] Process closed with code:', code);
-            if (fsSync.existsSync(tempFile)) {
-                fsSync.unlinkSync(tempFile);
-            }
-            if (code === 0 || code === 1) {
-                mainWindow?.webContents.send('ytdlp:progress', {
-                    type: 'complete',
-                    data: { status: 'completed', progress: 100, thumbnail, downloadId }
-                });
-                resolve({ success: true });
-            } else {
-                reject(new Error(`Download failed with code ${code}`));
-            }
-        });
+            child.on('close', (code: number) => {
+                if (dataSentState.complete) return resolve({success: true});
 
-        child.on('error', (err: Error) => {
-            console.error('yt-dlp spawn error:', err);
-            reject(err);
+                console.log('[yt-dlp] Process closed with code:', code);
+                if (fsSync.existsSync(tempFile)) {
+                    fsSync.unlinkSync(tempFile);
+                }
+                if (code === 0 || code === 1) {
+                    const data: Record<string, any> = {status: 'completed', progress: 100, thumbnail, downloadId};
+                    if (title) {
+                        data.title = title;
+                    }
+
+                    mainWindow?.webContents.send('ytdlp:progress', {
+                        type: 'complete',
+                        data
+                    });
+                    dataSentState.complete = true;
+                    resolve({success: true});
+                } else {
+                    reject(new Error(`Download failed with code ${code}`));
+                }
+            });
+
+            child.on('error', (err: Error) => {
+                console.error('yt-dlp spawn error:', err);
+                reject(err);
+            });
         });
     });
 }

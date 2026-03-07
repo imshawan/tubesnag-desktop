@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import type { DownloadItem } from "@/store/slices/downloads-slice";
 import { DownloadList } from "@/components/download-list";
 import { useAppSelector } from "@/store/hooks";
 
