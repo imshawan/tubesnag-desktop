@@ -20,31 +20,31 @@ export function Sidebar() {
       <div className="space-y-1">
         <NavButton
           icon={LayoutGrid}
-          label="Dashboard"
+          label={t("sidebar.dashboard")}
           isActive={activeTab === "dashboard"}
           onClick={() => dispatch(setActiveTab("dashboard"))}
         />
         <NavButton
           icon={Download}
-          label="Downloads"
+          label={t("sidebar.downloads")}
           isActive={activeTab === "downloads"}
           onClick={() => dispatch(setActiveTab("downloads"))}
         />
         <NavButton
           icon={History}
-          label="History"
+          label={t("sidebar.history")}
           isActive={activeTab === "history"}
           onClick={() => dispatch(setActiveTab("history"))}
         />
         <NavButton
           icon={Settings}
-          label="Settings"
+          label={t("sidebar.settings")}
           isActive={activeTab === "settings"}
           onClick={() => dispatch(setActiveTab("settings"))}
         />
         <NavButton
           icon={HelpCircle}
-          label="Help"
+          label={t("sidebar.help")}
           isActive={activeTab === "help"}
           onClick={() => dispatch(setActiveTab("help"))}
         />

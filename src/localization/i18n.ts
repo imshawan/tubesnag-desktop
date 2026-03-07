@@ -128,7 +128,7 @@ i18n.use(initReactI18next).init({
         downloads: {
           quality: "Quality",
           format: "Format",
-          title: "Downloads",
+          title: "Active Downloads",
           subtitle: "Track active downloads and their progress.",
           noActive: "No active downloads",
           startNewDownload: "Start a new download to see progress here."
@@ -194,6 +194,13 @@ i18n.use(initReactI18next).init({
           checking: "Checking dependencies...",
           installing: "Installing dependencies...",
           complete: "Setup complete!"
+        },
+        sidebar: {
+          dashboard: "Dashboard",
+          downloads: "Downloads",
+          history: "History",
+          settings: "Settings",
+          help: "Help"
         },
       },
     }
