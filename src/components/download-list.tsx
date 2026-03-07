@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/tailwind";
 import type { DownloadItem } from "@/store/slices/downloads-slice";
-import {useCallback, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {formatBytes} from "@/utils/common";
+import {fileToDataUrl} from "@/utils/ytdlp";
 
 interface DownloadListProps {
   items: DownloadItem[];
@@ -15,6 +16,13 @@ interface DownloadListProps {
 export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: DownloadListProps) {
   const { t } = useTranslation();
   const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
+  const formattedSizes = useMemo(() => {
+    return items.reduce((acc, item) => {
+      const size = formatBytes(item.size);
+      acc[item.id] = size.includes("NaN") || size.includes("undefined") ? "0 B" : size;
+      return acc;
+    }, {} as Record<string, string>);
+  }, [items]);
 
   const renderStatusBadge = (download: DownloadItem) => {
     if (download.status === "completed") {
@@ -38,8 +46,33 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
     }
   };
 
+  const ThumbnailIcon = ({item}: {item: DownloadItem}) => {
+    const [dataUrl, setDataUrl] = useState<string>('');
+
+    useEffect(() => {
+      if (!item.thumbnail || item.thumbnail.startsWith("http"))
+        return setDataUrl(item.thumbnail || "");
+      fileToDataUrl(item.thumbnail).then(setDataUrl).catch(() => setDataUrl(''));
+    }, [item.thumbnail]);
+
+    if (item.thumbnail) {
+      return (
+          <img
+              src={dataUrl}
+              alt={item.title}
+              className="size-10 rounded-lg object-cover border border-border/50" />
+      );
+    }
+    const Icon = item.type === "audio" ? Music : FileVideo;
+    return (
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
+          {<Icon className="size-5 text-muted-foreground" />}
+        </div>
+    );
+  }
+
   const renderDownloadRow = (download: DownloadItem, isPlaylistChild = false) => {
-    const size = useMemo(() => formatBytes(download.size), [download]);
+    const size = formattedSizes[download.id];
     return (
         <div
             key={download.id}
@@ -50,17 +83,7 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
             onClick={() => onOpenFile(download)}
         >
           <div className="flex items-center gap-4">
-            {download.thumbnail ? (
-                <img src={download.thumbnail} alt={download.title} className="size-10 rounded-lg object-cover border border-border/50" />
-            ) : (
-                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-                  {download.type === "audio" ? (
-                      <Music className="size-5 text-muted-foreground" />
-                  ) : (
-                      <FileVideo className="size-5 text-muted-foreground" />
-                  )}
-                </div>
-            )}
+            <ThumbnailIcon item={download} />
             <div className="flex flex-col">
               <span className="font-medium text-sm">{download.title}</span>
               <div className="flex gap-2 text-xs text-muted-foreground">
@@ -71,8 +94,8 @@ export function DownloadList({ items, onOpenFile, maxHeight = "h-[600px]" }: Dow
             </div>
           </div>
           <div className="flex items-center gap-4">
-        <span className="text-xs text-muted-foreground hidden sm:block">
-          {download.quality} • {size}
+        <span className="text-xs text-muted-foreground hidden sm:block capitalize">
+          {download.type} • {size}
         </span>
             {renderStatusBadge(download)}
           </div>

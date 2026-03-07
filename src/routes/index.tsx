@@ -27,6 +27,7 @@ import { GlobalSearch } from "@/components/global-search";
 import { ActionCard } from "@/components/action-card";
 import { Help } from "@/components/tabs/help";
 import { History as HistoryTab } from "@/components/tabs/history";
+import { Downloads as DownloadsTab } from "@/components/tabs/downloads";
 import { Settings as SettingsTab } from "@/components/tabs/settings";
 import { Sidebar } from "@/components/sidebar";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -38,8 +39,10 @@ import {
   setStorage,
 } from "@/store/slices/app-slice";
 import { setDownloadPath } from "@/store/slices/settings-slice";
+import { addActiveDownload, updateActiveDownload } from "@/store/slices/active-downloads-slice";
 import { RecentActivity } from "@/components/recent-activity";
-import {getDiskUsageStats} from "@/utils/setup";
+import { getDiskUsageStats } from "@/utils/setup";
+import { downloadWithYtdlp } from "@/utils/ytdlp";
 
 function HomePage() {
   const dispatch = useAppDispatch();
@@ -107,20 +110,55 @@ function HomePage() {
     });
   }, [realDownloads, historySearch, historyFilter]);
 
+  const handleSingleDownload = async (
+    url: string,
+    selectedQuality: QualityType,
+    format?: string,
+  ) => {
+    const newDownloads = addDownload([url], selectedQuality);
+    if (newDownloads.length === 0) return;
+
+    const download = newDownloads[0];
+    dispatch(addActiveDownload(download));
+    dispatch(setActiveDialog(null));
+
+    try {
+      await downloadWithYtdlp({
+        url,
+        outputPath: downloadPath,
+        quality: selectedQuality,
+        format,
+        onProgress: (progress) => {
+          console.log(progress)
+          dispatch(updateActiveDownload({
+            id: download.id,
+            updates: { progress },
+          }));
+        },
+        onData: (data) => {
+          dispatch(updateActiveDownload({
+            id: download.id,
+            updates: data,
+          }));
+        },
+      });
+    } catch (error) {
+      console.error("Download failed:", error);
+      dispatch(updateActiveDownload({
+        id: download.id,
+        updates: { status: "failed" },
+      }));
+    }
+  };
+
   const handleDownloadStart = (
     urls: string[],
     selectedQuality: QualityType,
   ) => {
     const newDownloads = addDownload(urls, selectedQuality);
-    setTimeout(() => {
-      if (newDownloads.length > 0) {
-        updateDownload(newDownloads[0].id, {
-          ...newDownloads[0],
-          title: t("dashboard.processingVideo"),
-          progress: 5,
-        });
-      }
-    }, 1000);
+    newDownloads.forEach((download) => {
+      dispatch(addActiveDownload(download));
+    });
   };
 
   const handleOpenFile = (download: any) => {
@@ -276,6 +314,12 @@ function HomePage() {
               </div>
             )}
 
+            {activeTab === "downloads" && (
+              <DownloadsTab
+                onOpenFile={handleOpenFile}
+              />
+            )}
+
             {activeTab === "history" && (
               <HistoryTab
                 onOpenFile={handleOpenFile}
@@ -304,7 +348,7 @@ function HomePage() {
       <SingleDownloadDialog
         open={activeDialog === "single"}
         onOpenChange={(v) => !v && dispatch(setActiveDialog(null))}
-        onDownload={handleDownloadStart}
+        onDownload={handleSingleDownload}
       />
       <BulkDownloadDialog
         open={activeDialog === "bulk"}
@@ -320,8 +364,6 @@ function HomePage() {
   );
 }
 
-export const Route = createFileRoute("/")(
-  {
-    component: HomePage,
-  }
-);
+export const Route = createFileRoute("/")({
+  component: HomePage,
+});

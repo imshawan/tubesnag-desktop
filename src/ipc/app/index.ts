@@ -1,4 +1,4 @@
-import { getDiskUsage, checkDependencies, installDependencies, getPlatform, getAppVersion } from "./handlers";
+import { getDiskUsage, checkDependencies, installDependencies, getPlatform, getAppVersion, downloadWithYtdlp } from "./handlers";
 
 export const app = {
   getDiskUsage,
@@ -6,4 +6,5 @@ export const app = {
   installDependencies,
   getPlatform,
   getAppVersion,
+  downloadWithYtdlp,
 };

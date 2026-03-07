@@ -5,16 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Link } from "lucide-react"
 import { cn } from "@/utils/tailwind"
 import { QualityType } from "@/types/index"
 import { VIDEO_QUALITIES, DOWNLOAD_FORMATS } from "@/constants"
+import { useAppSelector } from "@/store/hooks"
 
 interface SingleDownloadDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onDownload: (urls: string[], quality: QualityType, format?: string) => void
+  onDownload: (url: string, quality: QualityType, format?: string) => void
   isLoading?: boolean
 }
 
@@ -24,13 +24,22 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
   const [quality, setQuality] = useState<QualityType>("best")
   const [format, setFormat] = useState("mp4")
   const [error, setError] = useState("")
+  const [downloading, setDownloading] = useState(false)
 
   useEffect(() => { if (open) { setUrl(""); setError("") } }, [open])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!url.trim()) { setError(t("singleDownload.errorEmpty")); return }
-    onDownload([url], quality, format)
-    onOpenChange(false)
+    
+    setDownloading(true)
+    try {
+      await onDownload(url, quality, format)
+      onOpenChange(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("singleDownload.downloadFailed"))
+    } finally {
+      setDownloading(false)
+    }
   }
 
   return (
@@ -54,6 +63,7 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
                 value={url}
                 onChange={(e) => { setUrl(e.target.value); setError(""); }}
                 className={cn("pl-9", error && "border-destructive focus-visible:ring-destructive")}
+                disabled={downloading}
               />
             </div>
             {error && <p className="text-[0.8rem] font-medium text-destructive">{error}</p>}
@@ -101,9 +111,9 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
         </div>
 
         <DialogFooter>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>{t("singleDownload.cancel")}</Button>
-            <Button onClick={handleSubmit} disabled={isLoading}>
-                {isLoading ? t("singleDownload.starting") : t("singleDownload.download")}
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={downloading}>{t("singleDownload.cancel")}</Button>
+            <Button onClick={handleSubmit} disabled={isLoading || downloading}>
+                {downloading ? t("singleDownload.starting") : t("singleDownload.download")}
             </Button>
         </DialogFooter>
       </DialogContent>

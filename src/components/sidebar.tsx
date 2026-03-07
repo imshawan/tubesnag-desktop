@@ -1,4 +1,4 @@
-import { LayoutGrid, History, Settings, HelpCircle } from "lucide-react";
+import { LayoutGrid, History, Settings, HelpCircle, Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AppHeader } from "@/components/app-header";
 import { NavButton } from "@/components/nav-button";
@@ -23,6 +23,12 @@ export function Sidebar() {
           label="Dashboard"
           isActive={activeTab === "dashboard"}
           onClick={() => dispatch(setActiveTab("dashboard"))}
+        />
+        <NavButton
+          icon={Download}
+          label="Downloads"
+          isActive={activeTab === "downloads"}
+          onClick={() => dispatch(setActiveTab("downloads"))}
         />
         <NavButton
           icon={History}

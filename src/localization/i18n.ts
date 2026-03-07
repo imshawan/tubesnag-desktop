@@ -128,6 +128,10 @@ i18n.use(initReactI18next).init({
         downloads: {
           quality: "Quality",
           format: "Format",
+          title: "Downloads",
+          subtitle: "Track active downloads and their progress.",
+          noActive: "No active downloads",
+          startNewDownload: "Start a new download to see progress here."
         },
         bulkDownload: {
           title: "Bulk Download",

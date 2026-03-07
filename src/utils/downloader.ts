@@ -1,5 +1,6 @@
 import https from "https";
 import fsSync from "fs";
+import path from "node:path";
 
 export const downloadFile = async (url: string, dest: string, onProgress?: (progress: number) => void): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -46,3 +47,41 @@ export const downloadFile = async (url: string, dest: string, onProgress?: (prog
         });
     });
 }
+
+const downloadThumbnailOnly = (
+    ytDlpExe: string, url: string, thumbnailPath: string, tempFile: string
+): Promise<{title: string, channel: string}> => {
+    return new Promise((resolve, reject) => {
+        const { spawn } = require('child_process');
+        const args = [
+            '--skip-download',
+            '--write-thumbnail',
+            '--thumbnail-size', '500',
+            '-o', `thumbnail:${path.join(thumbnailPath, '%(title)s.%(ext)s')}`,
+            '--print-to-file', '%(channel)s', tempFile,
+            url
+        ];
+
+        const child = spawn(ytDlpExe, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+        let title = '';
+
+        child.stdout.on('data', (data: Buffer) => {
+            const text = data.toString();
+            const destMatch = text.match(/\[download\]\s+Destination:\s+(.+)/);
+            if (destMatch) {
+                title = destMatch[1].trim();
+            }
+        });
+
+        child.on('close', (code: number) => {
+            if (code === 0) {
+                const channel = fsSync.existsSync(tempFile) ? fsSync.readFileSync(tempFile, "utf8").trim() : 'Unknown';
+                resolve({ title, channel });
+            } else {
+                reject(new Error(`Thumbnail download failed with code ${code}`));
+            }
+        });
+
+        child.on('error', reject);
+    });
+};

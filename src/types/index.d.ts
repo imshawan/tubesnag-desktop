@@ -25,6 +25,9 @@ declare global {
       installDependencies: () => Promise<DependencyStatus>;
       onInstallProgress?: (callback: (data: { dependency: string; progress: number }) => void) => void;
       offInstallProgress?: (callback: (data: { dependency: string; progress: number }) => void) => void;
+      fileToDataUrl: (filePath: string) => Promise<string>;
+      getPlatform: () => Promise<NodeJS.Platform>;
+      getAppVersion: () => Promise<string>;
     };
   }
   var electron: Window['electron'];
@@ -67,16 +70,4 @@ export interface AppSettings {
   theme: "light" | "dark" | "system"
   language: string
 }
-// Utility Types
-export type AsyncFunction<T = void> = () => Promise<T>
-export type VoidFunction = () => void
-export type EventHandler<T = Event> = (event: T) => void
-
-// Type Guards
-export function isValidDownloadType(value: unknown): value is DownloadType;
-export function isValidQualityType(value: unknown): value is QualityType;
-export function isValidDownloadStatus(value: unknown): value is DownloadStatus;
-export function isValidToastType(value: unknown): value is ToastType;
-export function isDownloadItem(value: unknown): value is DownloadItem;
-export function isDownloadHistory(value: unknown): value is DownloadHistory;
 

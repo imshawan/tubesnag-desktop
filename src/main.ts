@@ -10,7 +10,10 @@ import { UpdateSourceType, updateElectronApp } from "update-electron-app";
 import { ipcContext } from "@/ipc/context";
 import { IPC_CHANNELS } from "./constants";
 import IpcMainEvent = Electron.IpcMainEvent;
-import {checkDependencies, getDiskUsage, installDependencies, selectFolder, getPlatform, getAppVersion} from "@/ipc/app/handlers";
+import {
+  checkDependencies, getDiskUsage, installDependencies, selectFolder, getPlatform, getAppVersion, downloadWithYtdlp,
+  fileToDataUrl
+} from "@/ipc/app/handlers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -85,6 +88,10 @@ function setupIpcHandlers() {
   
   ipcMain.handle('app:get-platform', getPlatform);
   ipcMain.handle('app:get-version', getAppVersion);
+  
+  ipcMain.handle('ytdlp:download', downloadWithYtdlp);
+
+  ipcMain.handle('file:to-data-url', fileToDataUrl);
 }
 
 app.whenReady().then(async () => {

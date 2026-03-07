@@ -70,8 +70,8 @@ export const faqs = [
 
 export const DEPENDENCY_CONFIG = {
   ytDlp: {
-    win32: { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe', filename: 'yt-dlp.exe' },
-    unix: { url: 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp', filename: 'yt-dlp' },
+    win32: { url: 'https://github.com/yt-dlp/yt-dlp/releases/download/2026.03.03/yt-dlp.exe', filename: 'yt-dlp.exe' },
+    unix: { url: 'https://github.com/yt-dlp/yt-dlp/releases/download/2026.03.03/yt-dlp', filename: 'yt-dlp' },
   },
   ffmpeg: {
     win32: { filename: 'ffmpeg.exe' },
