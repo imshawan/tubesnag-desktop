@@ -1,7 +1,7 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import type {QualityType} from "@/types/index";
 
-export type Status = "pending" | "downloading" | "completed" | "failed";
+export type Status = "pending" | "downloading" | "completed" | "failed" | "duplicate";
 
 export interface DownloadItem {
     id: string;

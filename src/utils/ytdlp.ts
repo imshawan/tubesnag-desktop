@@ -7,10 +7,11 @@ interface DownloadOptions {
   format?: string;
   onProgress?: (progress: number) => void;
   onData?: (data: Partial<DownloadItem>) => void;
+  onDuplicate?: (filename: string, metadata: any) => void;
 }
 
 export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void> => {
-  const { url, outputPath, quality, format, onProgress, onData } = options;
+  const { url, outputPath, quality, format, onProgress, onData, onDuplicate } = options;
 
   if (!globalThis.electron) {
     throw new Error("Electron not available");
@@ -25,6 +26,9 @@ export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void>
         onProgress?.(data.progress);
       } else if (data.type === "metadata") {
         onData?.(data.data);
+      } else if (data.type === "duplicate") {
+        onDuplicate?.(data.data.filename, data.data);
+        onData?.({ status: "duplicate", progress: 100, ...data.data });
       } else if (data.type === "complete") {
         onData?.(data.data);
         electron.off("ytdlp:progress", handleProgress);

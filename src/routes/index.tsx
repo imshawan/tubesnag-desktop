@@ -43,10 +43,12 @@ import { addActiveDownload, updateActiveDownload } from "@/store/slices/active-d
 import { RecentActivity } from "@/components/recent-activity";
 import { getDiskUsageStats } from "@/utils/setup";
 import { downloadWithYtdlp } from "@/utils/ytdlp";
+import { useToast } from "@/context/ToastContext";
 
 function HomePage() {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const { addToast } = useToast();
   const [, startGetAppVersion] = useTransition();
 
   const activeTab = useAppSelector((state) => state.app.activeTab);
@@ -140,6 +142,21 @@ function HomePage() {
             id: download.id,
             updates: data,
           }));
+        },
+        onDuplicate: (filename, metadata) => {
+          addToast(`File already downloaded: ${filename}`, "warning");
+          dispatch(updateActiveDownload({
+            id: download.id,
+            updates: { status: "duplicate", ...metadata },
+          }));
+          realDownloads.forEach((d) => {
+            if (d.title === filename || d.title.includes(filename.split('.')[0])) {
+              dispatch(updateActiveDownload({
+                id: d.id,
+                updates: { status: "duplicate" },
+              }));
+            }
+          });
         },
       });
     } catch (error) {

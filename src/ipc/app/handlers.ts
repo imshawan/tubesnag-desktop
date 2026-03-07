@@ -19,7 +19,7 @@ export const getFfmpegConfig = () => {
 }
 
 const sizeToBytes = (sizeStr: string): number => {
-    const match = sizeStr.match(/([\d.]+)\s*([KMGT]i?B|B)/);
+    const match = sizeStr.match(/([\\d.]+)\\s*([KMGT]i?B|B)/);
     if (!match) return 0;
     
     const value = parseFloat(match[1]);
@@ -162,6 +162,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
     const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
     const mainWindow = ipcContext.mainWindow;
     const tempFile = `.channel_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    console.log("Options: ", options)
 
     const qualityMap: Record<string, string> = {
         best: 'best',
@@ -183,7 +184,6 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         '-f', selectedFormat,
         '--print-to-file', '%(channel)s', tempFile,
         '--write-thumbnail',
-        // '--convert-thumbnails', 'jpg',
         '-o', `thumbnail:${path.join(thumbnailPath, '%(title)s.%(ext)s')}`,
         '-o', path.join(outputPath, '%(title)s.%(ext)s'),
         url
@@ -200,23 +200,21 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
 
         child.stdout.on('data', (data: Buffer) => {
             const text = data.toString();
-            const lines = text.split('\n');
+            const lines = text.split('\\n');
 
             if (fsSync.existsSync(tempFile) && !channel.trim().length) {
                 channel = fsSync.readFileSync(tempFile, "utf8").trim();
-                // fsSync.unlinkSync(tempFile);
             }
 
             lines.forEach((line: string) => {
-                console.log(line)
+                console.log('[yt-dlp]', line);
 
-                const thumbMatch = line.match(/Writing video thumbnail \d+ to: (.+)/);
+                const thumbMatch = line.match(/Writing video thumbnail \\d+ to: (.+)/);
                 if (thumbMatch) {
                     thumbnail = path.join(thumbnailPath, thumbMatch[1].trim());
                 }
 
-                // Extract title from Destination line
-                const destMatch = line.match(/\[download\]\s+Destination:\s+(.+)/);
+                const destMatch = line.match(/\\[download\\]\\s+Destination:\\s+(.+)/);
                 if (destMatch && !metadataSent) {
                     title = destMatch[1].trim();
                     metadataSent = true;
@@ -231,8 +229,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                     });
                 }
 
-                // Extract size from download line
-                const sizeMatch = line.match(/of\s+([\d.]+\s*[KMGT]i?B|[\d.]+\s*B)/);
+                const sizeMatch = line.match(/of\\s+([\\d.]+\\s*[KMGT]i?B|[\\d.]+\\s*B)/);
                 if (sizeMatch && metadataSent) {
                     const sizeBytes = sizeToBytes(sizeMatch[1]);
                     mainWindow?.webContents.send('ytdlp:progress', {
@@ -246,8 +243,38 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                     });
                 }
 
-                // Extract progress percentage
-                const progressMatch = line.match(/\[\s*download\s*\]\s+(\d+(?:\.\d+)?)%/);
+                if (line.includes('has already been downloaded')) {
+                    const dupMatch = line.match(/\[download\]\s+(.+?)\s+has already been downloaded/);
+                    let dupFilename;
+                    if (dupMatch) {
+                        dupFilename = dupMatch[1].trim();
+                    }
+
+                    const filename = dupFilename || 'unknown';
+                    const files = fsSync.readdirSync(outputPath);
+                    const file = files.find(f => f.includes(filename.split('.')[0]));
+
+                    let metadata: any = { filename };
+                    if (file) {
+                        const filePath = path.join(outputPath, file);
+                        const stats = fsSync.statSync(filePath);
+                        thumbnail = path.join(thumbnailPath, `${filename.split('.')[0]}.jpg`);
+                        metadata = {
+                            filename,
+                            title: file,
+                            size: stats.size,
+                            thumbnail,
+                            channel: channel || 'Unknown',
+                        };
+                    }
+                    
+                    mainWindow?.webContents.send('ytdlp:progress', {
+                        type: 'duplicate',
+                        data: metadata
+                    });
+                }
+
+                const progressMatch = line.match(/\\[\\s*download\\s*\\]\\s+(\\d+(?:\\.\\d+)?)%/);
                 if (progressMatch) {
                     const progress = Math.min(100, Math.max(0, parseFloat(progressMatch[1])));
                     if (Math.abs(progress - lastProgress) >= 1) {
@@ -266,10 +293,11 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         });
 
         child.on('close', (code: number) => {
+            console.log('[yt-dlp] Process closed with code:', code);
             if (fsSync.existsSync(tempFile)) {
                 fsSync.unlinkSync(tempFile);
             }
-            if (code === 0) {
+            if (code === 0 || code === 1) {
                 mainWindow?.webContents.send('ytdlp:progress', {
                     type: 'complete',
                     data: { status: 'completed', progress: 100, thumbnail }
