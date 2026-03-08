@@ -24,7 +24,6 @@ function createWindow() {
   const iconPath = inDevelopment
       ? path.join(__dirname, "../../assets/icon.png")
       : path.join(__dirname, "../assets/icon.png");
-  console.log(path.join(__dirname, "../assets/icon.png"));
   const mainWindow = new BrowserWindow({
     width: 1100,
     height: 700,
