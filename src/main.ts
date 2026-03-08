@@ -21,15 +21,19 @@ const inDevelopment = process.env.NODE_ENV === "development";
 
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
+  const iconPath = inDevelopment
+      ? path.join(__dirname, "../../assets/icon.png")
+      : path.join(__dirname, "../assets/icon.png");
+  console.log(path.join(__dirname, "../assets/icon.png"));
   const mainWindow = new BrowserWindow({
     width: 1100,
     height: 700,
+    icon: iconPath,
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
       nodeIntegration: true,
       nodeIntegrationInSubFrames: false,
-
       preload,
     },
     titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "hidden",
