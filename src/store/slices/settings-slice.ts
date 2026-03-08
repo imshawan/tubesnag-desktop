@@ -8,7 +8,7 @@ export interface SettingsState {
 
 const initialState: SettingsState = {
   quality: localStorage.getItem("downloadQuality") || "best",
-  downloadPath: localStorage.getItem("downloadPath") || "./",
+  downloadPath: localStorage.getItem("downloadPath") || "./downloads",
   autoStart: localStorage.getItem("autoStart") === "true",
 };
 

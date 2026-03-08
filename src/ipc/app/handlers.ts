@@ -7,7 +7,7 @@ import fsSync from "fs";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/utils/downloader";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
-import {sanitizeFilename} from "@/utils/download";
+import {sanitizeFilename, sizeToBytes} from "@/utils/download";
 
 export const getYtDlpConfig = () => {
     const platform = process.platform;
@@ -18,28 +18,6 @@ export const getFfmpegConfig = () => {
     const platform = process.platform;
     return DEPENDENCY_CONFIG.ffmpeg[platform as 'win32' | 'linux' | 'darwin'];
 }
-
-const sizeToBytes = (sizeStr: string): number => {
-    const match = sizeStr.match(/([\d.]+)\s*([KMGT]iB|[KMGT]B|B)/);
-    if (!match) return 0;
-
-    const value = parseFloat(match[1]);
-    const unit = match[2];
-
-    const multipliers: Record<string, number> = {
-        'B': 1,
-        'KiB': 1024,
-        'KB': 1000,
-        'MiB': 1024 ** 2,
-        'MB': 1000 ** 2,
-        'GiB': 1024 ** 3,
-        'GB': 1000 ** 3,
-        'TiB': 1024 ** 4,
-        'TB': 1000 ** 4,
-    };
-
-    return Math.round(value * (multipliers[unit] || 1));
-};
 
 export const checkDependencies = async () => {
     const userDataPath = app.getPath('userData');
@@ -330,6 +308,80 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                 console.error('yt-dlp spawn error:', err);
                 reject(err);
             });
+        });
+    });
+}
+
+export const getPlaylistVideos: (
+    event: Electron.IpcMainInvokeEvent, options: any
+) => Promise<PlaylistInfo> = async (event: IpcMainInvokeEvent, options: any) => {
+    const {url, reverse, playlistId} = options;
+    const userDataPath = app.getPath('userData');
+    const ytdlpPath = path.join(userDataPath, 'ytdlp');
+    const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
+    const thumbnailPath = path.join(userDataPath, 'Thumbnails');
+
+    return new Promise((resolve, reject) => {
+        const {spawn} = require('child_process');
+        const outputFile = path.join(userDataPath, `.playlist_${Date.now()}.txt`);
+        const metaFile = path.join(userDataPath, `.playlist_meta_${Date.now()}.txt`);
+        const args = [
+            '--flat-playlist',
+            '--print-to-file', '%(webpage_url)s',
+            outputFile,
+            '--print-to-file', '%(playlist_title)s|%(uploader)s',
+            metaFile,
+            '--write-thumbnail',
+            '--convert-thumbnail', 'webp',
+            '-o', `thumbnail:${path.join(thumbnailPath, playlistId + '.%(ext)s')}`,
+            url
+        ];
+
+        const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
+
+        child.on('close', (code: number) => {
+            try {
+                if (fsSync.existsSync(outputFile)) {
+                    const content = fsSync.readFileSync(outputFile, 'utf8');
+                    let videoUrls = content.split('\n').filter((line: string) => line.trim().length > 0);
+
+                    let metadata = {title: 'Playlist', channel: 'Unknown', thumbnail: ''};
+                    if (fsSync.existsSync(metaFile)) {
+                        const metaContent = fsSync.readFileSync(metaFile, 'utf8').trim();
+                        const [title, channel] = metaContent.split('|');
+                        metadata.title = title || 'Playlist';
+                        metadata.channel = channel || 'Unknown';
+                        fsSync.unlinkSync(metaFile);
+                    }
+
+                    const thumbnailFile = path.join(thumbnailPath, playlistId + '.webp');
+                    if (fsSync.existsSync(thumbnailFile)) {
+                        metadata.thumbnail = thumbnailFile;
+                    }
+
+                    if (reverse) {
+                        videoUrls = videoUrls.reverse();
+                    }
+
+                    fsSync.unlinkSync(outputFile);
+                    resolve({videoUrls, ...metadata});
+                } else {
+                    reject(new Error('Failed to extract playlist videos'));
+                }
+            } catch (error) {
+                if (fsSync.existsSync(outputFile)) {
+                    fsSync.unlinkSync(outputFile);
+                }
+                if (fsSync.existsSync(metaFile)) {
+                    fsSync.unlinkSync(metaFile);
+                }
+                reject(error);
+            }
+        });
+
+        child.on('error', (err: Error) => {
+            console.error('yt-dlp spawn error:', err);
+            reject(err);
         });
     });
 }

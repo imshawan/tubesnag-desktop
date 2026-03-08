@@ -45,6 +45,7 @@ i18n.use(initReactI18next).init({
           downloading: "Downloading",
           failed: "Failed",
           showing: "Showing",
+          pending: "Pending",
           items: "items",
           noResults: "No results found",
           tryAdjusting: "Try adjusting your filters or search query."
@@ -158,7 +159,8 @@ i18n.use(initReactI18next).init({
           errorInvalidPlaylist: "Invalid playlist URL (missing 'list=').",
           cancel: "Cancel",
           processing: "Processing...",
-          processPlaylist: "Process Playlist"
+          processPlaylist: "Process Playlist",
+          addedToQueue: "Playlist being added to downloads queue. Please wait while we load the video list.",
         },
         singleDownload: {
           title: "Download Video",

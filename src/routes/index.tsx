@@ -22,9 +22,11 @@ import {Sidebar} from "@/components/sidebar";
 
 import {RecentActivity} from "@/components/recent-activity";
 import {getDiskUsageStats} from "@/utils/setup";
-import {downloadWithYtdlp} from "@/utils/ytdlp";
+import {downloadWithYtdlp, getPlaylistVideos} from "@/utils/ytdlp";
 import {useToast} from "@/context/ToastContext";
 import {Statistics} from "@/components/statistics";
+import {generateUUID} from "@/utils/common";
+import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 
 function HomePage() {
     const {t} = useTranslation();
@@ -36,9 +38,6 @@ function HomePage() {
         activeDialog,
         searchOpen,
         downloadPath,
-        itemsPerPage,
-        historySearch,
-        historyFilter,
         setAppVersion,
         setActiveDialog,
         setSearchOpen,
@@ -52,10 +51,12 @@ function HomePage() {
         clearCompleted,
         addDownload,
         clearAll,
-        updateDownload,
-        addActiveDownload,
-        updateActiveDownload,
     } = useDownloads();
+
+    const {
+        addPlaylistDownload, addActiveDownloadItem,
+        updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem
+    } = useActiveDownloads();
 
     const updateDiskUsage = async () => {
         const data = await getDiskUsageStats(downloadPath);
@@ -96,7 +97,7 @@ function HomePage() {
         if (newDownloads.length === 0) return;
 
         const download = newDownloads[0];
-        addActiveDownload(download);
+        addActiveDownloadItem(download);
         setActiveDialog(null);
 
         try {
@@ -108,19 +109,19 @@ function HomePage() {
                 // format,
                 onProgress: (progress) => {
                     console.log(progress)
-                    updateActiveDownload(download.id, {progress});
+                    updateActiveDownloadItem(download.id, {progress});
                 },
                 onData: (data) => {
-                    updateActiveDownload(download.id, data);
+                    updateActiveDownloadItem(download.id, data);
                 },
                 onDuplicate: (filename, metadata) => {
                     addToast(`File already downloaded: ${filename}`, "warning");
-                    updateActiveDownload(download.id, {status: "duplicate", ...metadata});
+                    updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                 },
             });
         } catch (error) {
             console.error("Download failed:", error);
-            updateActiveDownload(download.id, {status: "failed"});
+            updateActiveDownloadItem(download.id, {status: "failed"});
         }
     };
 
@@ -132,7 +133,7 @@ function HomePage() {
         setActiveDialog(null);
 
         for (const download of newDownloads) {
-            addActiveDownload(download);
+            addActiveDownloadItem(download);
 
             try {
                 await downloadWithYtdlp({
@@ -141,22 +142,82 @@ function HomePage() {
                     quality: selectedQuality,
                     downloadId: download.id,
                     onProgress: (progress) => {
-                        updateActiveDownload(download.id, {progress});
+                        updateActiveDownloadItem(download.id, {progress});
                     },
                     onData: (data) => {
-                        console.log("ondata",data)
-                        updateActiveDownload(download.id, data);
+                        console.log("ondata", data)
+                        updateActiveDownloadItem(download.id, data);
                     },
                     onDuplicate: (filename, metadata) => {
                         addToast(`Duplicate: ${filename}`, "warning");
                         console.log("Duplicate found:", metadata);
-                        updateActiveDownload(download.id, {status: "duplicate", ...metadata});
+                        updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                     },
                 });
             } catch (error) {
                 console.error("Download failed:", error);
-                updateActiveDownload(download.id, {status: "failed"});
+                updateActiveDownloadItem(download.id, {status: "failed"});
             }
+        }
+    };
+
+    const handlePlaylistDownload = async (
+        urls: string[],
+        selectedQuality: QualityType,
+        format: FormatType,
+        reverse: boolean,
+    ) => {
+        const playlistUrl = urls[0];
+        setActiveDialog(null);
+
+        try {
+            addToast(t("playlistDownload.addedToQueue"), "info");
+
+            const playlistId = generateUUID();
+
+            const result = await getPlaylistVideos(playlistUrl, reverse, playlistId);
+
+            const {videoUrls} = result;
+            if (!videoUrls || videoUrls.length === 0) {
+                addToast(t("playlistDownload.noVideosFound"), "error");
+                return;
+
+            }
+            const playlistItem = addPlaylistDownload(playlistId, playlistUrl, result, selectedQuality, format);
+
+            for (const download of playlistItem.videos || []) {
+                try {
+                    await downloadWithYtdlp({
+                        url: download.url,
+                        outputPath: downloadPath,
+                        quality: selectedQuality,
+                        downloadId: download.id,
+                        format,
+                        onProgress: (progress) => {
+                            updateActivePlaylistVideoDownloadItem(playlistId, download.id, {
+                                progress,
+                                status: "downloading"
+                            });
+                        },
+                        onData: (data) => {
+                            updateActivePlaylistVideoDownloadItem(playlistId, download.id, data);
+                        },
+                        onDuplicate: (filename, metadata) => {
+                            addToast(`Duplicate: ${filename}`, "warning");
+                            updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
+                        },
+                    });
+                } catch (error) {
+                    console.error("Download failed:", error);
+                    updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "failed"});
+                }
+            }
+        } catch (error) {
+            console.error("Playlist processing failed:", error);
+            addToast(
+                error instanceof Error ? error.message : t("playlistDownload.processingFailed"),
+                "error"
+            );
         }
     };
 
@@ -177,8 +238,7 @@ function HomePage() {
                 }
             } else {
                 console.warn(t("dashboard.electronNotDetected"));
-                setDownloadPath("C:\\Users\\Electron\\Downloads");
-                alert(t("dashboard.mockPathSet"));
+                addToast(t("dashboard.mockPathSet"), "warning");
             }
         } catch (error) {
             console.error(t("dashboard.failedSelectFolder"), error);
@@ -331,12 +391,14 @@ function HomePage() {
             <PlaylistDownloadDialog
                 open={activeDialog === "playlist"}
                 onOpenChange={(v) => !v && setActiveDialog(null)}
-                onDownload={handleDownloadStart}
+                onDownload={handlePlaylistDownload}
             />
         </div>
     );
 }
 
-export const Route = createFileRoute("/")(({
-    component: HomePage,
-}));
+export const Route = createFileRoute("/")((
+    {
+        component: HomePage,
+    }
+));
