@@ -126,3 +126,9 @@ export function sizeToBytes(sizeStr: string): number {
 
     return Math.round(value * (multipliers[unit] || 1));
 }
+
+export function normalizeSingleVideoUrl(url: string): string {
+  const videoId = extractVideoId(url)
+  if (!videoId) return url
+  return `https://www.youtube.com/watch?v=${videoId}`
+}

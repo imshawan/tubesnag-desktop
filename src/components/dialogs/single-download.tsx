@@ -8,6 +8,7 @@ import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group"
 import {Link} from "lucide-react"
 import {cn} from "@/utils/tailwind"
 import {DOWNLOAD_FORMATS, VIDEO_QUALITIES} from "@/constants"
+import {normalizeSingleVideoUrl} from "@/utils/download";
 
 interface SingleDownloadDialogProps {
   open: boolean
@@ -31,12 +32,12 @@ export function SingleDownloadDialog({ open, onOpenChange, onDownload, isLoading
     
     setDownloading(true)
     try {
-      await onDownload(url, quality, format)
+      await onDownload(normalizeSingleVideoUrl(url), quality, format);
       onOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("singleDownload.downloadFailed"))
+      setError(err instanceof Error ? err.message : t("singleDownload.downloadFailed"));
     } finally {
-      setDownloading(false)
+      setDownloading(false);
     }
   }
 
