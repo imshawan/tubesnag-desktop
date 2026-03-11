@@ -52,17 +52,21 @@ export function useActiveDownloads() {
     const updateActivePlaylistVideoDownloadItem = (playlistId: string, downloadId: string, updates: Partial<DownloadItem>) =>
         dispatch(updateActivePlaylistVideoDownload({playlistId, updates, downloadId}));
 
-    const isDownloading = currentDownloads.length > 0;
-    const downloadCount = currentDownloads.length;
+    const failedDownloads = useMemo(
+        () => activeDownloads.filter((d) => d.status === "failed"),
+        [activeDownloads]
+    );
 
     return {
         currentDownloads,
-        isDownloading,
-        downloadCount,
+        isDownloading: currentDownloads.length > 0,
+        downloadCount: currentDownloads.length,
         addPlaylistDownload,
         addActiveDownloadItem,
         updateActiveDownloadItem,
         updateActivePlaylistVideoDownloadItem,
         activeDownloads,
+        failedDownloads,
+        failedDownloadsCount: failedDownloads.length
     };
 }

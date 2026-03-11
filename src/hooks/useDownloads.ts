@@ -13,6 +13,11 @@ export function useDownloads() {
         [downloads]
     );
 
+    const completedDownloads = useMemo(
+        () => downloads.filter((d) => d.status === "completed"),
+        [downloads]
+    );
+
     const totalProgress = useMemo(
         () =>
             downloads.length > 0
@@ -20,6 +25,17 @@ export function useDownloads() {
                     downloads.reduce((sum, d) => sum + d.progress, 0) / downloads.length
                 )
                 : 0,
+        [downloads]
+    );
+
+    const totalSize = useMemo(
+        () =>
+            downloads.reduce((sum, d) => {
+                if (d.size) {
+                    return sum + d.size;
+                }
+                return sum;
+            }, 0),
         [downloads]
     );
 
@@ -45,8 +61,10 @@ export function useDownloads() {
     return {
         downloads,
         isDownloading,
+        completedDownloads,
         totalProgress,
         recentItemsPerPage,
+        totalSize,
         addDownload,
         updateDownload: (id: string, updates: Partial<DownloadItem>) =>
             dispatch(updateDownload({id, updates})),

@@ -249,7 +249,7 @@ const MOCK_DATA: DownloadItem[] = [
         channel: "Jeremy Howard",
         url: "https://youtu.be/8SF_h3xF3cE",
         progress: 0,
-        status: "failed",
+        status: "completed",
         size: 0,
         quality: "1080p",
         type: "video",
