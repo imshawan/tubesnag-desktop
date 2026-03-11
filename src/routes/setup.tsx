@@ -13,6 +13,8 @@ function SetupPage() {
   const [status, setStatus] = useState<SetupStatus>("checking");
   const [overallProgress, setOverallProgress] = useState(0);
 
+  const navigateToApp = () => navigate({ to: "/" });
+
   useEffect(() => {
     const handleProgress = (data: { dependency: string; progress: number }) => {
       if (data.progress >= 0) {
@@ -35,22 +37,21 @@ function SetupPage() {
       if (result?.ytdlp && result?.ffmpeg) {
         setOverallProgress(100);
         setStatus("complete");
-        setTimeout(() => navigate({ to: "/" }), 1500);
+        setTimeout(navigateToApp, 1500);
       }
     } catch (error) {
       console.error("Setup error:", error);
     }
   };
-  const onLaunch = () => navigate({ to: "/" });
 
   const isComplete = status === "complete";
 
   useEffect(() => {
-    if (isComplete && onLaunch) {
+    if (isComplete && navigateToApp) {
       // Trigger navigation immediately
-      onLaunch();
+      navigateToApp();
     }
-  }, [isComplete, onLaunch]);
+  }, [isComplete, navigateToApp]);
   useEffect(() => {
     runSetup();
   }, [navigate]);
@@ -63,7 +64,7 @@ function SetupPage() {
         <div className="relative flex-1 flex flex-col items-center justify-center p-6">
 
           {/* Background Ambient Gradient (Theme Aware) */}
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className={cn("absolute inset-0 z-0 overflow-hidden pointer-events-none", isComplete ? "h-screen" : "")}>
             {/* Center Spot */}
             <div className={cn(
                 "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[100px] transition-colors duration-1000",
