@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import pkg from "../../../package.json";
 
 export interface AppState {
   appVersion: string;
@@ -19,7 +20,7 @@ export interface AppState {
 }
 
 const initialState: AppState = {
-  appVersion: "0.0.0",
+  appVersion: pkg.version,
   activeTab: "dashboard",
   activeDialog: null,
   searchOpen: false,

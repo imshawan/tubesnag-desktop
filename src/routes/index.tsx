@@ -2,7 +2,6 @@ import {Github, Layers, ListVideo, PlayCircle, Search,} from "lucide-react";
 import {createFileRoute} from "@tanstack/react-router";
 import {useEffect, useTransition} from "react";
 import {useTranslation} from "react-i18next";
-import {getAppVersion} from "@/actions/app";
 import ExternalLink from "@/components/external-link";
 import LangToggle from "@/components/lang-toggle";
 import ToggleTheme from "@/components/toggle-theme";
@@ -38,7 +37,6 @@ function HomePage() {
         activeDialog,
         searchOpen,
         downloadPath,
-        setAppVersion,
         setActiveDialog,
         setSearchOpen,
         toggleSearchOpen,
@@ -80,13 +78,6 @@ function HomePage() {
         document.addEventListener("keydown", down);
         return () => document.removeEventListener("keydown", down);
     }, [toggleSearchOpen, setSearchOpen]);
-
-    useEffect(() => {
-        startGetAppVersion(async () => {
-            const v = await getAppVersion();
-            setAppVersion(v);
-        });
-    }, [setAppVersion]);
 
     const handleSingleDownload = async (
         url: string,
