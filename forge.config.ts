@@ -11,14 +11,26 @@ import path from "node:path";
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    icon: path.join(__dirname, "assets/icon"),
+    icon: path.join(__dirname, "assets/icons"),
+    darwinDarkModeSupport: true
   },
   rebuildConfig: {},
   makers: [
-    new MakerSquirrel({}),
+    new MakerSquirrel({
+      iconUrl: path.join(__dirname, "assets/icons/icon.ico"),
+      setupIcon: path.join(__dirname, "assets/icons/icon.ico"),
+    }),
     new MakerZIP({}, ["darwin"]),
-    new MakerRpm({}),
-    new MakerDeb({}),
+    new MakerRpm({
+      options: {
+        icon: path.join(__dirname, "assets/icons/icon.png"),
+      },
+    }),
+    new MakerDeb({
+      options: {
+        icon: path.join(__dirname, "assets/icons/icon.png"),
+      },
+    }),
   ],
   publishers: [
     {
