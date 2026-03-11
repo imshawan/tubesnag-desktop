@@ -30,7 +30,6 @@ import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 function HomePage() {
     const {t} = useTranslation();
     const {addToast} = useToast();
-    const [, startGetAppVersion] = useTransition();
 
     const {
         activeTab,
