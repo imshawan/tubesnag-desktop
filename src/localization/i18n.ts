@@ -118,7 +118,7 @@ i18n.use(initReactI18next).init({
           batchDownloadSeries: "Batch download series",
           bulkImport: "Bulk Download",
           pasteMultipleLinks: "Paste multiple links",
-          searchDownloads: "Search downloads...",
+          searchDownloads: "Search previous downloads...",
           processingVideo: "Processing Video...",
           openingFile: "Opening file from:",
           downloadFailed: "This download failed. Retry?",
@@ -199,7 +199,7 @@ i18n.use(initReactI18next).init({
         },
         sidebar: {
           dashboard: "Dashboard",
-          downloads: "Downloads",
+          downloads: "Downloading",
           history: "History",
           settings: "Settings",
           help: "Help"
