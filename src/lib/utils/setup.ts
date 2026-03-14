@@ -1,4 +1,3 @@
-import type {DependencyStatus, YtDlpConfig} from "@/types/index";
 
 export async function checkSetupRequired(): Promise<boolean> {
   try {

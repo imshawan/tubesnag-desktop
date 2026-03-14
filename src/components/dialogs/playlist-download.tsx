@@ -13,11 +13,11 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Switch} from "@/components/ui/switch";
 import {ArrowDownUp, ListVideo} from "lucide-react";
-import {cn} from "@/utils/tailwind";
+import {cn} from "@/lib/utils/tailwind";
 import {QualitySelector} from "@/components/quality-selector";
 import {FormatSelector} from "@/components/format-selector";
 import {AudioBitrateSelector} from "@/components/audio-bitrate-selector";
-import {audioFormats} from "@/constants";
+import {audioFormats} from "@/lib/ytdlp/constants";
 
 export function PlaylistDownloadDialog({
                                            open,

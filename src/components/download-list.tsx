@@ -1,10 +1,10 @@
 import {AlertCircle, CheckCircle2, ChevronDown, ChevronUp, FileVideo, Music, Zap} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {cn} from "@/utils/tailwind";
+import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {formatBytes} from "@/utils/common";
-import {fileToDataUrl} from "@/utils/ytdlp";
+import {formatBytes} from "@/lib/utils/common";
+import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 
 interface DownloadListProps {
     items: DownloadItem[];

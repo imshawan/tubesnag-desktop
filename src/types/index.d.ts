@@ -2,13 +2,7 @@
  * Type definitions for TubeSnag Desktop
  */
 
-import {DOWNLOAD_FORMATS} from "@/constants";
-
-export interface DependencyStatus {
-    db: boolean;
-    ytdlp: boolean;
-    ffmpeg: boolean;
-}
+import {DOWNLOAD_FORMATS} from "@/lib/ytdlp/constants";
 
 declare global {
     interface Window {
@@ -39,6 +33,12 @@ declare global {
     type QualityType = "best" | "4k" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "audio"
     type DownloadStatus = "pending" | "downloading" | "completed" | "failed" | "duplicate"
     type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
+
+    interface DependencyStatus {
+        db: boolean;
+        ytdlp: boolean;
+        ffmpeg: boolean;
+    }
 
     interface DownloadItem {
         id: string;

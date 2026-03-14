@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollArea } from "./ui/scroll-area";
-import { cn } from "@/utils/tailwind";
+import { cn } from "@/lib/utils/tailwind";
 import { Film, Music, Play, Search } from "lucide-react";
 
 interface GlobalSearchProps {

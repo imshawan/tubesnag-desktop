@@ -1,6 +1,6 @@
 import {Label} from "@/components/ui/label";
 import {Select, SelectContent, SelectItem, SelectTrigger} from "@/components/ui/select";
-import {DOWNLOAD_FORMAT_TYPES, VIDEO_QUALITIES} from "@/constants";
+import {DOWNLOAD_FORMAT_TYPES, VIDEO_QUALITIES} from "@/lib/ytdlp/constants";
 import {useMemo} from "react";
 import {useTranslation} from "react-i18next";
 

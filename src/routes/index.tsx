@@ -20,11 +20,11 @@ import {Settings as SettingsTab} from "@/components/tabs/settings";
 import {Sidebar} from "@/components/sidebar";
 
 import {RecentActivity} from "@/components/recent-activity";
-import {getDiskUsageStats} from "@/utils/setup";
-import {downloadWithYtdlp, getPlaylistVideos} from "@/utils/ytdlp";
+import {getDiskUsageStats} from "@/lib/utils/setup";
+import {downloadWithYtdlp, getPlaylistVideos} from "@/lib/ytdlp/ytdlp";
 import {useToast} from "@/context/ToastContext";
 import {Statistics} from "@/components/statistics";
-import {generateUUID} from "@/utils/common";
+import {generateUUID} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
 

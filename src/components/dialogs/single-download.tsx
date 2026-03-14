@@ -5,9 +5,9 @@ import {Button} from "@/components/ui/button"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Link} from "lucide-react"
-import {cn} from "@/utils/tailwind"
-import {audioFormats} from "@/constants"
-import {normalizeSingleVideoUrl} from "@/utils/download";
+import {cn} from "@/lib/utils/tailwind"
+import {audioFormats} from "@/lib/ytdlp/constants"
+import {normalizeSingleVideoUrl} from "@/lib/ytdlp/download";
 import {AudioBitrateSelector} from "@/components/audio-bitrate-selector";
 import {QualitySelector} from "@/components/quality-selector";
 import {FormatSelector} from "@/components/format-selector";

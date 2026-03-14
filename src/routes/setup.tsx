@@ -2,8 +2,8 @@ import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {Loader2, Maximize2, Pause, Settings, Zap} from "lucide-react";
-import {installDependencies} from "@/utils/setup";
-import {cn} from "@/utils/tailwind";
+import {installDependencies} from "@/lib/utils/setup";
+import {cn} from "@/lib/utils/tailwind";
 
 type SetupStatus = "checking" | "installing" | "complete";
 

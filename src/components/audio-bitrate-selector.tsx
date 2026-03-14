@@ -8,8 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useTranslation } from "react-i18next"
-import { AUDIO_BITRATES } from "@/constants"
-import { cn } from "@/utils/tailwind"
+import { AUDIO_BITRATES } from "@/lib/ytdlp/constants"
+import { cn } from "@/lib/utils/tailwind"
 
 interface AudioBitrateSelectorProps {
   value: string

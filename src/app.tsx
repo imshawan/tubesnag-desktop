@@ -4,11 +4,11 @@ import { createRoot } from "react-dom/client";
 import { useTranslation } from "react-i18next";
 import { updateAppLanguage } from "./actions/language";
 import { syncWithLocalTheme } from "./actions/theme";
-import { router } from "./utils/routes";
+import { router } from "@/lib/utils/routes";
 import "./localization/i18n";
 import { store } from "@/store";
 import { Provider } from "react-redux";
-import { checkSetupRequired } from "./utils/setup";
+import { checkSetupRequired } from "@/lib/utils/setup";
 
 function AppContent() {
   const { i18n } = useTranslation();

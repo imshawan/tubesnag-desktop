@@ -2,8 +2,8 @@
  * Download Utilities
  * Helper functions for download operations
  */
-import {generateUUID} from "@/utils/common";
-import {DOWNLOAD_FORMAT_TYPES, ytdlpErrorMap} from "@/constants";
+import {generateUUID} from "@/lib/utils/common";
+import {DOWNLOAD_FORMAT_TYPES, ytdlpErrorMap} from "@/lib/ytdlp/constants";
 import fsSync from "fs";
 
 export function isValidYouTubeUrl(url: string): boolean {

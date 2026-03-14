@@ -1,4 +1,4 @@
-import { cn } from "@/utils/tailwind";
+import { cn } from "@/lib/utils/tailwind";
 import { Check } from "lucide-react";
 
 interface RadioItemProps {

@@ -5,7 +5,7 @@ import {
     updateActiveDownload,
     updateActivePlaylistVideoDownload
 } from "@/store/slices/active-downloads-slice";
-import {createDownloadItemFromUrls} from "@/utils/download";
+import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
 
 export function useActiveDownloads() {
     const dispatch = useAppDispatch();

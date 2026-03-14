@@ -2,12 +2,12 @@ import os from "os";
 import {app, dialog, shell} from "electron";
 import fs from "fs/promises";
 import * as path from "path";
-import {audioFormats, DEPENDENCY_CONFIG, downloadQualityMap} from "@/constants";
+import {audioFormats, DEPENDENCY_CONFIG, downloadQualityMap} from "@/lib/ytdlp/constants";
 import fsSync from "fs";
 import * as child_process from "node:child_process";
 import {ipcContext} from "@/ipc/context";
-import {downloadFile} from "@/utils/downloader";
-import {isYtdlpError, parseYtdlpError, readYtVideoInfoJsonFile, sanitizeFilename, sizeToBytes} from "@/utils/download";
+import {downloadFile} from "@/lib/ytdlp/downloader";
+import {isYtdlpError, parseYtdlpError, readYtVideoInfoJsonFile, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 
 export const getYtDlpConfig = () => {

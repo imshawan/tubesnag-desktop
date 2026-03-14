@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {addDownloads, clearAll, clearCompleted, removeDownload, updateDownload} from "@/store/slices/downloads-slice";
-import {generateUUID} from "@/utils/common";
+import {generateUUID} from "@/lib/utils/common";
 
 export function useDownloads() {
     const dispatch = useAppDispatch();

@@ -3,7 +3,7 @@ import {AlertCircle, CheckCircle2, HardDrive, Zap} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useDownloads} from "@/hooks/useDownloads";
-import {formatBytes} from "@/utils/common";
+import {formatBytes} from "@/lib/utils/common";
 import {useMemo} from "react";
 
 export function Statistics() {
