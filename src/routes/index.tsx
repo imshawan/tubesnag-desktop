@@ -82,6 +82,11 @@ function HomePage() {
         return () => document.removeEventListener("keydown", down);
     }, [toggleSearchOpen, setSearchOpen]);
 
+    const onDownloadComplete = (download: Partial<DownloadItem>) => {
+        const message = t("downloads.completedDownloading", { title: download.title });
+        addToast(message, "success", 5000);
+    }
+
     const handleSingleDownload: OnDownloadFn = async (
         url: string[],
         selectedQuality: QualityType,
@@ -105,8 +110,8 @@ function HomePage() {
                 format,
                 audioBitrate,
                 onProgress: (progress) => {
-                    console.log(progress)
-                    updateActiveDownloadItem(download.id, {progress});
+                    // console.log(progress)
+                    updateActiveDownloadItem(download.id, {progress, status: "downloading"});
                 },
                 onData: (data) => {
                     updateActiveDownloadItem(download.id, data);
@@ -115,9 +120,10 @@ function HomePage() {
                     addToast(`File already downloaded: ${filename}`, "warning");
                     updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                 },
+                onComplete: onDownloadComplete,
                 onError:(e) => {
                     console.error("Download error:", e);
-                    addToast(`${t("dashboard.downloadFailed")} - ${e}`, "error");
+                    addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                     updateActiveDownloadItem(download.id, {status: "failed"});
                 }
             });
@@ -149,7 +155,7 @@ function HomePage() {
                     format,
                     audioBitrate,
                     onProgress: (progress) => {
-                        updateActiveDownloadItem(download.id, {progress});
+                        updateActiveDownloadItem(download.id, {progress, status: "downloading"});
                     },
                     onData: (data) => {
                         console.log("ondata", data)
@@ -160,8 +166,9 @@ function HomePage() {
                         console.log("Duplicate found:", metadata);
                         updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                     },
+                    onComplete: onDownloadComplete,
                     onError:(e) => {
-                        addToast(`${t("dashboard.downloadFailed")} - ${e}`, "error");
+                        addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                         updateActiveDownloadItem(download.id, {status: "failed"});
                     }
                 });
@@ -221,8 +228,9 @@ function HomePage() {
                             addToast(`Duplicate: ${filename}`, "warning");
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
                         },
+                        onComplete: onDownloadComplete,
                         onError:(e) => {
-                            addToast(`${t("dashboard.downloadFailed")} - ${e}`, "error");
+                            addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                             updateActiveDownloadItem(download.id, {status: "failed"});
                         }
                     });

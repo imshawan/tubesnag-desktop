@@ -18,7 +18,12 @@ const activeDownloadsSlice = createSlice({
     updateActiveDownload: (state, action: PayloadAction<{ id: string; updates: Partial<DownloadItem> }>) => {
       const item = state.items.find((d) => d.id === action.payload.id && d.status != "completed");
       if (item) {
-        Object.assign(item, action.payload.updates);
+        if (action.payload.updates?.progress && action.payload.updates.progress <= item.progress) {
+          const {progress, ...updates } = action.payload.updates;
+          Object.assign(item, updates);
+        } else {
+          Object.assign(item, action.payload.updates);
+        }
       }
     },
     updateActivePlaylistVideoDownload(state, action: PayloadAction<{ playlistId: string; downloadId: string, updates: Partial<DownloadItem> }>) {

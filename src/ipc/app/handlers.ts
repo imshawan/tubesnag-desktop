@@ -226,6 +226,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
             complete: false
         };
         let thumbnail = path.join(thumbnailPath, downloadId + ".webp");
+        let title = "";
 
         child.stdout.on('data', (data: Buffer) => {
             const text = data.toString();
@@ -250,6 +251,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                         }
                     });
                     dataSentState.metadata = true;
+                    title = videoInfo.title;
+
                     Object.assign(videoInfoData, videoInfo);
 
                     if (videoInfo.filesize) {
@@ -263,12 +266,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 
                 // Used for audio converting, because initially yt-dlp downloads webm and the  converts it to specified format.
                 const finalMatch = line.startsWith("[ExtractAudio] Destination:")
-                console.log("final match->", finalMatch)
                 if (finalMatch) {
                     let oldExt = videoInfoData.title.split(".").pop();
                     let newExt = line.trim().split(".").pop();
-
-                    console.log("old ext->", oldExt, "new ext->", newExt)
 
                     if (oldExt && newExt && oldExt !== newExt) {
                         videoInfoData.title = videoInfoData.title.replace(oldExt, newExt);
@@ -281,6 +281,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                                 downloadId
                             }
                         });
+
+                        title = videoInfoData.title;
                     }
                 }
 
@@ -378,10 +380,10 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 
                 console.log('[yt-dlp] Process closed with code:', code);
                 if (fsSync.existsSync(jsonInfoFile)) {
-                    // fsSync.unlinkSync(jsonInfoFile);
+                    fsSync.unlinkSync(jsonInfoFile);
                 }
                 if (code === 0 || code === 1) {
-                    const data: Record<string, any> = {status: 'completed', progress: 100, thumbnail, downloadId};
+                    const data: Record<string, any> = {status: 'completed', progress: 100, thumbnail, downloadId, title};
 
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'complete',

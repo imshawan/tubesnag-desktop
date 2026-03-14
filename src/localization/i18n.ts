@@ -165,7 +165,8 @@ i18n.use(initReactI18next).init({
           title: "Active Downloads",
           subtitle: "Track active downloads and their progress.",
           noActive: "No active downloads",
-          startNewDownload: "Start a new download to see progress here."
+          startNewDownload: "Start a new download to see progress here.",
+          completedDownloading: "Completed downloading \"{{title}}\"",
         },
         bulkDownload: {
           title: "Bulk Download",

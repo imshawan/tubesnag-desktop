@@ -6,6 +6,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
         format,
         onProgress,
         onData,
+        onComplete,
         onDuplicate,
         onError,
         downloadId,
@@ -42,6 +43,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
                 isDuplicated = true;
             } else if (data.type === "complete" && !isCompleted) {
                 onData?.(data.data);
+                onComplete?.(data.data);
                 electron.off("ytdlp:progress", handleProgress);
                 isCompleted = true;
                 resolve();

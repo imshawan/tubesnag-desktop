@@ -85,6 +85,7 @@ declare global {
         downloadId: string;
         onProgress?: (progress: number) => void;
         onData?: (data: Partial<DownloadItem>) => void;
+        onComplete?: (data: Partial<DownloadItem>) => void;
         onDuplicate?: (filename: string, metadata: any) => void;
         onError?: (data: {error: string; downloadId: string }) => void;
         saveToPlaylistFolder?: boolean
