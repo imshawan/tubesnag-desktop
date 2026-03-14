@@ -85,3 +85,4 @@ const downloadThumbnailOnly = (
         child.on('error', reject);
     });
 };
+

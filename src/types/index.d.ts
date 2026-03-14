@@ -34,8 +34,9 @@ declare global {
 
     var electron: Window['electron'];
 
+    type AudioBitrate = "128" | "192" | "256" | "320";
     type DownloadItemType = "video" | "audio" | "playlist";
-    type QualityType = "best" | "high" | "medium" | "low"
+    type QualityType = "best" | "4k" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "audio"
     type DownloadStatus = "pending" | "downloading" | "completed" | "failed" | "duplicate"
     type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
 
@@ -74,6 +75,36 @@ declare global {
         format: string;
         quality: string;
     }
+
+    interface YtDlpDownloadOptions {
+        url: string;
+        outputPath: string;
+        quality: QualityType;
+        format?: FormatType;
+        audioBitrate?: AudioBitrate;
+        downloadId: string;
+        onProgress?: (progress: number) => void;
+        onData?: (data: Partial<DownloadItem>) => void;
+        onDuplicate?: (filename: string, metadata: any) => void;
+        onError?: (data: {error: string; downloadId: string }) => void;
+        saveToPlaylistFolder?: boolean
+        playlistName?: string
+    }
+
+    interface DownloadDialogProps {
+        open: boolean;
+        onOpenChange: (open: boolean) => void;
+        onDownload: OnDownloadFn;
+        isLoading?: boolean;
+    }
+
+    type OnDownloadFn = (
+        urls: string[],
+        quality: QualityType,
+        format: FormatType,
+        reverse: boolean,
+        audioBitrate: AudioBitrate
+    ) => void;
 }
 
 export interface YtDlpConfig {

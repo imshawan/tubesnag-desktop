@@ -33,6 +33,24 @@ export function DownloadList({items, onOpenFile, maxHeight = "h-[600px]"}: Downl
         }, {} as Record<string, string>);
     }, [items]);
 
+    const QualityBadge = ({quality}: {quality: string}) => {
+        const getQualityColor = (q: string) => {
+            if (q.includes("4K") || q.includes("2160")) return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+            if (q.includes("1440") || q.includes("2K")) return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+            if (q.includes("1080") || q.includes("FHD")) return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+            if (q.includes("720") || q.includes("HD")) return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+            if (q.includes("480") || q.includes("SD")) return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+            return "bg-gray-500/10 text-gray-500 border-gray-500/20";
+        };
+
+        return (
+            <div className={`px-2 py-0.5 rounded text-[10px] font-medium border ${getQualityColor(quality)}`}>
+                {quality}
+            </div>
+        );
+
+    }
+
     const renderStatusBadge = (download: DownloadItem) => {
         if (download.status === "completed") {
             return (
@@ -124,7 +142,8 @@ export function DownloadList({items, onOpenFile, maxHeight = "h-[600px]"}: Downl
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                    <QualityBadge quality={download.quality} />
                     {renderStatusBadge(download)}
                 </div>
             </div>

@@ -1,6 +1,6 @@
 import {Github, Layers, ListVideo, PlayCircle, Search,} from "lucide-react";
 import {createFileRoute} from "@tanstack/react-router";
-import {useEffect, useTransition} from "react";
+import {useEffect} from "react";
 import {useTranslation} from "react-i18next";
 import ExternalLink from "@/components/external-link";
 import LangToggle from "@/components/lang-toggle";
@@ -82,12 +82,14 @@ function HomePage() {
         return () => document.removeEventListener("keydown", down);
     }, [toggleSearchOpen, setSearchOpen]);
 
-    const handleSingleDownload = async (
-        url: string,
+    const handleSingleDownload: OnDownloadFn = async (
+        url: string[],
         selectedQuality: QualityType,
-        format?: string,
+        format: FormatType,
+        reverse,
+        audioBitrate: AudioBitrate,
     ) => {
-        const newDownloads = addDownload([url], selectedQuality, downloadPath);
+        const newDownloads = addDownload(url, selectedQuality, format, downloadPath);
         if (newDownloads.length === 0) return;
 
         const download = newDownloads[0];
@@ -96,11 +98,12 @@ function HomePage() {
 
         try {
             await downloadWithYtdlp({
-                url,
+                url: url[0],
                 outputPath: downloadPath,
                 quality: selectedQuality,
                 downloadId: download.id,
-                // format,
+                format,
+                audioBitrate,
                 onProgress: (progress) => {
                     console.log(progress)
                     updateActiveDownloadItem(download.id, {progress});
@@ -112,6 +115,11 @@ function HomePage() {
                     addToast(`File already downloaded: ${filename}`, "warning");
                     updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                 },
+                onError:(e) => {
+                    console.error("Download error:", e);
+                    addToast(`${t("dashboard.downloadFailed")} - ${e}`, "error");
+                    updateActiveDownloadItem(download.id, {status: "failed"});
+                }
             });
         } catch (error) {
             console.error("Download failed:", error);
@@ -119,11 +127,14 @@ function HomePage() {
         }
     };
 
-    const handleDownloadStart = async (
+    const handleBulkDownloadStart: OnDownloadFn = async (
         urls: string[],
         selectedQuality: QualityType,
+        format: FormatType,
+        reverse,
+        audioBitrate,
     ) => {
-        const newDownloads = addDownload(urls, selectedQuality, downloadPath);
+        const newDownloads = addDownload(urls, selectedQuality, format, downloadPath);
         setActiveDialog(null);
 
         for (const download of newDownloads) {
@@ -135,6 +146,8 @@ function HomePage() {
                     outputPath: downloadPath,
                     quality: selectedQuality,
                     downloadId: download.id,
+                    format,
+                    audioBitrate,
                     onProgress: (progress) => {
                         updateActiveDownloadItem(download.id, {progress});
                     },
@@ -147,6 +160,10 @@ function HomePage() {
                         console.log("Duplicate found:", metadata);
                         updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                     },
+                    onError:(e) => {
+                        addToast(`${t("dashboard.downloadFailed")} - ${e}`, "error");
+                        updateActiveDownloadItem(download.id, {status: "failed"});
+                    }
                 });
             } catch (error) {
                 console.error("Download failed:", error);
@@ -155,11 +172,12 @@ function HomePage() {
         }
     };
 
-    const handlePlaylistDownload = async (
+    const handlePlaylistDownload: OnDownloadFn = async (
         urls: string[],
         selectedQuality: QualityType,
         format: FormatType,
         reverse: boolean,
+        audioBitrate: AudioBitrate,
     ) => {
         const playlistUrl = urls[0];
         setActiveDialog(null);
@@ -187,6 +205,7 @@ function HomePage() {
                         quality: selectedQuality,
                         downloadId: download.id,
                         format,
+                        audioBitrate,
                         saveToPlaylistFolder: saveVideosToPlaylistFolders,
                         playlistName: result.title,
                         onProgress: (progress) => {
@@ -202,6 +221,10 @@ function HomePage() {
                             addToast(`Duplicate: ${filename}`, "warning");
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
                         },
+                        onError:(e) => {
+                            addToast(`${t("dashboard.downloadFailed")} - ${e}`, "error");
+                            updateActiveDownloadItem(download.id, {status: "failed"});
+                        }
                     });
                 } catch (error) {
                     console.error("Download failed:", error);
@@ -389,7 +412,7 @@ function HomePage() {
             <BulkDownloadDialog
                 open={activeDialog === "bulk"}
                 onOpenChange={(v) => !v && setActiveDialog(null)}
-                onDownload={handleDownloadStart}
+                onDownload={handleBulkDownloadStart}
             />
             <PlaylistDownloadDialog
                 open={activeDialog === "playlist"}

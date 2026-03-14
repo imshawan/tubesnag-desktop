@@ -2,12 +2,13 @@ import os from "os";
 import {app, dialog, shell} from "electron";
 import fs from "fs/promises";
 import * as path from "path";
-import {DEPENDENCY_CONFIG} from "@/constants";
+import {audioFormats, DEPENDENCY_CONFIG, downloadQualityMap} from "@/constants";
 import fsSync from "fs";
+import * as child_process from "node:child_process";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/utils/downloader";
+import {isYtdlpError, parseYtdlpError, readYtVideoInfoJsonFile, sanitizeFilename, sizeToBytes} from "@/utils/download";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
-import {readYtVideoInfoJsonFile, sanitizeFilename, sizeToBytes} from "@/utils/download";
 
 export const getYtDlpConfig = () => {
     const platform = process.platform;
@@ -133,8 +134,17 @@ export const getAppVersion = () => {
     return app.getVersion();
 }
 
-export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any) => {
-    const {url, outputPath, quality, format, downloadId, saveToPlaylistFolder, playlistName} = options;
+export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDlpDownloadOptions) => {
+    const {
+        url,
+        outputPath,
+        quality,
+        format,
+        downloadId,
+        saveToPlaylistFolder,
+        playlistName,
+        audioBitrate = "192"
+    } = options;
     const userDataPath = app.getPath('userData');
     const tempDir = path.join(userDataPath, 'Temp');
     const thumbnailPath = path.join(userDataPath, 'Thumbnails');
@@ -142,21 +152,6 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
     const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
     const mainWindow = ipcContext.mainWindow;
     const jsonInfoFile = path.join(tempDir, `${downloadId}.json`);
-
-    const qualityMap: Record<string, string> = {
-        best: 'best',
-        high: 'best[height<=1080]',
-        medium: 'best[height<=720]',
-        low: 'best[height<=480]',
-    };
-
-    const formatMap: Record<string, string> = {
-        mp4: 'best[ext=mp4]',
-        mkv: 'best[ext=mkv]',
-        webm: 'best[ext=webm]',
-        mp3: 'bestaudio[ext=m4a]/bestaudio',
-        wav: 'bestaudio[ext=wav]/bestaudio',
-    };
 
     const jsonInfoStructure = `{
         "title":"%(title)s.%(ext)s",
@@ -169,7 +164,22 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         "quality":"%(height)sp"
     }`;
 
-    const selectedFormat = format && formatMap[format] ? formatMap[format] : qualityMap[quality];
+    const isAudioFormat = format != null && audioFormats.includes(format);
+
+    // Build format string with both quality and format
+    let selectedFormat: string;
+
+    if (isAudioFormat) {
+        selectedFormat = downloadQualityMap.audio[0];
+    } else if (format) {
+        // For video formats, use the pre-built format strings
+        selectedFormat = downloadQualityMap[quality][0];
+    } else {
+        // No format specified, use quality only
+        const qualityFormats = downloadQualityMap[quality];
+        selectedFormat = qualityFormats.join('/');
+    }
+
     const args = [
         '-f', selectedFormat,
         '--print-to-file', jsonInfoStructure, jsonInfoFile,
@@ -184,8 +194,18 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         url
     ];
 
+    if (isAudioFormat && format) {
+        args.push(
+            '--extract-audio',
+            '--audio-format', format,  // mp3, m4a, wav
+        );
+        if (audioBitrate) {
+            args.push('--audio-quality', audioBitrate);
+        }
+    }
+
     return new Promise((resolve, reject) => {
-        const {spawn} = require('child_process');
+        const {spawn} = child_process;
         const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
         let lastProgress = 0;
         const videoInfoData: YtDlpMeta = {
@@ -213,17 +233,19 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
 
             if (fsSync.existsSync(jsonInfoFile)) {
                 const videoInfo = readYtVideoInfoJsonFile<YtDlpMeta>(jsonInfoFile);
-                if (videoInfo) {
+                if (videoInfo && !dataSentState.metadata) {
                     videoInfo.filesize = videoInfo.filesize ?? videoInfo.filesize_approx ?? 0;
+                    let quality = isAudioFormat ? `${audioBitrate} kbps` : videoInfo.quality;
 
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'metadata',
                         data: {
                             title: videoInfo.title,
                             channel: videoInfo.channel || 'Unknown',
-                            quality: videoInfo.quality,
+                            quality,
                             size: videoInfo.filesize,
                             outputPath: path.join(outputPath, videoInfo.title),
+                            type: isAudioFormat ? 'audio' : 'video',
                             downloadId
                         }
                     });
@@ -238,6 +260,29 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
 
             lines.forEach((line: string) => {
                 console.log('[yt-dlp]', line);
+
+                // Used for audio converting, because initially yt-dlp downloads webm and the  converts it to specified format.
+                const finalMatch = line.startsWith("[ExtractAudio] Destination:")
+                console.log("final match->", finalMatch)
+                if (finalMatch) {
+                    let oldExt = videoInfoData.title.split(".").pop();
+                    let newExt = line.trim().split(".").pop();
+
+                    console.log("old ext->", oldExt, "new ext->", newExt)
+
+                    if (oldExt && newExt && oldExt !== newExt) {
+                        videoInfoData.title = videoInfoData.title.replace(oldExt, newExt);
+
+                        mainWindow?.webContents.send('ytdlp:progress', {
+                            type: 'metadata',
+                            data: {
+                                title: videoInfoData.title,
+                                outputPath: path.join(outputPath, videoInfoData.title),
+                                downloadId
+                            }
+                        });
+                    }
+                }
 
                 const sizeMatch = line.match(/of\s+([\d.]+\s*[KMGT]iB|[\d.]+\s*[KMGT]B|[\d.]+\s*B)/);
                 if (sizeMatch && !dataSentState.size) {
@@ -313,7 +358,19 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
             });
 
             child.stderr.on('data', (data: Buffer) => {
-                console.error('[yt-dlp stderr]', data.toString());
+                const line = data.toString();
+                console.error('[yt-dlp stderr]', line);
+
+                if (isYtdlpError(line)) {
+                    const ytdlpError = parseYtdlpError(line);
+                    mainWindow?.webContents.send('ytdlp:progress', {
+                        type: 'error',
+                        data: {
+                            error: ytdlpError
+                        },
+                        downloadId
+                    });
+                }
             });
 
             child.on('close', (code: number) => {
@@ -321,7 +378,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
 
                 console.log('[yt-dlp] Process closed with code:', code);
                 if (fsSync.existsSync(jsonInfoFile)) {
-                    fsSync.unlinkSync(jsonInfoFile);
+                    // fsSync.unlinkSync(jsonInfoFile);
                 }
                 if (code === 0 || code === 1) {
                     const data: Record<string, any> = {status: 'completed', progress: 100, thumbnail, downloadId};
@@ -355,7 +412,7 @@ export const getPlaylistVideos: (
     const thumbnailPath = path.join(userDataPath, 'Thumbnails');
 
     return new Promise((resolve, reject) => {
-        const {spawn} = require('child_process');
+        const {spawn} = child_process;
         const outputFile = path.join(userDataPath, `.playlist_${Date.now()}.txt`);
         const metaFile = path.join(userDataPath, `.playlist_meta_${Date.now()}.txt`);
         const args = [

@@ -1,18 +1,18 @@
-interface DownloadOptions {
-    url: string;
-    outputPath: string;
-    quality: string;
-    format?: string;
-    downloadId: string;
-    onProgress?: (progress: number) => void;
-    onData?: (data: Partial<DownloadItem>) => void;
-    onDuplicate?: (filename: string, metadata: any) => void;
-    saveToPlaylistFolder?: boolean;
-    playlistName?: string
-}
-
-export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void> => {
-    const {url, outputPath, quality, format, onProgress, onData, onDuplicate, downloadId, saveToPlaylistFolder, playlistName} = options;
+export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<void> => {
+    const {
+        url,
+        outputPath,
+        quality,
+        format,
+        onProgress,
+        onData,
+        onDuplicate,
+        onError,
+        downloadId,
+        saveToPlaylistFolder,
+        playlistName,
+        audioBitrate
+    } = options;
 
     if (!globalThis.electron) {
         throw new Error("Electron not available");
@@ -47,7 +47,9 @@ export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void>
                 resolve();
             } else if (data.type === "error") {
                 electron.off("ytdlp:progress", handleProgress);
-                reject(new Error(data.error));
+                onError?.({error: data.error, downloadId});
+                isCompleted = true;
+                resolve();
             }
         };
 
@@ -60,7 +62,8 @@ export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void>
             format,
             downloadId,
             saveToPlaylistFolder,
-            playlistName
+            playlistName,
+            audioBitrate
         }).catch((err: Error) => {
             electron.off("ytdlp:progress", handleProgress);
             reject(err);

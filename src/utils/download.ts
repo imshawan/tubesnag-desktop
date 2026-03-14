@@ -3,7 +3,7 @@
  * Helper functions for download operations
  */
 import {generateUUID} from "@/utils/common";
-import {DOWNLOAD_FORMAT_TYPES} from "@/constants";
+import {DOWNLOAD_FORMAT_TYPES, ytdlpErrorMap} from "@/constants";
 import fsSync from "fs";
 
 export function isValidYouTubeUrl(url: string): boolean {
@@ -145,3 +145,22 @@ export function readYtVideoInfoJsonFile<T>(path: string): T | null {
         return null;
     }
 }
+
+export const parseYtdlpError = (errorLine: string): string => {
+    const errorMatch = errorLine.match(/ERROR:\s+(.+?)$/);
+    if (!errorMatch) return 'Unknown error occurred';
+
+    const errorMsg = errorMatch[1].trim();
+
+    for (const [key, value] of Object.entries(ytdlpErrorMap)) {
+        if (errorMsg.includes(key)) {
+            return value;
+        }
+    }
+
+    return errorMsg;
+};
+
+export const isYtdlpError = (line: string): boolean => {
+    return line.includes('ERROR:');
+};

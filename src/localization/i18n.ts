@@ -75,17 +75,44 @@ i18n.use(initReactI18next).init({
         videoQualities: {
           best: { label: "Best Available", sub: "Max Resolution" },
           "4k": { label: "4K Ultra HD", sub: "2160p HDR" },
-          high: { label: "High Def", sub: "1080p @ 60fps" },
-          medium: { label: "Standard", sub: "720p / Data Saver" },
+          "1440p": { label: "1440p QHD", sub: "2K Resolution" },
+          "1080p": { label: "High Def", sub: "1080p @ 60fps" },
+          "720p": { label: "Standard", sub: "720p / Data Saver" },
+          "480p": { label: "Medium", sub: "480p / Medium quality" },
+          "360p": { label: "Low", sub: "360p / Low quality" },
           audio: { label: "Audio Only", sub: "MP3 / M4A" }
         },
         downloadFormats: {
           mp4: "MP4 (Video)",
+          mp4Sub: "H.264 codec, widely compatible",
           webm: "WebM (Video)",
+          webmSub: "VP9 codec, smaller file size",
           mkv: "MKV (Video)",
+          mkvSub: "Matroska container, high quality",
           mp3: "MP3 (Audio)",
+          mp3Sub: "MPEG-3 audio, universal support",
           m4a: "M4A (Audio)",
-          wav: "WAV (Audio)"
+          m4aSub: "AAC codec, better quality",
+          wav: "WAV (Audio)",
+          wavSub: "Uncompressed, lossless quality",
+        },
+        audioBitrates: {
+          "128": {
+            label: "128 kbps",
+            description: "Low quality, smaller file size"
+          },
+          "192": {
+            label: "192 kbps",
+            description: "Standard quality"
+          },
+          "256": {
+            label: "256 kbps",
+            description: "High quality"
+          },
+          "320": {
+            label: "320 kbps",
+            description: "Maximum quality, larger file size"
+          }
         },
         faqs: [
           {
@@ -123,7 +150,7 @@ i18n.use(initReactI18next).init({
           searchDownloads: "Search previous downloads...",
           processingVideo: "Processing Video...",
           openingFile: "Opening file from:",
-          downloadFailed: "This download failed. Retry?",
+          downloadFailed: "Download Failed",
           electronNotDetected: "Electron IPC not detected. Using mock path.",
           mockPathSet: "Mock path set! To fix, add 'selectFolder' to your preload.js.",
           failedSelectFolder: "Failed to select folder:",
@@ -134,6 +161,7 @@ i18n.use(initReactI18next).init({
         downloads: {
           quality: "Quality",
           format: "Format",
+          audioBitrate: "Audio Bitrate",
           title: "Active Downloads",
           subtitle: "Track active downloads and their progress.",
           noActive: "No active downloads",
