@@ -19,10 +19,11 @@ export function useActiveDownloads() {
     const addPlaylistDownload = (
         playlistId: string,
         playlistUrl: string,
-        playlistInfo: PlaylistInfo, quality: QualityType, format: FormatType
+        playlistInfo: PlaylistInfo, quality: QualityType, format: FormatType,
+        downloadPath: string
     ) => {
         const {videoUrls, ...playlistData} = playlistInfo;
-        const videoDownloads = createDownloadItemFromUrls(videoUrls, quality, format);
+        const videoDownloads = createDownloadItemFromUrls(videoUrls, quality, format, downloadPath);
 
         const playlistItem: DownloadItem = {
             id: playlistId,
@@ -37,6 +38,7 @@ export function useActiveDownloads() {
             channel: playlistData.channel,
             thumbnail: playlistData.thumbnail,
             videos: videoDownloads,
+            downloadPath
         };
 
         dispatch(addActiveDownload(playlistItem));

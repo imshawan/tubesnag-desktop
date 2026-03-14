@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import {useState, useEffect, useMemo} from "react";
 import { useTranslation } from "react-i18next";
 import {
   Dialog,
@@ -22,6 +22,7 @@ import { Layers, AlertCircle, CheckCircle2, Check } from "lucide-react";
 import { cn } from "@/utils/tailwind";
 import { DOWNLOAD_FORMATS, VIDEO_QUALITIES } from "@/constants";
 import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
+import {parseUrlList} from "@/utils/download";
 
 interface BulkDownloadDialogProps {
   open: boolean;
@@ -42,6 +43,9 @@ export function BulkDownloadDialog({
   const [error, setError] = useState("");
   const [format, setFormat] = useState<FormatType>("mp4");
 
+  const urls = useMemo(() => parseUrlList(text), [text]);
+  const linkCount = useMemo(() => urls.length, [urls]);
+
   // Reset state when dialog opens
   useEffect(() => {
     if (open) {
@@ -49,13 +53,6 @@ export function BulkDownloadDialog({
       setError("");
     }
   }, [open]);
-
-  // Logic to split text by newlines or commas and filter empty strings
-  const urls = text
-    .split(/[\n,]+/)
-    .map((u) => u.trim())
-    .filter((u) => u.length > 0);
-  const linkCount = urls.length;
 
   const handleSubmit = () => {
     if (linkCount === 0) {

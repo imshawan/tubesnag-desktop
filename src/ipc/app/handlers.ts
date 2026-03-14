@@ -1,5 +1,5 @@
 import os from "os";
-import {app, dialog} from "electron";
+import {app, dialog, shell} from "electron";
 import fs from "fs/promises";
 import * as path from "path";
 import {DEPENDENCY_CONFIG} from "@/constants";
@@ -7,7 +7,7 @@ import fsSync from "fs";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/utils/downloader";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
-import {sanitizeFilename, sizeToBytes} from "@/utils/download";
+import {readYtVideoInfoJsonFile, sanitizeFilename, sizeToBytes} from "@/utils/download";
 
 export const getYtDlpConfig = () => {
     const platform = process.platform;
@@ -134,13 +134,14 @@ export const getAppVersion = () => {
 }
 
 export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any) => {
-    const {url, outputPath, quality, format, downloadId} = options;
+    const {url, outputPath, quality, format, downloadId, saveToPlaylistFolder, playlistName} = options;
     const userDataPath = app.getPath('userData');
+    const tempDir = path.join(userDataPath, 'Temp');
     const thumbnailPath = path.join(userDataPath, 'Thumbnails');
     const ytdlpPath = path.join(userDataPath, 'ytdlp');
     const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
     const mainWindow = ipcContext.mainWindow;
-    const tempFile = `.channel_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const jsonInfoFile = path.join(tempDir, `${downloadId}.json`);
 
     const qualityMap: Record<string, string> = {
         best: 'best',
@@ -157,23 +158,46 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
         wav: 'bestaudio[ext=wav]/bestaudio',
     };
 
+    const jsonInfoStructure = `{
+        "title":"%(title)s.%(ext)s",
+        "channel":"%(channel)s",
+        "ext":"%(ext)s",
+        "filesize":%(filesize)j,
+        "filesize_approx":%(filesize_approx)j,
+        "format_id":"%(format_id)s",
+        "format":"%(format)s",
+        "quality":"%(height)sp"
+    }`;
+
     const selectedFormat = format && formatMap[format] ? formatMap[format] : qualityMap[quality];
     const args = [
         '-f', selectedFormat,
-        '--print-to-file', '%(channel)s', tempFile,
+        '--print-to-file', jsonInfoStructure, jsonInfoFile,
         '--write-thumbnail',
         '--convert-thumbnail', 'webp',
         '-o', `thumbnail:${path.join(thumbnailPath, downloadId + '.%(ext)s')}`,
-        '-o', path.join(outputPath, '%(title)s.%(ext)s'),
+        '-o', path.join(
+            outputPath,
+            saveToPlaylistFolder && playlistName ? playlistName : '',
+            '%(title)s.%(ext)s'
+        ),
         url
     ];
 
     return new Promise((resolve, reject) => {
         const {spawn} = require('child_process');
         const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
-        let title = '';
-        let channel = '';
         let lastProgress = 0;
+        const videoInfoData: YtDlpMeta = {
+            quality: "",
+            filesize: 0,
+            title: '',
+            channel: '',
+            ext: '',
+            filesize_approx: 0,
+            format: '',
+            format_id: ''
+        }
         const dataSentState = {
             metadata: false,
             thumbnail: false,
@@ -187,28 +211,33 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
             const text = data.toString();
             const lines = text.split('\\n');
 
-            if (fsSync.existsSync(tempFile) && !channel.trim().length) {
-                channel = fsSync.readFileSync(tempFile, "utf8").trim();
-            }
+            if (fsSync.existsSync(jsonInfoFile)) {
+                const videoInfo = readYtVideoInfoJsonFile<YtDlpMeta>(jsonInfoFile);
+                if (videoInfo) {
+                    videoInfo.filesize = videoInfo.filesize ?? videoInfo.filesize_approx ?? 0;
 
-            lines.forEach((line: string) => {
-                console.log('[yt-dlp]', line);
-
-                const destMatch = line.match(/\[download\]\s+Destination:\s+(.+?)\s*$/);
-                if (destMatch && !dataSentState.metadata) {
-                    title = destMatch[1].trim();
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'metadata',
                         data: {
-                            title,
-                            channel: channel || 'Unknown',
-                            quality: quality,
-                            size: 0,
+                            title: videoInfo.title,
+                            channel: videoInfo.channel || 'Unknown',
+                            quality: videoInfo.quality,
+                            size: videoInfo.filesize,
+                            outputPath: path.join(outputPath, videoInfo.title),
                             downloadId
                         }
                     });
                     dataSentState.metadata = true;
+                    Object.assign(videoInfoData, videoInfo);
+
+                    if (videoInfo.filesize) {
+                        dataSentState.size = true;
+                    }
                 }
+            }
+
+            lines.forEach((line: string) => {
+                console.log('[yt-dlp]', line);
 
                 const sizeMatch = line.match(/of\s+([\d.]+\s*[KMGT]iB|[\d.]+\s*[KMGT]B|[\d.]+\s*B)/);
                 if (sizeMatch && !dataSentState.size) {
@@ -216,9 +245,6 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'metadata',
                         data: {
-                            title,
-                            channel: channel || 'Unknown',
-                            quality: quality,
                             size: sizeBytes,
                             downloadId
                         }
@@ -233,25 +259,35 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                         dupFilename = sanitizeFilename(dupMatch[1].trim());
                     }
 
-                    const filename = dupFilename || 'unknown';
-                    const files = fsSync.readdirSync(outputPath);
-                    const sanitizedFiles = files.map(f => ({original: f, sanitized: sanitizeFilename(f)}));
-                    const fileMatch = sanitizedFiles.find(f => f.sanitized.includes(filename.split('.')[0]));
-                    const file = fileMatch?.original;
+                    // If in case file size not found in the YT video, handle it
+                    if (!videoInfoData.filesize || !videoInfoData.title) {
+                        const filename = dupFilename || 'unknown';
+                        const files = fsSync.readdirSync(outputPath);
+                        const sanitizedFiles = files.map(f => ({original: f, sanitized: sanitizeFilename(f)}));
+                        const fileMatch = sanitizedFiles.find(f => f.sanitized.includes(filename.split('.')[0]));
+                        const file = fileMatch?.original;
+                        if (file) {
+                            const filePath = path.join(outputPath, file);
+                            const stats = fsSync.statSync(filePath);
+                            videoInfoData.filesize = stats.size;
+                            videoInfoData.title = file
+                        }
 
-                    let metadata: any = {filename};
-                    if (file) {
-                        const filePath = path.join(outputPath, file);
-                        const stats = fsSync.statSync(filePath);
-                        metadata = {
-                            filename,
-                            title: file,
-                            size: stats.size,
-                            thumbnail,
-                            channel: channel || 'Unknown',
-                            downloadId
-                        };
                     }
+
+                    const out = (saveToPlaylistFolder && playlistName) ?
+                        path.join(outputPath, playlistName, videoInfoData.title) :
+                        path.join(outputPath, videoInfoData.title);
+
+                    const metadata = {
+                        filename: videoInfoData.title,
+                        title: videoInfoData.title,
+                        size: videoInfoData.filesize,
+                        thumbnail,
+                        channel: videoInfoData.channel || 'Unknown',
+                        outputPath: out,
+                        downloadId
+                    };
 
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'duplicate',
@@ -284,14 +320,11 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: any)
                 if (dataSentState.complete) return resolve({success: true});
 
                 console.log('[yt-dlp] Process closed with code:', code);
-                if (fsSync.existsSync(tempFile)) {
-                    fsSync.unlinkSync(tempFile);
+                if (fsSync.existsSync(jsonInfoFile)) {
+                    fsSync.unlinkSync(jsonInfoFile);
                 }
                 if (code === 0 || code === 1) {
                     const data: Record<string, any> = {status: 'completed', progress: 100, thumbnail, downloadId};
-                    if (title) {
-                        data.title = title;
-                    }
 
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'complete',
@@ -397,3 +430,13 @@ export const fileToDataUrl = async (event: IpcMainInvokeEvent, filePath: string)
         return "";
     }
 };
+
+export const openFile = async (event: IpcMainInvokeEvent, filePath: string) => {
+    try {
+        await shell.openPath(filePath);
+        return {success: true};
+    } catch (error) {
+        console.error('Failed to open file:', error);
+        throw error;
+    }
+}

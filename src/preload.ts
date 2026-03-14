@@ -30,4 +30,5 @@ contextBridge.exposeInMainWorld('electron', {
         reverse,
         playlistId
     }),
+    openFile: (filePath: string): Promise<void> => ipcRenderer.invoke('app:open-file', filePath),
 })

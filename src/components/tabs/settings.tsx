@@ -7,6 +7,7 @@ import { RadioItem } from "@/components/radio-item";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setQuality, setDownloadPath, setAutoStart } from "@/store/slices/settings-slice";
 import { useTranslation } from "react-i18next";
+import {useSettings} from "@/hooks/useSettings";
 
 interface SettingsProps {
   onBrowseFolder: () => void;
@@ -15,9 +16,7 @@ interface SettingsProps {
 export function Settings({ onBrowseFolder }: SettingsProps) {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const quality = useAppSelector((state) => state.settings.quality);
-  const downloadPath = useAppSelector((state) => state.settings.downloadPath);
-  const autoStart = useAppSelector((state) => state.settings.autoStart);
+  const {quality, downloadPath, autoStart, setSaveVideosToPlaylistFolders, saveVideosToPlaylistFolders} = useSettings();
 
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500 max-w-3xl">
@@ -106,7 +105,27 @@ export function Settings({ onBrowseFolder }: SettingsProps) {
               onCheckedChange={(v) => dispatch(setAutoStart(v))}
             />
           </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4 mt-1">
+            <div className="space-y-0.5">
+              <Label htmlFor="playlist-folders" className="text-base">
+                {t("settings.savePlaylistFolders")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.savePlaylistFoldersDesc")}
+              </p>
+            </div>
+            <Switch
+                id="playlist-folders"
+                checked={saveVideosToPlaylistFolders}
+                onCheckedChange={(v) => setSaveVideosToPlaylistFolders(v)}
+            />
+          </div>
         </section>
+        <section className="rounded-xl border border-border/50 bg-card p-6">
+
+        </section>
+
       </div>
     </div>
   );

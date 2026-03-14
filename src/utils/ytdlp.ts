@@ -7,10 +7,12 @@ interface DownloadOptions {
     onProgress?: (progress: number) => void;
     onData?: (data: Partial<DownloadItem>) => void;
     onDuplicate?: (filename: string, metadata: any) => void;
+    saveToPlaylistFolder?: boolean;
+    playlistName?: string
 }
 
 export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void> => {
-    const {url, outputPath, quality, format, onProgress, onData, onDuplicate, downloadId} = options;
+    const {url, outputPath, quality, format, onProgress, onData, onDuplicate, downloadId, saveToPlaylistFolder, playlistName} = options;
 
     if (!globalThis.electron) {
         throw new Error("Electron not available");
@@ -56,7 +58,9 @@ export const downloadWithYtdlp = async (options: DownloadOptions): Promise<void>
             outputPath,
             quality,
             format,
-            downloadId
+            downloadId,
+            saveToPlaylistFolder,
+            playlistName
         }).catch((err: Error) => {
             electron.off("ytdlp:progress", handleProgress);
             reject(err);

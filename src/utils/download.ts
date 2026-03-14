@@ -3,7 +3,8 @@
  * Helper functions for download operations
  */
 import {generateUUID} from "@/utils/common";
-import {DOWNLOAD_FORMAT_TYPES, DOWNLOAD_FORMATS} from "@/constants";
+import {DOWNLOAD_FORMAT_TYPES} from "@/constants";
+import fsSync from "fs";
 
 export function isValidYouTubeUrl(url: string): boolean {
     const youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/
@@ -15,7 +16,7 @@ export function isValidPlaylistUrl(url: string): boolean {
     return playlistUrlPattern.test(url.trim())
 }
 
-export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType): DownloadItem[] {
+export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string): DownloadItem[] {
     return urls.map((url) => {
         const type = isValidPlaylistUrl(url) ? "playlist" : (format ? DOWNLOAD_FORMAT_TYPES[format] : "")
         const tempId = generateUUID();
@@ -31,6 +32,7 @@ export function createDownloadItemFromUrls(urls: string[], quality: QualityType,
             type,
             date: "Just now",
             format,
+            downloadPath
         }
     }) as DownloadItem[];
 }
@@ -42,11 +44,11 @@ export function extractVideoId(url: string): string | null {
     ]
 
     for (const pattern of patterns) {
-        const match = url.match(pattern)
-        if (match) return match[1]
+        const match = url.match(pattern);
+        if (match) return match[1];
     }
 
-    return null
+    return null;
 }
 
 export function parseUrlList(input: string): string[] {
@@ -54,6 +56,7 @@ export function parseUrlList(input: string): string[] {
         .split(/[,\n]+/)
         .map((url) => url.trim())
         .filter((url) => url.length > 0 && isValidYouTubeUrl(url))
+        .map(normalizeSingleVideoUrl);
 }
 
 export function formatDuration(seconds: number): string {
@@ -128,7 +131,17 @@ export function sizeToBytes(sizeStr: string): number {
 }
 
 export function normalizeSingleVideoUrl(url: string): string {
-  const videoId = extractVideoId(url)
-  if (!videoId) return url
-  return `https://www.youtube.com/watch?v=${videoId}`
+    const videoId = extractVideoId(url)
+    if (!videoId) return url
+    return `https://www.youtube.com/watch?v=${videoId}`
+}
+
+export function readYtVideoInfoJsonFile<T>(path: string): T | null {
+    try {
+        const data = fsSync.readFileSync(path, 'utf8');
+        return JSON.parse(data.replaceAll("NA", "null")) as T;
+    } catch (error) {
+        console.error('Error reading JSON file:', error);
+        return null;
+    }
 }

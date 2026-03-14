@@ -39,8 +39,8 @@ export function useDownloads() {
         [downloads]
     );
 
-    const addDownload = (urls: string[], quality: QualityType) => {
-        dispatch(addDownloads({urls, quality}));
+    const addDownload = (urls: string[], quality: QualityType, downloadPath: string) => {
+        dispatch(addDownloads({urls, quality, downloadPath}));
         return urls.map((url) => {
             const tempId = generateUUID();
             return {
@@ -54,6 +54,7 @@ export function useDownloads() {
                 quality: quality,
                 type: "video",
                 date: "Just now",
+                downloadPath
             }
         }) as DownloadItem[];
     };

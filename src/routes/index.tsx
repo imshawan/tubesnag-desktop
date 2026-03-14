@@ -26,6 +26,7 @@ import {useToast} from "@/context/ToastContext";
 import {Statistics} from "@/components/statistics";
 import {generateUUID} from "@/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
+import {useSettings} from "@/hooks/useSettings";
 
 function HomePage() {
     const {t} = useTranslation();
@@ -45,10 +46,13 @@ function HomePage() {
 
     const {
         downloads: realDownloads,
+        completedDownloads,
         clearCompleted,
         addDownload,
         clearAll,
     } = useDownloads();
+
+    const {saveVideosToPlaylistFolders} = useSettings();
 
     const {
         addPlaylistDownload, addActiveDownloadItem,
@@ -83,7 +87,7 @@ function HomePage() {
         selectedQuality: QualityType,
         format?: string,
     ) => {
-        const newDownloads = addDownload([url], selectedQuality);
+        const newDownloads = addDownload([url], selectedQuality, downloadPath);
         if (newDownloads.length === 0) return;
 
         const download = newDownloads[0];
@@ -119,7 +123,7 @@ function HomePage() {
         urls: string[],
         selectedQuality: QualityType,
     ) => {
-        const newDownloads = addDownload(urls, selectedQuality);
+        const newDownloads = addDownload(urls, selectedQuality, downloadPath);
         setActiveDialog(null);
 
         for (const download of newDownloads) {
@@ -173,7 +177,7 @@ function HomePage() {
                 return;
 
             }
-            const playlistItem = addPlaylistDownload(playlistId, playlistUrl, result, selectedQuality, format);
+            const playlistItem = addPlaylistDownload(playlistId, playlistUrl, result, selectedQuality, format, downloadPath);
 
             for (const download of playlistItem.videos || []) {
                 try {
@@ -183,6 +187,8 @@ function HomePage() {
                         quality: selectedQuality,
                         downloadId: download.id,
                         format,
+                        saveToPlaylistFolder: saveVideosToPlaylistFolders,
+                        playlistName: result.title,
                         onProgress: (progress) => {
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {
                                 progress,
@@ -211,13 +217,27 @@ function HomePage() {
         }
     };
 
-    const handleOpenFile = (download: any) => {
+    const handleOpenFile = async (download: DownloadItem) => {
         if (download.status === "completed") {
-            alert(`${t("dashboard.openingFile")} ${downloadPath}\n\n${download.title}`);
+            const confirmed = window.confirm(
+                `${t("dashboard.openingFile")}\n\n${download.title}\n\n${t("dashboard.openFileConfirm")}`
+            );
+
+            if (confirmed && globalThis.electron?.openFile) {
+                console.log("Opening file:", download.downloadPath)
+                try {
+                    await globalThis.electron.openFile(download.downloadPath);
+                    addToast(t("dashboard.fileOpened"), "success");
+                } catch (error) {
+                    console.error("Failed to open file:", error);
+                    addToast(t("dashboard.failedToOpenFile"), "error");
+                }
+            }
         } else if (download.status === "failed") {
-            alert(t("dashboard.downloadFailed"));
+            addToast(t("dashboard.downloadFailed"), "error");
         }
     };
+
 
     const handleBrowseFolder = async () => {
         try {
@@ -234,13 +254,6 @@ function HomePage() {
             console.error(t("dashboard.failedSelectFolder"), error);
         }
     };
-
-    const activeDownloadsCount = realDownloads.filter(
-        (d) => d.status === "downloading",
-    ).length;
-    const completedDownloadsCount = realDownloads.filter(
-        (d) => d.status === "completed",
-    ).length;
 
     return (
         <div
@@ -348,7 +361,7 @@ function HomePage() {
                                 onOpenFile={handleOpenFile}
                                 onClearCompleted={clearCompleted}
                                 onClearAll={clearAll}
-                                completedCount={completedDownloadsCount}
+                                completedCount={completedDownloads.length}
                             />
                         )}
 

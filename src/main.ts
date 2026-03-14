@@ -12,7 +12,7 @@ import { IPC_CHANNELS } from "./constants";
 import IpcMainEvent = Electron.IpcMainEvent;
 import {
   checkDependencies, getDiskUsage, installDependencies, selectFolder, getPlatform, getAppVersion, downloadWithYtdlp,
-  fileToDataUrl, getPlaylistVideos
+  fileToDataUrl, getPlaylistVideos, openFile
 } from "@/ipc/app/handlers";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -91,6 +91,8 @@ function setupIpcHandlers() {
   
   ipcMain.handle('app:get-platform', getPlatform);
   ipcMain.handle('app:get-version', getAppVersion);
+  ipcMain.handle('app:open-file', openFile);
+
   
   ipcMain.handle('ytdlp:download', downloadWithYtdlp);
   ipcMain.handle('ytdlp:get-playlist-videos', getPlaylistVideos);

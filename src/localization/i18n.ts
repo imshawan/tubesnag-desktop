@@ -68,7 +68,9 @@ i18n.use(initReactI18next).init({
           autoSaved: "Changes are auto-saved to config.json",
           general: "General",
           autoStartDownloads: "Auto-start downloads",
-          autoStartDesc: "Begin downloading immediately when added"
+          autoStartDesc: "Begin downloading immediately when added",
+          savePlaylistFolders: "Save videos in playlist named folders",
+          savePlaylistFoldersDesc: "Organize playlist downloads into separate folders by playlist name",
         },
         videoQualities: {
           best: { label: "Best Available", sub: "Max Resolution" },
@@ -124,7 +126,10 @@ i18n.use(initReactI18next).init({
           downloadFailed: "This download failed. Retry?",
           electronNotDetected: "Electron IPC not detected. Using mock path.",
           mockPathSet: "Mock path set! To fix, add 'selectFolder' to your preload.js.",
-          failedSelectFolder: "Failed to select folder:"
+          failedSelectFolder: "Failed to select folder:",
+          openFileConfirm: "Do you want to open this file?",
+          fileOpened: "File opened successfully",
+          failedToOpenFile: "Failed to open file",
         },
         downloads: {
           quality: "Quality",

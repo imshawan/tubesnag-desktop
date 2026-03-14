@@ -26,6 +26,7 @@ declare global {
             off: (channel: string, listener: (data: any) => void) => void;
             invoke: (channel: string, args: any) => Promise<any>;
             getPlaylistVideos: (url: string, reverse: boolean, playlistId: string) => Promise<PlaylistInfo>;
+            openFile: (filePath: string) => Promise<void>;
         };
     }
 
@@ -53,6 +54,7 @@ declare global {
         format?: string;
         thumbnail?: string;
         videos?: DownloadItem[];
+        downloadPath: string;
     }
 
     interface PlaylistInfo {
@@ -60,6 +62,17 @@ declare global {
         thumbnail: string;
         channel: string;
         videoUrls: string[];
+    }
+
+    interface YtDlpMeta {
+        title: string;
+        channel: string;
+        ext: string;
+        filesize?: number;
+        filesize_approx?: number;
+        format_id: string;
+        format: string;
+        quality: string;
     }
 }
 

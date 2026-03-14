@@ -4,327 +4,8 @@ export interface DownloadsState {
     downloads: DownloadItem[];
 }
 
-const MOCK_DATA: DownloadItem[] = [
-    {
-        id: "pl-1",
-        title: "Web Development Masterclass 2024",
-        channel: "Traversy Media",
-        url: "",
-        progress: 100,
-        status: "completed",
-        size: 9126805504,
-        quality: "1080p",
-        type: "playlist",
-        date: "3 days ago",
-        thumbnail: "https://i.ytimg.com/vi/wm5gMKuwSYk/maxresdefault.jpg",
-        videos: [
-            {
-                id: "v-1",
-                title: "HTML & CSS Fundamentals",
-                channel: "Traversy Media",
-                url: "https://youtu.be/abc123",
-                progress: 100,
-                status: "completed",
-                size: 1288490189,
-                quality: "1080p",
-                type: "video",
-                date: "3 days ago",
-                thumbnail: "https://i.ytimg.com/vi/abc123/maxresdefault.jpg"
-            },
-            {
-                id: "v-2",
-                title: "JavaScript Essentials",
-                channel: "Traversy Media",
-                url: "https://youtu.be/def456",
-                progress: 100,
-                status: "completed",
-                size: 1932735283,
-                quality: "1080p",
-                type: "video",
-                date: "3 days ago",
-                thumbnail: "https://i.ytimg.com/vi/def456/maxresdefault.jpg"
-            },
-            {
-                id: "v-3",
-                title: "React Deep Dive",
-                channel: "Traversy Media",
-                url: "https://youtu.be/ghi789",
-                progress: 100,
-                status: "completed",
-                size: 2256901120,
-                quality: "1080p",
-                type: "video",
-                date: "2 days ago",
-                thumbnail: "https://i.ytimg.com/vi/ghi789/maxresdefault.jpg"
-            },
-            {
-                id: "v-4",
-                title: "Node.js & Express",
-                channel: "Traversy Media",
-                url: "https://youtu.be/jkl012",
-                progress: 100,
-                status: "completed",
-                size: 2040109465,
-                quality: "1080p",
-                type: "video",
-                date: "2 days ago",
-                thumbnail: "https://i.ytimg.com/vi/jkl012/maxresdefault.jpg"
-            },
-            {
-                id: "v-5",
-                title: "Database Design & SQL",
-                channel: "Traversy Media",
-                url: "https://youtu.be/mno345",
-                progress: 100,
-                status: "completed",
-                size: 1610612736,
-                quality: "1080p",
-                type: "video",
-                date: "1 day ago",
-                thumbnail: "https://i.ytimg.com/vi/mno345/maxresdefault.jpg"
-            },
-        ],
-    },
-    {
-        id: "pl-2",
-        title: "Python for Data Science",
-        channel: "Corey Schafer",
-        url: "",
-        progress: 65,
-        status: "downloading",
-        size: 5583007744,
-        quality: "1080p",
-        type: "playlist",
-        date: "Just now",
-        thumbnail: "https://i.ytimg.com/vi/pqr678/maxresdefault.jpg",
-        videos: [
-            {
-                id: "v-6",
-                title: "Python Basics & Setup",
-                channel: "Corey Schafer",
-                url: "https://youtu.be/pqr678",
-                progress: 100,
-                status: "completed",
-                size: 912680550,
-                quality: "1080p",
-                type: "video",
-                date: "Just now",
-                thumbnail: "https://i.ytimg.com/vi/pqr678/maxresdefault.jpg"
-            },
-            {
-                id: "v-7",
-                title: "NumPy Tutorial",
-                channel: "Corey Schafer",
-                url: "https://youtu.be/stu901",
-                progress: 100,
-                status: "completed",
-                size: 988137472,
-                quality: "1080p",
-                type: "video",
-                date: "Just now",
-                thumbnail: "https://i.ytimg.com/vi/stu901/maxresdefault.jpg"
-            },
-            {
-                id: "v-8",
-                title: "Pandas for Data Analysis",
-                channel: "Corey Schafer",
-                url: "https://youtu.be/vwx234",
-                progress: 75,
-                status: "downloading",
-                size: 1181116006,
-                quality: "1080p",
-                type: "video",
-                date: "Just now",
-                thumbnail: "https://i.ytimg.com/vi/vwx234/maxresdefault.jpg"
-            },
-            {
-                id: "v-9",
-                title: "Data Visualization with Matplotlib",
-                channel: "Corey Schafer",
-                url: "https://youtu.be/yza567",
-                progress: 45,
-                status: "downloading",
-                size: 1052266496,
-                quality: "1080p",
-                type: "video",
-                date: "Just now",
-                thumbnail: "https://i.ytimg.com/vi/yza567/maxresdefault.jpg"
-            },
-            {
-                id: "v-10",
-                title: "Machine Learning Basics",
-                channel: "Corey Schafer",
-                url: "https://youtu.be/bcd890",
-                progress: 0,
-                status: "pending",
-                size: 1395864371,
-                quality: "1080p",
-                type: "video",
-                date: "Just now",
-                thumbnail: "https://i.ytimg.com/vi/bcd890/maxresdefault.jpg"
-            },
-        ],
-    },
-    {
-        id: "1",
-        title: "Next.js 14 Full Course 2024 | Build and Deploy a Full Stack App",
-        channel: "Javascript Mastery",
-        url: "https://youtu.be/wm5gMKuwSYk",
-        progress: 100,
-        status: "completed",
-        size: 1288490189,
-        quality: "1080p",
-        type: "video",
-        date: "2 mins ago",
-        thumbnail: "https://i.ytimg.com/vi/wm5gMKuwSYk/maxresdefault.jpg"
-    },
-    {
-        id: "2",
-        title: "lofi hip hop radio - beats to relax/study to",
-        channel: "Lofi Girl",
-        url: "https://youtu.be/jfKfPfyJRdk",
-        progress: 45,
-        status: "downloading",
-        size: 1203920,
-        quality: "Audio",
-        type: "audio",
-        date: "Just now",
-        thumbnail: "https://i.ytimg.com/vi/jfKfPfyJRdk/maxresdefault.jpg"
-    },
-    {
-        id: "3",
-        title: "Rust for Beginners - Full Tutorial",
-        channel: "FreeCodeCamp",
-        url: "https://youtu.be/MsocPEZqCJ4",
-        progress: 100,
-        status: "completed",
-        size: 912680550,
-        quality: "1080p",
-        type: "video",
-        date: "1 hour ago",
-        thumbnail: "https://i.ytimg.com/vi/MsocPEZqCJ4/maxresdefault.jpg"
-    },
-    {
-        id: "4",
-        title: "Elden Ring: Shadow of the Erdtree - Official Trailer",
-        channel: "Bandai Namco",
-        url: "https://youtu.be/qLZenOn7WUo",
-        progress: 100,
-        status: "completed",
-        size: 257698037,
-        quality: "4K",
-        type: "video",
-        date: "3 hours ago",
-        thumbnail: "https://i.ytimg.com/vi/qLZenOn7WUo/maxresdefault.jpg"
-    },
-    {
-        id: "5",
-        title: "Top 10 Linux Terminal Commands You Must Know",
-        channel: "NetworkChuck",
-        url: "https://youtu.be/lZAoFs75_cs",
-        progress: 12,
-        status: "downloading",
-        size: 128849018,
-        quality: "1080p",
-        type: "video",
-        date: "Just now",
-        thumbnail: "https://i.ytimg.com/vi/lZAoFs75_cs/maxresdefault.jpg"
-    },
-    {
-        id: "6",
-        title: "System Design Interview - Rate Limiter",
-        channel: "ByteByteGo",
-        url: "https://youtu.be/FU4WlwfS3G0",
-        progress: 100,
-        status: "completed",
-        size: 193273528,
-        quality: "1080p",
-        type: "video",
-        date: "Yesterday",
-        thumbnail: "https://i.ytimg.com/vi/FU4WlwfS3G0/maxresdefault.jpg"
-    },
-    {
-        id: "7",
-        title: "Deep Learning for Coders with fastai & PyTorch",
-        channel: "Jeremy Howard",
-        url: "https://youtu.be/8SF_h3xF3cE",
-        progress: 0,
-        status: "completed",
-        size: 0,
-        quality: "1080p",
-        type: "video",
-        date: "Yesterday",
-        thumbnail: "https://i.ytimg.com/vi/8SF_h3xF3cE/maxresdefault.jpg"
-    },
-    {
-        id: "8",
-        title: "React vs Vue - Which is better in 2024?",
-        channel: "Fireship",
-        url: "https://youtu.be/lkIFF4maKMU",
-        progress: 100,
-        status: "completed",
-        size: 48318382,
-        quality: "1080p",
-        type: "video",
-        date: "2 days ago",
-        thumbnail: "https://i.ytimg.com/vi/lkIFF4maKMU/maxresdefault.jpg"
-    },
-    {
-        id: "9",
-        title: "Kubernetes Explained in 100 Seconds",
-        channel: "Fireship",
-        url: "https://youtu.be/PVLmVZ33JH8",
-        progress: 100,
-        status: "completed",
-        size: 26843545,
-        quality: "1080p",
-        type: "video",
-        date: "2 days ago",
-        thumbnail: "https://i.ytimg.com/vi/PVLmVZ33JH8/maxresdefault.jpg"
-    },
-    {
-        id: "10",
-        title: "Harvard CS50 - Lecture 1 - C",
-        channel: "CS50",
-        url: "https://youtu.be/zYD7nN17G3E",
-        progress: 100,
-        status: "completed",
-        size: 2256901120,
-        quality: "1080p",
-        type: "video",
-        date: "Last week",
-        thumbnail: "https://i.ytimg.com/vi/zYD7nN17G3E/maxresdefault.jpg"
-    },
-    {
-        id: "11",
-        title: "Chillstep Mix 2024",
-        channel: "Music Lab",
-        url: "https://youtu.be/xyz123",
-        progress: 100,
-        status: "completed",
-        size: 161061273,
-        quality: "Audio",
-        type: "audio",
-        date: "Last week",
-        thumbnail: "https://i.ytimg.com/vi/xyz123/maxresdefault.jpg"
-    },
-    {
-        id: "12",
-        title: "How to Center a Div",
-        channel: "Kevin Powell",
-        url: "https://youtu.be/abc987",
-        progress: 100,
-        status: "completed",
-        size: 32212254,
-        quality: "1080p",
-        type: "video",
-        date: "Last month",
-        thumbnail: "https://i.ytimg.com/vi/abc987/maxresdefault.jpg"
-    },
-];
-
 const initialState: DownloadsState = {
-    downloads: MOCK_DATA,
+    downloads: [],
 };
 
 const downloadsSlice = createSlice({
@@ -334,6 +15,7 @@ const downloadsSlice = createSlice({
         addDownloads: (state, action: PayloadAction<{
             urls: string[];
             quality: QualityType;
+            downloadPath: string;
             format?: string;
             isPlaylist?: boolean
         }>) => {
@@ -350,8 +32,10 @@ const downloadsSlice = createSlice({
                     type: "video" as const,
                     date: "Just now",
                     format: action.payload.format,
+                    downloadPath: action.payload.downloadPath
                 }));
                 const playlist: DownloadItem = {
+                    downloadPath: action.payload.downloadPath,
                     id: `${Date.now()}-${Math.random()}`,
                     url: "",
                     title: "Playlist - Fetching info...",
@@ -363,7 +47,7 @@ const downloadsSlice = createSlice({
                     type: "playlist",
                     date: "Just now",
                     format: action.payload.format,
-                    videos,
+                    videos
                 };
                 state.downloads.push(playlist);
             } else {
@@ -379,6 +63,7 @@ const downloadsSlice = createSlice({
                     type: "video" as const,
                     date: "Just now",
                     format: action.payload.format,
+                    downloadPath: action.payload.downloadPath
                 }));
                 state.downloads.push(...newDownloads);
             }

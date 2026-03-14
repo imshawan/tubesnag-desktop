@@ -1,8 +1,7 @@
 import React, { createContext, useContext } from "react"
-import type { UseDownloadReturn } from "@/hooks/useDownloads"
 import { useDownloads } from "@/hooks/useDownloads"
 
-interface DownloadContextType extends UseDownloadReturn {}
+interface DownloadContextType {}
 
 const DownloadContext = createContext<DownloadContextType | undefined>(undefined)
 
