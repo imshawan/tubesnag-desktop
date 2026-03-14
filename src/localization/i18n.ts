@@ -153,10 +153,15 @@ i18n.use(initReactI18next).init({
           downloadFailed: "Download Failed",
           electronNotDetected: "Electron IPC not detected. Using mock path.",
           mockPathSet: "Mock path set! To fix, add 'selectFolder' to your preload.js.",
-          failedSelectFolder: "Failed to select folder:",
+          failedSelectFolder: "Failed to select folder: {{reason}}",
           openFileConfirm: "Do you want to open this file?",
           fileOpened: "File opened successfully",
           failedToOpenFile: "Failed to open file",
+          retryingDownload: "Retrying download...",
+          deleteConfirm: "Are you sure you want to delete",
+          downloadDeleted: "Download deleted",
+          urlCopied: "URL copied to clipboard",
+          failedCopyUrl: "URL copy failed",
         },
         downloads: {
           quality: "Quality",
@@ -237,6 +242,23 @@ i18n.use(initReactI18next).init({
           history: "History",
           settings: "Settings",
           help: "Help"
+        },
+        contextMenu: {
+          openFile: "Open File",
+          openFolder: "Open in Folder",
+          copyUrl: "Copy URL",
+          copyTitle: "Copy Title",
+          share: "Share",
+          retry: "Retry Download",
+          delete: "Delete",
+          messages: {
+            fileOpened: "File opened successfully",
+            failedOpenFile: "Failed to open file",
+            fileDeleted: "File deleted successfully",
+            failedDeleteFile: "Failed to delete file",
+            copiedToClipboard: "Copied to clipboard",
+            failedCopyToClipboard: "Failed to copy to clipboard"
+          }
         },
       },
     }

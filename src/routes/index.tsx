@@ -21,12 +21,13 @@ import {Sidebar} from "@/components/sidebar";
 
 import {RecentActivity} from "@/components/recent-activity";
 import {getDiskUsageStats} from "@/lib/utils/setup";
-import {downloadWithYtdlp, getPlaylistVideos} from "@/lib/ytdlp/ytdlp";
+import {deleteFileFromSystem, downloadWithYtdlp, getPlaylistVideos} from "@/lib/ytdlp/ytdlp";
 import {useToast} from "@/context/ToastContext";
 import {Statistics} from "@/components/statistics";
 import {generateUUID} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
+import {openFile, selectFolder, openFolder} from "@/lib/ytdlp/ytdlp";
 
 function HomePage() {
     const {t} = useTranslation();
@@ -50,13 +51,15 @@ function HomePage() {
         clearCompleted,
         addDownload,
         clearAll,
+        removeDownload
     } = useDownloads();
 
     const {saveVideosToPlaylistFolders} = useSettings();
 
     const {
         addPlaylistDownload, addActiveDownloadItem,
-        updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem
+        updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem,
+        removeActiveDownloadItem
     } = useActiveDownloads();
 
     const updateDiskUsage = async () => {
@@ -254,10 +257,10 @@ function HomePage() {
                 `${t("dashboard.openingFile")}\n\n${download.title}\n\n${t("dashboard.openFileConfirm")}`
             );
 
-            if (confirmed && globalThis.electron?.openFile) {
+            if (confirmed) {
                 console.log("Opening file:", download.downloadPath)
                 try {
-                    await globalThis.electron.openFile(download.downloadPath);
+                    await openFile(download);
                     addToast(t("dashboard.fileOpened"), "success");
                 } catch (error) {
                     console.error("Failed to open file:", error);
@@ -269,20 +272,57 @@ function HomePage() {
         }
     };
 
+    const handleOpenFolder = async (download: DownloadItem) => {
+        await openFolder(download);
+    };
+
+    const handleRetry = async (download: DownloadItem) => {
+        addToast(t("dashboard.retryingDownload"), "info");
+        handleSingleDownload([download.url], download.quality, download.format as FormatType, false, "192" as AudioBitrate);
+    };
+
+    const handleDelete = (download: DownloadItem, downloadListType: DownloadListType) => {
+        const confirmed = window.confirm(`${t("dashboard.deleteConfirm")}\n${download.title}?`);
+        const parent = download.parentId ? download.parentId : download.id;
+        const child = download.parentId ? download.id : undefined; // if parentId exists that means it's an item of playlist
+        if (confirmed) {
+            if (downloadListType === "active") {
+                removeActiveDownloadItem(parent, child);
+            } else if (downloadListType === "completed") {
+                removeDownload(parent, child);
+            }
+            deleteFileFromSystem(download).finally(() => {});
+            addToast(t("dashboard.downloadDeleted"), "success");
+        }
+    };
+
+    const handleShare = (download: DownloadItem) => {
+        const shareText = `${download.title} - Downloaded with TubeSnag`;
+        if (navigator.share) {
+            navigator.share({
+                title: download.title,
+                text: shareText,
+                url: download.url,
+            }).catch(() => {
+                navigator.clipboard.writeText(download.url).then(() => addToast(t("dashboard.urlCopied"), "success"))
+                    .catch(() => addToast(t("dashboard.failedCopyUrl"), "error"))
+            });
+        } else {
+            navigator.clipboard.writeText(download.url).then(() => addToast(t("dashboard.urlCopied"), "success"))
+                .catch(() => addToast(t("dashboard.failedCopyUrl"), "error"));
+        }
+    };
+
 
     const handleBrowseFolder = async () => {
         try {
-            if (globalThis.electron && globalThis.electron.selectFolder) {
-                const path = await globalThis.electron.selectFolder();
-                if (path) {
-                    setDownloadPath(path);
-                }
-            } else {
-                console.warn(t("dashboard.electronNotDetected"));
-                addToast(t("dashboard.mockPathSet"), "warning");
+            const path = await selectFolder();
+            if (path) {
+                setDownloadPath(path);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(t("dashboard.failedSelectFolder"), error);
+            addToast(t("dashboard.failedSelectFolder", {reason: error.message}), "error");
         }
     };
 
@@ -377,6 +417,10 @@ function HomePage() {
 
                                 <RecentActivity
                                     onOpenFile={handleOpenFile}
+                                    onOpenFolder={handleOpenFolder}
+                                    onRetry={handleRetry}
+                                    onDelete={handleDelete}
+                                    onShare={handleShare}
                                 />
                             </div>
                         )}
@@ -384,12 +428,20 @@ function HomePage() {
                         {activeTab === "downloads" && (
                             <DownloadsTab
                                 onOpenFile={handleOpenFile}
+                                onOpenFolder={handleOpenFolder}
+                                onRetry={handleRetry}
+                                onDelete={handleDelete}
+                                onShare={handleShare}
                             />
                         )}
 
                         {activeTab === "history" && (
                             <HistoryTab
                                 onOpenFile={handleOpenFile}
+                                onOpenFolder={handleOpenFolder}
+                                onRetry={handleRetry}
+                                onDelete={handleDelete}
+                                onShare={handleShare}
                                 onClearCompleted={clearCompleted}
                                 onClearAll={clearAll}
                                 completedCount={completedDownloads.length}

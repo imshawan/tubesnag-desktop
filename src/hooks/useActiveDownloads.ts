@@ -1,7 +1,7 @@
 import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
-    addActiveDownload,
+    addActiveDownload, removeActiveDownload,
     updateActiveDownload,
     updateActivePlaylistVideoDownload
 } from "@/store/slices/active-downloads-slice";
@@ -23,7 +23,7 @@ export function useActiveDownloads() {
         downloadPath: string
     ) => {
         const {videoUrls, ...playlistData} = playlistInfo;
-        const videoDownloads = createDownloadItemFromUrls(videoUrls, quality, format, downloadPath);
+        const videoDownloads = createDownloadItemFromUrls(videoUrls, quality, format, downloadPath, playlistId, playlistInfo.title);
 
         const playlistItem: DownloadItem = {
             id: playlistId,
@@ -53,6 +53,8 @@ export function useActiveDownloads() {
 
     const updateActivePlaylistVideoDownloadItem = (playlistId: string, downloadId: string, updates: Partial<DownloadItem>) =>
         dispatch(updateActivePlaylistVideoDownload({playlistId, updates, downloadId}));
+    const removeActiveDownloadItem = (parent: string, child?: string) =>
+        dispatch(removeActiveDownload({parent, child}));
 
     const failedDownloads = useMemo(
         () => activeDownloads.filter((d) => d.status === "failed"),
@@ -67,6 +69,7 @@ export function useActiveDownloads() {
         addActiveDownloadItem,
         updateActiveDownloadItem,
         updateActivePlaylistVideoDownloadItem,
+        removeActiveDownloadItem,
         activeDownloads,
         failedDownloads,
         failedDownloadsCount: failedDownloads.length

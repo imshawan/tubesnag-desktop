@@ -70,7 +70,8 @@ export function useDownloads() {
         addDownload,
         updateDownload: (id: string, updates: Partial<DownloadItem>) =>
             dispatch(updateDownload({id, updates})),
-        removeDownload: (id: string) => dispatch(removeDownload(id)),
+        removeDownload: (parent: string, child?: string) => dispatch(removeDownload({
+            parent, child})),
         clearCompleted: () => dispatch(clearCompleted()),
         clearAll: () => dispatch(clearAll())
     };

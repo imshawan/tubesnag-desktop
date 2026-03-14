@@ -5,15 +5,32 @@ import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {formatBytes} from "@/lib/utils/common";
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
+import {DownloadContextMenu} from "@/components/download-context-menu";
+import {useToast} from "@/context/ToastContext";
 
 interface DownloadListProps {
     items: DownloadItem[];
     onOpenFile: (download: DownloadItem) => void;
+    onOpenFolder: (download: DownloadItem) => void;
+    onRetry: (download: DownloadItem) => void;
+    onDelete: (download: DownloadItem, downloadListType: DownloadListType) => void;
+    onShare: (download: DownloadItem) => void;
     maxHeight?: string;
+    downloadListType: DownloadListType;
 }
 
-export function DownloadList({items, onOpenFile, maxHeight = "h-[600px]"}: DownloadListProps) {
+export function DownloadList({
+                                 items,
+                                 onOpenFile,
+                                 onOpenFolder,
+                                 onRetry,
+                                 onDelete,
+                                 onShare,
+                                 downloadListType,
+                                 maxHeight = "h-[600px]"
+                             }: DownloadListProps) {
     const {t} = useTranslation();
+    const {addToast} = useToast();
     const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
     const imageCache = useRef<Record<string, string>>({});
 
@@ -33,7 +50,7 @@ export function DownloadList({items, onOpenFile, maxHeight = "h-[600px]"}: Downl
         }, {} as Record<string, string>);
     }, [items]);
 
-    const QualityBadge = ({quality}: {quality: string}) => {
+    const QualityBadge = ({quality}: { quality: string }) => {
         const getQualityColor = (q: string) => {
             if (q.includes("4K") || q.includes("2160")) return "bg-purple-500/10 text-purple-500 border-purple-500/20";
             if (q.includes("1440") || q.includes("2K")) return "bg-blue-500/10 text-blue-500 border-blue-500/20";
@@ -118,35 +135,56 @@ export function DownloadList({items, onOpenFile, maxHeight = "h-[600px]"}: Downl
 
     const renderDownloadRow = (download: DownloadItem, isPlaylistChild = false) => {
         const size = formattedSizes[download.id];
+
+        const handleCopyUrl = (url: string) => {
+            navigator.clipboard.writeText(url).then(() => {
+                addToast(t("contextMenu.messages.copiedToClipboard"), "success");
+            }).catch((e) => {
+                console.error("Failed to copy URL:", e);
+                addToast(t("contextMenu.messages.failedCopyToClipboard"), "error");
+            });
+        };
+
         return (
-            <div
+            <DownloadContextMenu
                 key={download.id}
-                className={cn(
-                    "flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors",
-                    isPlaylistChild && "pl-12 bg-muted/5"
-                )}
-                onClick={() => onOpenFile(download)}
+                download={download}
+                onOpen={onOpenFile}
+                onOpenFolder={onOpenFolder}
+                onCopyUrl={handleCopyUrl}
+                onRetry={onRetry}
+                onDelete={onDelete}
+                onShare={onShare}
+                downloadListType={downloadListType}
             >
-                <div className="flex items-center gap-4">
-                    <ThumbnailIcon item={download}/>
-                    <div className="flex flex-col">
-                        <span className="font-medium text-sm">{download.title}</span>
-                        <div className="flex gap-2 text-xs text-muted-foreground">
-                            <span>{download.channel}</span>
-                            <span>•</span>
-                            <span>{download.date}</span>
-                            <span>•</span>
-                            <span className="capitalize">{download.type}</span>
-                            <span>•</span>
-                            <span>{size}</span>
+                <div
+                    className={cn(
+                        "flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors",
+                        isPlaylistChild && "pl-12 bg-muted/5"
+                    )}
+                    onClick={() => onOpenFile(download)}
+                >
+                    <div className="flex items-center gap-4">
+                        <ThumbnailIcon item={download}/>
+                        <div className="flex flex-col">
+                            <span className="font-medium text-sm">{download.title}</span>
+                            <div className="flex gap-2 text-xs text-muted-foreground">
+                                <span>{download.channel}</span>
+                                <span>•</span>
+                                <span>{download.date}</span>
+                                <span>•</span>
+                                <span className="capitalize">{download.type}</span>
+                                <span>•</span>
+                                <span>{size}</span>
+                            </div>
                         </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                        <QualityBadge quality={download.quality}/>
+                        {renderStatusBadge(download)}
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <QualityBadge quality={download.quality} />
-                    {renderStatusBadge(download)}
-                </div>
-            </div>
+            </DownloadContextMenu>
         );
     }
 

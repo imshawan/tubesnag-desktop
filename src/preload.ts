@@ -30,5 +30,8 @@ contextBridge.exposeInMainWorld('electron', {
         reverse,
         playlistId
     }),
-    openFile: (filePath: string): Promise<void> => ipcRenderer.invoke('app:open-file', filePath),
+    openFile: (item: DownloadItem): Promise<void> => ipcRenderer.invoke('file:open', item),
+    openFolder: (item: DownloadItem): Promise<void> => ipcRenderer.invoke('file:open-folder', item),
+    deleteFileFromSystem: (item: DownloadItem): Promise<void> => ipcRenderer.invoke('file:delete', item),
+    deleteDownloadedPlaylistResources: (item: DownloadItem): Promise<void> => ipcRenderer.invoke('file:delete-playlist', item),
 })

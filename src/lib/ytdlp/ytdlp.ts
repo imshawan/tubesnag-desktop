@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<void> => {
     const {
         url,
@@ -16,7 +18,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
     } = options;
 
     if (!globalThis.electron) {
-        throw new Error("Electron not available");
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
     }
 
     const electron = globalThis.electron;
@@ -75,16 +77,51 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 
 export const fileToDataUrl = async (filePath: string): Promise<string> => {
     if (!globalThis.electron) {
-        throw new Error("Electron not available");
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
     }
     return await globalThis.electron.fileToDataUrl(filePath);
 };
+
+export const selectFolder = async () => {
+    if (!globalThis.electron) {
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
+    }
+    return await globalThis.electron.selectFolder();
+};
+
+export const openFile = async (item: DownloadItem): Promise<void> => {
+    if (!globalThis.electron) {
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
+    }
+    await globalThis.electron.openFile(item);
+}
+
+export const openFolder = async (item: DownloadItem): Promise<void> => {
+    if (!globalThis.electron) {
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
+    }
+    await globalThis.electron.openFolder(item);
+}
+
+export const deleteFileFromSystem = async (item: DownloadItem): Promise<void> => {
+    if (!globalThis.electron) {
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
+    }
+    await globalThis.electron.deleteFileFromSystem(item);
+}
+
+export const deletePlaylistFolder = async (item: DownloadItem): Promise<void> => {
+    if (!globalThis.electron) {
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
+    }
+    await globalThis.electron.deleteDownloadedPlaylistResources(item);
+}
 
 export const getPlaylistVideos = async (
     url: string, reverse: boolean = false, playlistId: string
 ): Promise<PlaylistInfo> => {
     if (!globalThis.electron) {
-        throw new Error("Electron not available");
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
     }
     return await globalThis.electron.getPlaylistVideos(url, reverse, playlistId);
 };

@@ -4,28 +4,13 @@ import {
   setActiveDialog,
   setSearchOpen,
   toggleSearchOpen,
-  setStorage,
+  setStorage, setActiveTab,
 } from "@/store/slices/app-slice";
 import { setDownloadPath } from "@/store/slices/settings-slice";
 
-export interface UseAppReturn {
-  activeTab: string;
-  activeDialog: string | null;
-  searchOpen: boolean;
-  downloadPath: string;
-  itemsPerPage: number;
-  historySearch: string;
-  historyFilter: string;
-  setAppVersion: (version: string) => void;
-  setActiveDialog: (dialog: DownloadType) => void;
-  setSearchOpen: (open: boolean) => void;
-  toggleSearchOpen: () => void;
-  setStorage: (data: any) => void;
-  setDownloadPath: (path: string) => void;
-}
-
-export function useApp(): UseAppReturn {
+export function useApp() {
   const dispatch = useAppDispatch();
+
   const activeTab = useAppSelector((state) => state.app.activeTab);
   const activeDialog = useAppSelector((state) => state.app.activeDialog);
   const searchOpen = useAppSelector((state) => state.app.searchOpen);
@@ -43,6 +28,7 @@ export function useApp(): UseAppReturn {
     historySearch,
     historyFilter,
     setAppVersion: (version: string) => dispatch(setAppVersion(version)),
+    setActiveTab: (tab: string) => dispatch(setActiveTab(tab)),
     setActiveDialog: (dialog: DownloadType) => dispatch(setActiveDialog(dialog)),
     setSearchOpen: (open: boolean) => dispatch(setSearchOpen(open)),
     toggleSearchOpen: () => dispatch(toggleSearchOpen()),

@@ -7,8 +7,9 @@ import fsSync from "fs";
 import * as child_process from "node:child_process";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/lib/ytdlp/downloader";
-import {isYtdlpError, parseYtdlpError, readYtVideoInfoJsonFile, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
+import {isYtdlpError, parseYtdlpError, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
+import {getNormalizedFileListMap, readYtVideoInfoJsonFile, resolveDownloadedFilePath} from "@/lib/ytdlp/utils";
 
 export const getYtDlpConfig = () => {
     const platform = process.platform;
@@ -383,7 +384,13 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                     fsSync.unlinkSync(jsonInfoFile);
                 }
                 if (code === 0 || code === 1) {
-                    const data: Record<string, any> = {status: 'completed', progress: 100, thumbnail, downloadId, title};
+                    const data: Record<string, any> = {
+                        status: 'completed',
+                        progress: 100,
+                        thumbnail,
+                        downloadId,
+                        title
+                    };
 
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'complete',
@@ -490,12 +497,62 @@ export const fileToDataUrl = async (event: IpcMainInvokeEvent, filePath: string)
     }
 };
 
-export const openFile = async (event: IpcMainInvokeEvent, filePath: string) => {
+export const openFile = async (event: IpcMainInvokeEvent, item: DownloadItem) => {
+    const filePath = resolveDownloadedFilePath(item);
+    if (!filePath) return {success: false};
+
     try {
         await shell.openPath(filePath);
         return {success: true};
     } catch (error) {
         console.error('Failed to open file:', error);
         throw error;
+    }
+}
+
+export const openFolder = async (event: IpcMainInvokeEvent, item: DownloadItem) => {
+    const folderPath = item.parentTitle ? path.join(item.downloadPath, item.parentTitle) : item.downloadPath;
+
+    if (!fsSync.existsSync(folderPath)) return {success: false};
+
+    try {
+        await shell.openPath(folderPath);
+        return {success: true};
+    } catch (error) {
+        console.error('Failed to open folder:', error);
+        throw error;
+    }
+}
+
+export const deleteDownloadedResources = (event: IpcMainInvokeEvent, item: DownloadItem) => {
+    const {thumbnail} = item;
+
+    const filePath = resolveDownloadedFilePath(item);
+
+    if (filePath && fsSync.existsSync(filePath)) {
+        fsSync.unlinkSync(filePath);
+    }
+
+    // Delete thumbnail if it exists
+    if (thumbnail && fsSync.existsSync(thumbnail)) {
+        fsSync.unlinkSync(thumbnail);
+
+    }
+}
+
+export const deleteDownloadedPlaylistResources = (event: IpcMainInvokeEvent, item: DownloadItem) => {
+    const {downloadPath, title, videos} = item;
+    const playlistDir = path.join(downloadPath, title);
+
+    if (fsSync.existsSync(playlistDir)) {
+        fsSync.rmSync(playlistDir, {recursive: true});
+    }
+
+    if (videos && videos.length) {
+        videos.forEach(video => {
+            if (video.thumbnail && fsSync.existsSync(video.thumbnail)) {
+                fsSync.unlinkSync(video.thumbnail);
+            }
+        });
     }
 }

@@ -42,8 +42,15 @@ const activeDownloadsSlice = createSlice({
         }
       }
     },
-    removeActiveDownload: (state, action: PayloadAction<string>) => {
-      state.items = state.items.filter((d) => d.id !== action.payload);
+    removeActiveDownload: (state, action: PayloadAction<{parent: string; child?: string}>) => {
+      let idx = state.items.findIndex((d) => d.id === action.payload.parent);
+      if (idx != -1) {
+        if (action.payload.child) {
+          state.items[idx].videos = state.items[idx].videos?.filter(d => d.id !== action.payload.child);
+        } else {
+          state.items[idx].videos = undefined;
+        }
+      }
     },
     clearActiveDownloads: (state) => {
       state.items = [];

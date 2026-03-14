@@ -20,7 +20,10 @@ declare global {
             off: (channel: string, listener: (data: any) => void) => void;
             invoke: (channel: string, args: any) => Promise<any>;
             getPlaylistVideos: (url: string, reverse: boolean, playlistId: string) => Promise<PlaylistInfo>;
-            openFile: (filePath: string) => Promise<void>;
+            openFile: (item: DownloadItem) => Promise<void>;
+            openFolder: (item: DownloadItem) => Promise<void>;
+            deleteFileFromSystem: (item: DownloadItem) => Promise<void>;
+            deleteDownloadedPlaylistResources: (item: DownloadItem) => Promise<void>;
         };
     }
 
@@ -56,6 +59,8 @@ declare global {
         thumbnail?: string;
         videos?: DownloadItem[];
         downloadPath: string;
+        parentId?: string;
+        parentTitle?: string;
     }
 
     interface PlaylistInfo {
@@ -98,6 +103,8 @@ declare global {
         onDownload: OnDownloadFn;
         isLoading?: boolean;
     }
+
+    type DownloadListType = "active" | "completed";
 
     type OnDownloadFn = (
         urls: string[],

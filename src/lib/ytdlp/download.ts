@@ -4,7 +4,6 @@
  */
 import {generateUUID} from "@/lib/utils/common";
 import {DOWNLOAD_FORMAT_TYPES, ytdlpErrorMap} from "@/lib/ytdlp/constants";
-import fsSync from "fs";
 
 export function isValidYouTubeUrl(url: string): boolean {
     const youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/
@@ -16,7 +15,7 @@ export function isValidPlaylistUrl(url: string): boolean {
     return playlistUrlPattern.test(url.trim())
 }
 
-export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string): DownloadItem[] {
+export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string, playlistId: string, playlistName: string): DownloadItem[] {
     return urls.map((url) => {
         const type = isValidPlaylistUrl(url) ? "playlist" : (format ? DOWNLOAD_FORMAT_TYPES[format] : "")
         const tempId = generateUUID();
@@ -32,7 +31,9 @@ export function createDownloadItemFromUrls(urls: string[], quality: QualityType,
             type,
             date: "Just now",
             format,
-            downloadPath
+            downloadPath,
+            parentId: playlistId,
+            parentTitle: playlistName
         }
     }) as DownloadItem[];
 }
@@ -136,17 +137,7 @@ export function normalizeSingleVideoUrl(url: string): string {
     return `https://www.youtube.com/watch?v=${videoId}`
 }
 
-export function readYtVideoInfoJsonFile<T>(path: string): T | null {
-    try {
-        const data = fsSync.readFileSync(path, 'utf8');
-        return JSON.parse(data.replaceAll("NA", "null")) as T;
-    } catch (error) {
-        console.error('Error reading JSON file:', error);
-        return null;
-    }
-}
-
-export const parseYtdlpError = (errorLine: string): string => {
+export function parseYtdlpError(errorLine: string): string {
     const errorMatch = errorLine.match(/ERROR:\s+(.+?)$/);
     if (!errorMatch) return 'Unknown error occurred';
 
@@ -161,6 +152,6 @@ export const parseYtdlpError = (errorLine: string): string => {
     return errorMsg;
 };
 
-export const isYtdlpError = (line: string): boolean => {
+export function isYtdlpError(line: string): boolean {
     return line.includes('ERROR:');
 };
