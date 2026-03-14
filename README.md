@@ -83,7 +83,7 @@ src/
 ├── store/            # Redux store configuration
 ├── styles/           # Global styles
 ├── types/            # TypeScript type definitions
-└── utils/            # Utility functions
+└── lib/              # Utility and ytdlp related modules
 ```
 
 ## Scripts
