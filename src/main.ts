@@ -14,6 +14,12 @@ import {
   checkDependencies, getDiskUsage, installDependencies, selectFolder, getPlatform, getAppVersion, downloadWithYtdlp,
   fileToDataUrl, getPlaylistVideos, openFile, deleteDownloadedResources, deleteDownloadedPlaylistResources, openFolder
 } from "@/ipc/app/handlers";
+import * as dbHandlers from "@/ipc/database/handlers";
+import {initDatabase} from "@/ipc/database";
+import {
+  deleteActiveDownloadsVideoFromPlaylist,
+  deleteCompletedDownloadsVideoFromPlaylist
+} from "@/ipc/database/handlers";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -101,6 +107,24 @@ function setupIpcHandlers() {
   ipcMain.handle('file:delete-playlist', deleteDownloadedPlaylistResources);
   ipcMain.handle('file:open', openFile);
   ipcMain.handle('file:open-folder', openFolder);
+
+  ipcMain.handle('db:create-active-download', dbHandlers.createActiveDownload);
+  ipcMain.handle('db:get-active-downloads', dbHandlers.getActiveDownloads);
+  ipcMain.handle('db:get-active-download-by-id', dbHandlers.getActiveDownloadById);
+  ipcMain.handle('db:update-active-download', dbHandlers.updateActiveDownload);
+  ipcMain.handle('db:delete-active-download', dbHandlers.deleteActiveDownload);
+  ipcMain.handle('db:delete-all-active-downloads', dbHandlers.deleteAllActiveDownloads);
+
+  ipcMain.handle('db:get-completed-downloads', dbHandlers.getCompletedDownloads);
+  ipcMain.handle('db:get-completed-download-by-id', dbHandlers.getCompletedDownloadById);
+  ipcMain.handle('db:delete-completed-download', dbHandlers.deleteCompletedDownload);
+  ipcMain.handle('db:delete-all-completed-downloads', dbHandlers.deleteAllCompletedDownloads);
+
+  ipcMain.handle('db:delete-active-downloads-video-from-playlist', dbHandlers.deleteActiveDownloadsVideoFromPlaylist);
+  ipcMain.handle('db:delete-completed-downloads-video-from-playlist', dbHandlers.deleteCompletedDownloadsVideoFromPlaylist);
+
+  ipcMain.handle('db:move-active-to-completed', dbHandlers.moveActiveToCompleted);
+
 }
 
 app.whenReady().then(async () => {
@@ -110,6 +134,7 @@ app.whenReady().then(async () => {
     await installExtensions();
     checkForUpdates();
     await setupORPC();
+    await initDatabase();
   } catch (error) {
     console.error("Error during app initialization:", error);
   }

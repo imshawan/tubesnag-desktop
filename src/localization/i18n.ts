@@ -162,6 +162,8 @@ i18n.use(initReactI18next).init({
           downloadDeleted: "Download deleted",
           urlCopied: "URL copied to clipboard",
           failedCopyUrl: "URL copy failed",
+          failedLoadHistory: "Failed to load download history",
+          failedLoadActiveDownloads: "Failed to load active downloads"
         },
         downloads: {
           quality: "Quality",
@@ -260,6 +262,9 @@ i18n.use(initReactI18next).init({
             failedCopyToClipboard: "Failed to copy to clipboard"
           }
         },
+        database: {
+          deleteFailed: "Failed to clear download(s) from database",
+        }
       },
     }
   },

@@ -1,6 +1,13 @@
 import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
-import {addDownloads, clearAll, clearCompleted, removeDownload, updateDownload} from "@/store/slices/downloads-slice";
+import {
+    addDownloads,
+    clearAll,
+    clearCompleted,
+    removeDownload,
+    setDownloads,
+    updateDownload
+} from "@/store/slices/downloads-slice";
 import {generateUUID} from "@/lib/utils/common";
 
 export function useDownloads() {
@@ -68,6 +75,7 @@ export function useDownloads() {
         recentItemsPerPage,
         totalSize,
         addDownload,
+        setDownloads: (downloads: DownloadItem[]) => dispatch(setDownloads(downloads)),
         updateDownload: (id: string, updates: Partial<DownloadItem>) =>
             dispatch(updateDownload({id, updates})),
         removeDownload: (parent: string, child?: string) => dispatch(removeDownload({

@@ -12,6 +12,9 @@ const downloadsSlice = createSlice({
     name: "downloads",
     initialState,
     reducers: {
+        setDownloads: (state, action: PayloadAction<DownloadItem[]>) => {
+            state.downloads = action.payload;
+        },
         addDownloads: (state, action: PayloadAction<{
             urls: string[];
             quality: QualityType;
@@ -86,5 +89,5 @@ const downloadsSlice = createSlice({
     },
 });
 
-export const {addDownloads, updateDownload, removeDownload, clearCompleted, clearAll} = downloadsSlice.actions;
+export const {setDownloads, addDownloads, updateDownload, removeDownload, clearCompleted, clearAll} = downloadsSlice.actions;
 export default downloadsSlice.reducer;

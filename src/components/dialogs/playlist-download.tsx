@@ -26,7 +26,7 @@ export function PlaylistDownloadDialog({
                                            isLoading,
                                        }: DownloadDialogProps) {
     const {t} = useTranslation();
-    const [url, setUrl] = useState("");
+    const [url, setUrl] = useState<string>("");
     const [quality, setQuality] = useState<QualityType>("best");
     const [format, setFormat] = useState<FormatType>("mp4");
     const [reverse, setReverse] = useState(false);
@@ -37,16 +37,16 @@ export function PlaylistDownloadDialog({
 
     useEffect(() => {
         if (open) {
-            setUrl("");
+            // setUrl("");
             setError("");
             // Reset defaults
-            setQuality("best");
-            setFormat("mp4");
-            setReverse(false);
+            // setQuality("best");
+            // setFormat("mp4");
+            // setReverse(false);
         }
     }, [open]);
 
-    const handleFormatChange = (value: FormatType) => {
+    const handleFormatChange: (value: FormatType) => void = (value: FormatType) => {
         setFormat(value);
 
     }

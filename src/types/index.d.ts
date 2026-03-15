@@ -24,6 +24,24 @@ declare global {
             openFolder: (item: DownloadItem) => Promise<void>;
             deleteFileFromSystem: (item: DownloadItem) => Promise<void>;
             deleteDownloadedPlaylistResources: (item: DownloadItem) => Promise<void>;
+            db: {
+                createActiveDownload: (downloadItem: DownloadItem) => Promise<{ success: boolean }>;
+                getActiveDownloads: () => Promise<DownloadItem[]>;
+                getActiveDownloadById: (id: string) => Promise<DownloadItem | null>;
+                updateActiveDownload: (parentId: string, childId: string | null, updates: any) => Promise<{ success: boolean }>;
+                deleteActiveDownload: (id: string) => Promise<{ success: boolean }>;
+                deleteAllActiveDownloads: () => Promise<{ success: boolean }>;
+
+                getCompletedDownloads: () => Promise<DownloadItem[]>;
+                getCompletedDownloadById: (id: string) => Promise<DownloadItem | null>;
+                deleteCompletedDownload: (id: string) => Promise<{ success: boolean }>;
+                deleteAllCompletedDownloads: () => Promise<{ success: boolean }>;
+
+                deleteActiveDownloadsVideoFromPlaylist: (playlistId: string, videoId: string) => Promise<{ success: boolean }>;
+                deleteCompletedDownloadsVideoFromPlaylist: (playlistId: string, videoId: string) => Promise<{ success: boolean }>;
+
+                moveActiveToCompleted: (id: string) => Promise<{ success: boolean }>;
+            };
         };
     }
 

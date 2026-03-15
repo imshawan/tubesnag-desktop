@@ -28,6 +28,7 @@ import {generateUUID} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
 import {openFile, selectFolder, openFolder} from "@/lib/ytdlp/ytdlp";
+import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
 
 function HomePage() {
     const {t} = useTranslation();
@@ -46,6 +47,7 @@ function HomePage() {
     } = useApp();
 
     const {
+        setDownloads: setCompletedDownloads,
         downloads: realDownloads,
         completedDownloads,
         clearCompleted,
@@ -57,6 +59,7 @@ function HomePage() {
     const {saveVideosToPlaylistFolders} = useSettings();
 
     const {
+        setDownloads: setActiveDownloads,
         addPlaylistDownload, addActiveDownloadItem,
         updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem,
         removeActiveDownloadItem
@@ -84,6 +87,25 @@ function HomePage() {
         document.addEventListener("keydown", down);
         return () => document.removeEventListener("keydown", down);
     }, [toggleSearchOpen, setSearchOpen]);
+
+    useEffect(() => {
+        getActiveDownloads()
+            .then(setActiveDownloads)
+            .catch(err => {
+                console.error("Failed to load active downloads:", err);
+                addToast(t("dashboard.failedLoadActiveDownloads"), "error");
+            });
+
+        getCompletedDownloads()
+            .then(e => {
+                setCompletedDownloads(e)
+                console.log("Setting downloads", e)
+            })
+            .catch(err => {
+                console.error("Failed to load completed downloads:", err);
+                addToast(t("dashboard.failedLoadHistory"), "error");
+            });
+    }, []);
 
     // Do not do writes to DB here or something because this does not have complete/updated video list info
     const onDownloadComplete = (download: Partial<DownloadItem>) => {

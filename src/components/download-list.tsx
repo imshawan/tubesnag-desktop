@@ -1,4 +1,4 @@
-import {AlertCircle, CheckCircle2, ChevronDown, ChevronUp, FileVideo, Music, Zap} from "lucide-react";
+import {AlertCircle, CheckCircle2, ChevronDown, ChevronUp, FileVideo, LucideProps, Music, Zap} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {cn} from "@/lib/utils/tailwind";
@@ -69,7 +69,7 @@ export function DownloadList({
     }
 
     const renderStatusBadge = (download: DownloadItem) => {
-        if (download.status === "completed") {
+        if (download.status === "completed" || download.progress === 100) {
             return (
                 <div
                     className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[10px] font-medium border border-emerald-500/20">
@@ -124,7 +124,8 @@ export function DownloadList({
                     className="size-10 rounded-lg object-cover border border-border/50"/>
             );
         }
-        const Icon = item.type === "audio" ? Music : FileVideo;
+        const Icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>
+            = item.type === "audio" ? Music : FileVideo;
         return (
             <div
                 className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
