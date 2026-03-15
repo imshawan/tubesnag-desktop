@@ -6,10 +6,10 @@ import {audioFormats, DEPENDENCY_CONFIG, downloadQualityMap} from "@/lib/ytdlp/c
 import fsSync from "fs";
 import * as child_process from "node:child_process";
 import {ipcContext} from "@/ipc/context";
-import {downloadFile} from "@/lib/ytdlp/downloader";
+import {downloadFile} from "@/lib/utils/downloader";
 import {isYtdlpError, parseYtdlpError, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
+import {readYtVideoInfoJsonFile, resolveDownloadedFilePath} from "@/lib/ytdlp/utils";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
-import {getNormalizedFileListMap, readYtVideoInfoJsonFile, resolveDownloadedFilePath} from "@/lib/ytdlp/utils";
 
 export const getYtDlpConfig = () => {
     const platform = process.platform;
@@ -484,6 +484,48 @@ export const getPlaylistVideos: (
         });
     });
 }
+
+
+export const downloadYtContentThumbnail: (ytDlpExe: string, url: string, thumbnailPath: string, tempFile: string) => Promise<{
+    title: string;
+    channel: string
+}> = (
+    ytDlpExe: string, url: string, thumbnailPath: string, tempFile: string
+): Promise<{ title: string, channel: string }> => {
+    return new Promise((resolve, reject) => {
+        const {spawn} = require('child_process');
+        const args = [
+            '--skip-download',
+            '--write-thumbnail',
+            '--thumbnail-size', '500',
+            '-o', `thumbnail:${path.join(thumbnailPath, '%(title)s.%(ext)s')}`,
+            '--print-to-file', '%(channel)s', tempFile,
+            url
+        ];
+
+        const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
+        let title = '';
+
+        child.stdout.on('data', (data: Buffer) => {
+            const text = data.toString();
+            const destMatch = text.match(/\[download\]\s+Destination:\s+(.+)/);
+            if (destMatch) {
+                title = destMatch[1].trim();
+            }
+        });
+
+        child.on('close', (code: number) => {
+            if (code === 0) {
+                const channel = fsSync.existsSync(tempFile) ? fsSync.readFileSync(tempFile, "utf8").trim() : 'Unknown';
+                resolve({title, channel});
+            } else {
+                reject(new Error(`Thumbnail download failed with code ${code}`));
+            }
+        });
+
+        child.on('error', reject);
+    });
+};
 
 export const fileToDataUrl = async (event: IpcMainInvokeEvent, filePath: string) => {
     try {
