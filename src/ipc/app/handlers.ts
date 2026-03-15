@@ -418,7 +418,6 @@ export const getPlaylistVideos: (
     const userDataPath = app.getPath('userData');
     const ytdlpPath = path.join(userDataPath, 'ytdlp');
     const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
-    const thumbnailPath = path.join(userDataPath, 'Thumbnails');
     const tempDir = path.join(userDataPath, 'Temp');
 
     return new Promise((resolve, reject) => {
@@ -430,9 +429,6 @@ export const getPlaylistVideos: (
             '--flat-playlist',
             '--print-to-file', '%(webpage_url)s', videoUrlsFile,
             '--print-to-file', '%(playlist_title)s|%(playlist_uploader,playlist_channel,uploader,channel)s', metaFile,
-            '--write-thumbnail',
-            '--convert-thumbnail', 'webp',
-            '-o', `thumbnail:${path.join(thumbnailPath, playlistId + '.%(ext)s')}`,
             url
         ];
 
@@ -451,11 +447,6 @@ export const getPlaylistVideos: (
                         metadata.title = title || 'Playlist';
                         metadata.channel = channel || 'Unknown';
                         fsSync.unlinkSync(metaFile);
-                    }
-
-                    const thumbnailFile = path.join(thumbnailPath, playlistId + '.webp');
-                    if (fsSync.existsSync(thumbnailFile)) {
-                        metadata.thumbnail = thumbnailFile;
                     }
 
                     if (reverse) {
