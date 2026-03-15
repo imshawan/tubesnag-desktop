@@ -259,7 +259,8 @@ i18n.use(initReactI18next).init({
           esc: "ESC",
           toClose: "to close",
           noResults: "No results found.",
-          results: "Results"
+          results: "Results",
+          videos: "videos"
         },
         setup: {
           title: "TubeSnag Setup",

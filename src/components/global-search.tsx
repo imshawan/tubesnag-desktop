@@ -2,20 +2,22 @@ import {useEffect, useRef, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {ScrollArea} from "./ui/scroll-area";
 import {cn} from "@/lib/utils/tailwind";
-import {Film, Music, Play, Search} from "lucide-react";
+import {Film, FolderIcon, FolderOpen, Music, Play, Search} from "lucide-react";
 import {formatBytes} from "@/lib/utils/common";
+import {useDownloads} from "@/hooks/useDownloads";
 
 interface GlobalSearchProps {
     isOpen: boolean;
     onClose: () => void;
-    data: any[];
     onSelect: (item: any) => void;
 }
 
-export function GlobalSearch({isOpen, onClose, data, onSelect}: GlobalSearchProps) {
+export function GlobalSearch({isOpen, onClose, onSelect}: GlobalSearchProps) {
     const {t} = useTranslation();
     const [query, setQuery] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const {downloads} = useDownloads();
 
     useEffect(() => {
         if (isOpen) {
@@ -25,13 +27,24 @@ export function GlobalSearch({isOpen, onClose, data, onSelect}: GlobalSearchProp
         }
     }, [isOpen]);
 
-    const filtered = data.filter(
-        (item: any) =>
+    const filtered = downloads.filter(
+        (item: DownloadItem) =>
             item.title.toLowerCase().includes(query.toLowerCase()) ||
             item.channel.toLowerCase().includes(query.toLowerCase()),
     );
 
     if (!isOpen) return null;
+
+    const DownloadTypeIcon = ({type}: { type: DownloadItemType }) => {
+        if (type === "audio") return <Music className="size-5"/>;
+        if (type === "video") return <Film className="size-5"/>;
+        return <FolderIcon className="size-5"/>
+    }
+
+    const DownloadActionIcon = ({type, className}: { type: DownloadItemType, className: string }) => {
+        if (type === "audio" || type === "video") return <Play className={cn("size-5", className)}/>;
+        return <FolderOpen className={cn("size-5", className)}/>
+    }
 
     return (
         <div
@@ -68,7 +81,7 @@ export function GlobalSearch({isOpen, onClose, data, onSelect}: GlobalSearchProp
                                 <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
                                     {t("globalSearch.results")} ({filtered.length})
                                 </div>
-                                {filtered.map((item: any) => (
+                                {filtered.map((item: DownloadItem) => (
                                     <button
                                         key={item.id}
                                         onClick={() => {
@@ -85,18 +98,14 @@ export function GlobalSearch({isOpen, onClose, data, onSelect}: GlobalSearchProp
                                                     : "bg-blue-500/10 text-blue-500",
                                             )}
                                         >
-                                            {item.type === "audio" ? (
-                                                <Music className="size-5"/>
-                                            ) : (
-                                                <Film className="size-5"/>
-                                            )}
+                                            <DownloadTypeIcon type={item.type}/>
                                         </div>
                                         <div className="flex flex-1 flex-col overflow-hidden">
                                             <span className="truncate font-medium">{item.title}</span>
                                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                                 <span>{item.channel}</span>
                                                 <span>•</span>
-                                                <span>{formatBytes(item.size)}</span>
+                                                <span>{item.type === "playlist" ? `${item.videos?.length} ${t("globalSearch.videos")}` : formatBytes(item.size)}</span>
                                                 <span>•</span>
                                                 <span
                                                     className={cn(
@@ -112,7 +121,8 @@ export function GlobalSearch({isOpen, onClose, data, onSelect}: GlobalSearchProp
                         </span>
                                             </div>
                                         </div>
-                                        <Play
+                                        <DownloadActionIcon
+                                            type={item.type}
                                             className="size-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"/>
                                     </button>
                                 ))}

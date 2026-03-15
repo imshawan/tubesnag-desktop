@@ -3,7 +3,6 @@ import {createFileRoute} from "@tanstack/react-router";
 import {useEffect} from "react";
 import {useTranslation} from "react-i18next";
 import ExternalLink from "@/components/external-link";
-import LangToggle from "@/components/lang-toggle";
 import ToggleTheme from "@/components/toggle-theme";
 import {useDownloads} from "@/hooks/useDownloads";
 import {useApp} from "@/hooks/useApp";
@@ -21,13 +20,19 @@ import {Sidebar} from "@/components/sidebar";
 
 import {RecentActivity} from "@/components/recent-activity";
 import {getDiskUsageStats} from "@/lib/utils/setup";
-import {deleteFileFromSystem, downloadWithYtdlp, getPlaylistVideos} from "@/lib/ytdlp/ytdlp";
+import {
+    deleteFileFromSystem,
+    downloadWithYtdlp,
+    getPlaylistVideos,
+    openFile,
+    openFolder,
+    selectFolder
+} from "@/lib/ytdlp/ytdlp";
 import {useToast} from "@/context/ToastContext";
 import {Statistics} from "@/components/statistics";
 import {generateUUID} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
-import {openFile, selectFolder, openFolder} from "@/lib/ytdlp/ytdlp";
 import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
 import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
 import LangDisplay from "@/components/lang-display";
@@ -111,7 +116,7 @@ function HomePage() {
 
     // Do not do writes to DB here or something because this does not have complete/updated video list info
     const onDownloadComplete = (download: Partial<DownloadItem>) => {
-        const message = t("downloads.completedDownloading", { title: download.title });
+        const message = t("downloads.completedDownloading", {title: download.title});
         addToast(message, "success", 5000);
     }
 
@@ -152,7 +157,7 @@ function HomePage() {
                     updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                 },
                 onComplete: onDownloadComplete,
-                onError:(e) => {
+                onError: (e) => {
                     console.error("Download error:", e);
                     addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                     updateActiveDownloadItem(download.id, {status: "failed"});
@@ -201,7 +206,7 @@ function HomePage() {
                         updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                     },
                     onComplete: onDownloadComplete,
-                    onError:(e) => {
+                    onError: (e) => {
                         addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                         updateActiveDownloadItem(download.id, {status: "failed"});
                     }
@@ -263,7 +268,7 @@ function HomePage() {
                             addToast(`Duplicate: ${filename}`, "warning");
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
                         },
-                        onError:(e) => {
+                        onError: (e) => {
                             addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                             updateActiveDownloadItem(download.id, {status: "failed"});
                         }
@@ -323,7 +328,8 @@ function HomePage() {
             } else if (downloadListType === "completed") {
                 removeDownload(parent, child);
             }
-            deleteFileFromSystem(download).finally(() => {});
+            deleteFileFromSystem(download).finally(() => {
+            });
             addToast(t("dashboard.downloadDeleted"), "success");
         }
     };
@@ -395,7 +401,7 @@ function HomePage() {
                             <Github className="size-5"/>
                         </ExternalLink>
                         <div className="h-4 w-px bg-border"/>
-                        <LangDisplay />
+                        <LangDisplay/>
                         <ToggleTheme/>
                     </div>
                 </header>
@@ -492,7 +498,6 @@ function HomePage() {
             <GlobalSearch
                 isOpen={searchOpen}
                 onClose={() => setSearchOpen(false)}
-                data={realDownloads}
                 onSelect={handleOpenFile}
             />
 
