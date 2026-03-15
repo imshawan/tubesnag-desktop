@@ -28,7 +28,7 @@ export function createDownloadItemFromUrls(urls: string[], quality: QualityType,
             size: 0,
             quality: quality,
             type: "video",
-            date: "Just now",
+            date: new Date().toISOString(),
             format,
             downloadPath
         }
@@ -49,7 +49,7 @@ export function createPlaylistDownloadItemFromUrls(urls: string[], quality: Qual
             size: 0,
             quality: quality,
             type,
-            date: "Just now",
+            date: new Date().toISOString(),
             format,
             downloadPath,
             parentId: playlistId,

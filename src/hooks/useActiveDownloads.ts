@@ -34,7 +34,7 @@ export function useActiveDownloads() {
             size: 0,
             quality: quality,
             type: "playlist",
-            date: new Date().toLocaleDateString(),
+            date: new Date().toISOString(),
             channel: playlistData.channel,
             thumbnail: playlistData.thumbnail,
             videos: videoDownloads,

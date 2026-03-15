@@ -7,6 +7,7 @@ import {formatBytes} from "@/lib/utils/common";
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
 import {useToast} from "@/context/ToastContext";
+import {timeFromNow} from "@/lib/utils/date";
 
 interface DownloadListProps {
     items: DownloadItem[];
@@ -172,7 +173,7 @@ export function DownloadList({
                             <div className="flex gap-2 text-xs text-muted-foreground">
                                 <span>{download.channel}</span>
                                 <span>•</span>
-                                <span>{download.date}</span>
+                                <span>{timeFromNow(download.date)}</span>
                                 <span>•</span>
                                 <span className="capitalize">{download.type}</span>
                                 <span>•</span>
