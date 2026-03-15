@@ -21,12 +21,13 @@
     },
     "outDir": "dist",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "typeRoots": ["./node_modules/@types", "./src/types"],
   "include": [
     "src/**/*",
     "src/types/**/*",
+    "src/**/*.json",
     "./package.json",
     "./forge.config.ts",
     "*.mts",

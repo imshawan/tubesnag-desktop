@@ -30,6 +30,7 @@ import {useSettings} from "@/hooks/useSettings";
 import {openFile, selectFolder, openFolder} from "@/lib/ytdlp/ytdlp";
 import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
 import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
+import LangDisplay from "@/components/lang-display";
 
 function HomePage() {
     const {t} = useTranslation();
@@ -394,7 +395,7 @@ function HomePage() {
                             <Github className="size-5"/>
                         </ExternalLink>
                         <div className="h-4 w-px bg-border"/>
-                        <LangToggle/>
+                        <LangDisplay />
                         <ToggleTheme/>
                     </div>
                 </header>

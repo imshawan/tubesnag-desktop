@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import hi from "./resources/hi.json";
 
 i18n.use(initReactI18next).init({
   fallbackLng: "en",
@@ -65,7 +66,7 @@ i18n.use(initReactI18next).init({
           storageLocation: "Storage Location",
           saveDownloadsTo: "Save downloads to",
           browse: "Browse",
-          autoSaved: "Changes are auto-saved to config.json",
+          autoSaved: "Changes are auto-saved",
           general: "General",
           autoStartDownloads: "Auto-start downloads",
           autoStartDesc: "Begin downloading immediately when added",
@@ -296,6 +297,7 @@ i18n.use(initReactI18next).init({
           deleteFailed: "Failed to clear download(s) from database",
         }
       },
-    }
+    },
+    hi
   },
 });

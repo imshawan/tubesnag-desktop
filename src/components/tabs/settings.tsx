@@ -1,4 +1,4 @@
-import { Folder, Monitor } from "lucide-react";
+import {Folder, Languages, Monitor} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setQuality, setDownloadPath, setAutoStart } from "@/store/slices/settings-slice";
 import { useTranslation } from "react-i18next";
 import {useSettings} from "@/hooks/useSettings";
+import LangToggle from "@/components/lang-toggle";
 
 interface SettingsProps {
   onBrowseFolder: () => void;
@@ -26,6 +27,55 @@ export function Settings({ onBrowseFolder }: SettingsProps) {
       </div>
 
       <div className="space-y-6">
+        <section className="rounded-xl border border-border/50 bg-card p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Languages className="size-4 text-primary" />
+            <h2 className="text-base font-semibold">Language</h2>
+          </div>
+          <div className="space-y-3">
+            <Label htmlFor="language-select">App Language</Label>
+            <LangToggle />
+            <p className="text-[10px] text-muted-foreground">
+              Select your preferred language for the application interface
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-border/50 bg-card p-6">
+          <h2 className="text-base font-semibold mb-4">{t("settings.general")}</h2>
+          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="autostart" className="text-base">
+                {t("settings.autoStartDownloads")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.autoStartDesc")}
+              </p>
+            </div>
+            <Switch
+                id="autostart"
+                checked={autoStart}
+                onCheckedChange={(v) => dispatch(setAutoStart(v))}
+            />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4 mt-1">
+            <div className="space-y-0.5">
+              <Label htmlFor="playlist-folders" className="text-base">
+                {t("settings.savePlaylistFolders")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("settings.savePlaylistFoldersDesc")}
+              </p>
+            </div>
+            <Switch
+                id="playlist-folders"
+                checked={saveVideosToPlaylistFolders}
+                onCheckedChange={(v) => setSaveVideosToPlaylistFolders(v)}
+            />
+          </div>
+        </section>
+
         <section className="rounded-xl border border-border/50 bg-card p-6">
           <div className="mb-4 flex items-center gap-2">
             <Monitor className="size-4 text-primary" />
@@ -88,40 +138,6 @@ export function Settings({ onBrowseFolder }: SettingsProps) {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border/50 bg-card p-6">
-          <h2 className="text-base font-semibold mb-4">{t("settings.general")}</h2>
-          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4">
-            <div className="space-y-0.5">
-              <Label htmlFor="autostart" className="text-base">
-                {t("settings.autoStartDownloads")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.autoStartDesc")}
-              </p>
-            </div>
-            <Switch
-              id="autostart"
-              checked={autoStart}
-              onCheckedChange={(v) => dispatch(setAutoStart(v))}
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-border/30 bg-background/50 p-4 mt-1">
-            <div className="space-y-0.5">
-              <Label htmlFor="playlist-folders" className="text-base">
-                {t("settings.savePlaylistFolders")}
-              </Label>
-              <p className="text-xs text-muted-foreground">
-                {t("settings.savePlaylistFoldersDesc")}
-              </p>
-            </div>
-            <Switch
-                id="playlist-folders"
-                checked={saveVideosToPlaylistFolders}
-                onCheckedChange={(v) => setSaveVideosToPlaylistFolders(v)}
-            />
-          </div>
-        </section>
         <section className="rounded-xl border border-border/50 bg-card p-6">
 
         </section>
