@@ -27,12 +27,33 @@ export const checkDependencies = async () => {
     const ytdlpPath = path.join(userDataPath, 'ytdlp');
     const ffmpegPath = path.join(userDataPath, 'ytdlp');
 
+    const MIN_YTDLP_SIZE = 17 * 1024 * 1024; // 17MB
+    const MIN_FFMPEG_SIZE = 78 * 1024 * 1024; // 78MB
+
     const ytDlpConfig = getYtDlpConfig();
     const ffmpegConfig = getFfmpegConfig();
+
+    const checkFileSize = (filePath: string, minSize: number): boolean => {
+        try {
+            if (!fsSync.existsSync(filePath)) return false;
+            const stats = fsSync.statSync(filePath);
+            const isNotPartial = stats.size >= minSize;
+
+            if (!isNotPartial) {
+                console.warn(`File ${filePath} is downloaded partially with size: ${stats.size} bytes. Deleting it.`);
+                fsSync.unlinkSync(filePath);
+            }
+
+            return isNotPartial;
+        } catch {
+            return false;
+        }
+    };
+
     return {
         db: fsSync.existsSync(dbPath),
-        ytdlp: fsSync.existsSync(path.join(ytdlpPath, ytDlpConfig.filename)),
-        ffmpeg: fsSync.existsSync(path.join(ffmpegPath, ffmpegConfig.filename))
+        ytdlp: checkFileSize(path.join(ytdlpPath, ytDlpConfig.filename), MIN_YTDLP_SIZE),
+        ffmpeg: checkFileSize(path.join(ffmpegPath, ffmpegConfig.filename), MIN_FFMPEG_SIZE)
     };
 }
 
@@ -348,7 +369,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 
                 const progressMatch = line.match(/\[\s*download\s*\]\s+(\d+(?:\.\d+)?)%/);
                 if (progressMatch) {
-                    const progress = Math.min(100, Math.max(0, parseFloat(progressMatch[1])));
+                    const progress = Math.min(100, Math.max(0, Number.parseFloat(progressMatch[1])));
                     if (Math.abs(progress - lastProgress) >= 1) {
                         lastProgress = progress;
                         mainWindow?.webContents.send('ytdlp:progress', {
@@ -484,7 +505,6 @@ export const downloadYtContentThumbnail: (ytDlpExe: string, url: string, thumbna
     ytDlpExe: string, url: string, thumbnailPath: string, tempFile: string
 ): Promise<{ title: string, channel: string }> => {
     return new Promise((resolve, reject) => {
-        const {spawn} = require('child_process');
         const args = [
             '--skip-download',
             '--write-thumbnail',
@@ -494,7 +514,7 @@ export const downloadYtContentThumbnail: (ytDlpExe: string, url: string, thumbna
             url
         ];
 
-        const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
+        const child = child_process.spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
         let title = '';
 
         child.stdout.on('data', (data: Buffer) => {
@@ -581,7 +601,7 @@ export const deleteDownloadedPlaylistResources = (event: IpcMainInvokeEvent, ite
         fsSync.rmSync(playlistDir, {recursive: true});
     }
 
-    if (videos && videos.length) {
+    if (videos?.length) {
         videos.forEach(video => {
             if (video.thumbnail && fsSync.existsSync(video.thumbnail)) {
                 fsSync.unlinkSync(video.thumbnail);
