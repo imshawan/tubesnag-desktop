@@ -55,7 +55,7 @@ const activeDownloadsSlice = createSlice({
                 if (action.payload.child) {
                     state.items[idx].videos = state.items[idx].videos?.filter(d => d.id !== action.payload.child);
                 } else {
-                    state.items[idx].videos = undefined;
+                    state.items = state.items.filter((d) => d.id !== action.payload.parent);
                 }
             }
         },
@@ -74,3 +74,5 @@ export const {
     updateActivePlaylistVideoDownload
 } = activeDownloadsSlice.actions;
 export default activeDownloadsSlice.reducer;
+
+export const selectActiveDownloads = (state: {activeDownloads: ActiveDownloadsState}) => state.activeDownloads.items;

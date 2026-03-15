@@ -15,7 +15,27 @@ export function isValidPlaylistUrl(url: string): boolean {
     return playlistUrlPattern.test(url.trim())
 }
 
-export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string, playlistId: string, playlistName: string): DownloadItem[] {
+export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string) {
+    return urls.map((url) => {
+        const tempId = generateUUID();
+        return {
+            id: tempId,
+            url,
+            title: "Fetching video info...",
+            channel: "Please wait",
+            status: "pending" as const,
+            progress: 0,
+            size: 0,
+            quality: quality,
+            type: "video",
+            date: "Just now",
+            format,
+            downloadPath
+        }
+    }) as DownloadItem[];
+}
+
+export function createPlaylistDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string, playlistId: string, playlistName: string): DownloadItem[] {
     return urls.map((url) => {
         const type = isValidPlaylistUrl(url) ? "playlist" : (format ? DOWNLOAD_FORMAT_TYPES[format] : "")
         const tempId = generateUUID();

@@ -1,14 +1,13 @@
 import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
-    addDownloads,
+    addDownload,
     clearAll,
     clearCompleted,
     removeDownload,
     setDownloads,
     updateDownload
 } from "@/store/slices/downloads-slice";
-import {generateUUID} from "@/lib/utils/common";
 
 export function useDownloads() {
     const dispatch = useAppDispatch();
@@ -35,37 +34,15 @@ export function useDownloads() {
         [downloads]
     );
 
-    const totalSize = useMemo(
-        () =>
-            downloads.reduce((sum, d) => {
-                if (d.size) {
-                    return sum + d.size;
-                }
-                return sum;
-            }, 0),
-        [downloads]
-    );
+   const sizeCounter = (downloads: DownloadItem[]): number => {
+       return downloads.reduce((sum, d) => {
+           const currentSize = d.size || 0;
+           const videosSize = d.videos ? sizeCounter(d.videos) : 0;
+           return sum + currentSize + videosSize;
+       }, 0);
+   }
 
-    const addDownload = (urls: string[], quality: QualityType, format: FormatType, downloadPath: string) => {
-        dispatch(addDownloads({urls, quality, downloadPath}));
-        return urls.map((url) => {
-            const tempId = generateUUID();
-            return {
-                id: tempId,
-                url,
-                title: "Fetching video info...",
-                channel: "Please wait",
-                status: "pending" as const,
-                progress: 0,
-                size: 0,
-                quality: quality,
-                type: "video",
-                date: "Just now",
-                format,
-                downloadPath
-            }
-        }) as DownloadItem[];
-    };
+    const totalSize = useMemo(() => sizeCounter(downloads), [downloads]);
 
     return {
         downloads,
@@ -74,12 +51,13 @@ export function useDownloads() {
         totalProgress,
         recentItemsPerPage,
         totalSize,
-        addDownload,
+        addDownload: (download: DownloadItem) => dispatch(addDownload(download)),
         setDownloads: (downloads: DownloadItem[]) => dispatch(setDownloads(downloads)),
         updateDownload: (id: string, updates: Partial<DownloadItem>) =>
             dispatch(updateDownload({id, updates})),
         removeDownload: (parent: string, child?: string) => dispatch(removeDownload({
-            parent, child})),
+            parent, child
+        })),
         clearCompleted: () => dispatch(clearCompleted()),
         clearAll: () => dispatch(clearAll())
     };

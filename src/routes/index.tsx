@@ -29,6 +29,7 @@ import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
 import {openFile, selectFolder, openFolder} from "@/lib/ytdlp/ytdlp";
 import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
+import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
 
 function HomePage() {
     const {t} = useTranslation();
@@ -44,6 +45,7 @@ function HomePage() {
         toggleSearchOpen,
         setStorage,
         setDownloadPath,
+        setActiveTab
     } = useApp();
 
     const {
@@ -51,7 +53,6 @@ function HomePage() {
         downloads: realDownloads,
         completedDownloads,
         clearCompleted,
-        addDownload,
         clearAll,
         removeDownload
     } = useDownloads();
@@ -113,7 +114,6 @@ function HomePage() {
         addToast(message, "success", 5000);
     }
 
-
     const handleSingleDownload: OnDownloadFn = async (
         url: string[],
         selectedQuality: QualityType,
@@ -121,12 +121,15 @@ function HomePage() {
         reverse,
         audioBitrate: AudioBitrate,
     ) => {
-        const newDownloads = addDownload(url, selectedQuality, format, downloadPath);
+        const newDownloads = createDownloadItemFromUrls(url, selectedQuality, format, downloadPath);
         if (newDownloads.length === 0) return;
 
         const download = newDownloads[0];
         addActiveDownloadItem(download);
         setActiveDialog(null);
+        setActiveTab("downloads");
+
+        addToast(t("singleDownload.addedToQueue"), "success");
 
         try {
             await downloadWithYtdlp({
@@ -167,8 +170,11 @@ function HomePage() {
         reverse,
         audioBitrate,
     ) => {
-        const newDownloads = addDownload(urls, selectedQuality, format, downloadPath);
+        const newDownloads = createDownloadItemFromUrls(urls, selectedQuality, format, downloadPath);
         setActiveDialog(null);
+        setActiveTab("downloads");
+
+        addToast(t("bulkDownload.addedToQueue"), "success");
 
         for (const download of newDownloads) {
             addActiveDownloadItem(download);
@@ -218,6 +224,7 @@ function HomePage() {
 
         try {
             addToast(t("playlistDownload.addedToQueue"), "info");
+            setActiveTab("downloads")
 
             const playlistId = generateUUID();
 

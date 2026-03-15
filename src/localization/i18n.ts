@@ -187,7 +187,8 @@ i18n.use(initReactI18next).init({
           cancel: "Cancel",
           queueing: "Queueing...",
           download: "Download",
-          downloadVideos: "Download {{count}} Videos"
+          downloadVideos: "Download {{count}} Videos",
+          addedToQueue: "Downloads added to queue",
         },
         playlistDownload: {
           title: "Download Playlist",
@@ -211,7 +212,8 @@ i18n.use(initReactI18next).init({
           errorEmpty: "Please paste a link first.",
           cancel: "Cancel",
           starting: "Starting...",
-          download: "Download"
+          download: "Download",
+          addedToQueue: "Video added to download queue"
         },
         storageIndicator: {
           storage: "Storage",

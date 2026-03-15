@@ -7,7 +7,7 @@ import {
     updateActivePlaylistVideoDownload,
     clearActiveDownloads
 } from '../slices/active-downloads-slice';
-import * as downloadsSlice from "@/store/slices/downloads-slice";
+import {addDownload, removeDownload} from "@/store/slices/downloads-slice";
 
 const DB_FIELDS: (keyof DownloadItem)[] = [
     'id',
@@ -55,7 +55,13 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
             // If status is completed, move to completed_downloads
             if (updates.status === 'completed') {
                 console.log('Moving to completed downloads');
+
+                const item: DownloadItem = store.getState().activeDownloads.items.find((item: any) => item.id === id);
+
                 await db.moveActiveToCompleted(id);
+
+                store.dispatch(addDownload(item));
+                store.dispatch(removeActiveDownload({parent: id}));
             }
         } catch (error) {
             console.error('Failed to update active download in DB:', error);
@@ -70,13 +76,13 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
             const state = store.getState();
             const playlist = state.activeDownloads.items.find((item: any) => item.id === playlistId);
 
-            console.log("state ->", state.activeDownloads)
-            console.log("playlist ->", playlist)
-            console.log("updates ->", updates)
-
             if (playlist && playlist.status === 'completed') {
                 console.log('Moving playlist to completed downloads');
+
                 await db.moveActiveToCompleted(playlistId);
+
+                store.dispatch(addDownload(playlist));
+                store.dispatch(removeActiveDownload({parent: playlistId}));
             } else {
                 console.log('Updating playlist video download:', {playlistId, updates});
                 await db.updateActiveDownload(playlistId, downloadId, pickDbFields(updates));
@@ -108,7 +114,7 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
         }
     }
 
-    if (downloadsSlice.removeDownload.match(action)) {
+    if (removeDownload.match(action)) {
         try {
             const {parent, child} = action.payload;
             if (child) {

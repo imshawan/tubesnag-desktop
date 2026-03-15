@@ -15,61 +15,8 @@ const downloadsSlice = createSlice({
         setDownloads: (state, action: PayloadAction<DownloadItem[]>) => {
             state.downloads = action.payload;
         },
-        addDownloads: (state, action: PayloadAction<{
-            urls: string[];
-            quality: QualityType;
-            downloadPath: string;
-            format?: string;
-            isPlaylist?: boolean
-        }>) => {
-            if (action.payload.isPlaylist) {
-                const videos = action.payload.urls.map((url) => ({
-                    id: `${Date.now()}-${Math.random()}`,
-                    url,
-                    title: "Fetching video info...",
-                    channel: "Please wait",
-                    status: "pending" as DownloadStatus,
-                    progress: 0,
-                    size: 0,
-                    quality: action.payload.quality,
-                    type: "video" as const,
-                    date: "Just now",
-                    format: action.payload.format,
-                    downloadPath: action.payload.downloadPath
-                }));
-                const playlist: DownloadItem = {
-                    downloadPath: action.payload.downloadPath,
-                    id: `${Date.now()}-${Math.random()}`,
-                    url: "",
-                    title: "Playlist - Fetching info...",
-                    channel: "Please wait",
-                    status: "pending",
-                    progress: 0,
-                    size: 0,
-                    quality: action.payload.quality,
-                    type: "playlist",
-                    date: "Just now",
-                    format: action.payload.format,
-                    videos
-                };
-                state.downloads.push(playlist);
-            } else {
-                const newDownloads = action.payload.urls.map((url) => ({
-                    id: `${Date.now()}-${Math.random()}`,
-                    url,
-                    title: "Fetching video info...",
-                    channel: "Please wait",
-                    status: "pending" as DownloadStatus,
-                    progress: 0,
-                    size: 0,
-                    quality: action.payload.quality,
-                    type: "video" as const,
-                    date: "Just now",
-                    format: action.payload.format,
-                    downloadPath: action.payload.downloadPath
-                }));
-                state.downloads.push(...newDownloads);
-            }
+        addDownload: (state, action: PayloadAction<DownloadItem>) => {
+            state.downloads.unshift(action.payload);
         },
         updateDownload: (state, action: PayloadAction<{ id: string; updates: Partial<DownloadItem> }>) => {
             const download = state.downloads.find((d) => d.id === action.payload.id);
@@ -89,5 +36,5 @@ const downloadsSlice = createSlice({
     },
 });
 
-export const {setDownloads, addDownloads, updateDownload, removeDownload, clearCompleted, clearAll} = downloadsSlice.actions;
+export const {setDownloads, addDownload, updateDownload, removeDownload, clearCompleted, clearAll} = downloadsSlice.actions;
 export default downloadsSlice.reducer;
