@@ -85,10 +85,12 @@ function HomePage() {
         return () => document.removeEventListener("keydown", down);
     }, [toggleSearchOpen, setSearchOpen]);
 
+    // Do not do writes to DB here or something because this does not have complete/updated video list info
     const onDownloadComplete = (download: Partial<DownloadItem>) => {
         const message = t("downloads.completedDownloading", { title: download.title });
         addToast(message, "success", 5000);
     }
+
 
     const handleSingleDownload: OnDownloadFn = async (
         url: string[],
@@ -231,7 +233,6 @@ function HomePage() {
                             addToast(`Duplicate: ${filename}`, "warning");
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
                         },
-                        onComplete: onDownloadComplete,
                         onError:(e) => {
                             addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
                             updateActiveDownloadItem(download.id, {status: "failed"});
@@ -242,6 +243,7 @@ function HomePage() {
                     updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "failed"});
                 }
             }
+            onDownloadComplete(playlistItem);
         } catch (error) {
             console.error("Playlist processing failed:", error);
             addToast(

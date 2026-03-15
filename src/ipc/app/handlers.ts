@@ -419,17 +419,17 @@ export const getPlaylistVideos: (
     const ytdlpPath = path.join(userDataPath, 'ytdlp');
     const ytDlpExe = path.join(ytdlpPath, getYtDlpConfig().filename);
     const thumbnailPath = path.join(userDataPath, 'Thumbnails');
+    const tempDir = path.join(userDataPath, 'Temp');
 
     return new Promise((resolve, reject) => {
         const {spawn} = child_process;
-        const outputFile = path.join(userDataPath, `.playlist_${Date.now()}.txt`);
-        const metaFile = path.join(userDataPath, `.playlist_meta_${Date.now()}.txt`);
+        const videoUrlsFile = path.join(tempDir, `.playlist_${playlistId}.txt`);
+        const metaFile = path.join(tempDir, `.playlist_meta_${playlistId}.txt`);
+
         const args = [
             '--flat-playlist',
-            '--print-to-file', '%(webpage_url)s',
-            outputFile,
-            '--print-to-file', '%(playlist_title)s|%(uploader)s',
-            metaFile,
+            '--print-to-file', '%(webpage_url)s', videoUrlsFile,
+            '--print-to-file', '%(playlist_title)s|%(playlist_uploader,playlist_channel,uploader,channel)s', metaFile,
             '--write-thumbnail',
             '--convert-thumbnail', 'webp',
             '-o', `thumbnail:${path.join(thumbnailPath, playlistId + '.%(ext)s')}`,
@@ -440,8 +440,8 @@ export const getPlaylistVideos: (
 
         child.on('close', (code: number) => {
             try {
-                if (fsSync.existsSync(outputFile)) {
-                    const content = fsSync.readFileSync(outputFile, 'utf8');
+                if (fsSync.existsSync(videoUrlsFile)) {
+                    const content = fsSync.readFileSync(videoUrlsFile, 'utf8');
                     let videoUrls = content.split('\n').filter((line: string) => line.trim().length > 0);
 
                     let metadata = {title: 'Playlist', channel: 'Unknown', thumbnail: ''};
@@ -462,14 +462,14 @@ export const getPlaylistVideos: (
                         videoUrls = videoUrls.reverse();
                     }
 
-                    fsSync.unlinkSync(outputFile);
+                    fsSync.unlinkSync(videoUrlsFile);
                     resolve({videoUrls, ...metadata});
                 } else {
                     reject(new Error('Failed to extract playlist videos'));
                 }
             } catch (error) {
-                if (fsSync.existsSync(outputFile)) {
-                    fsSync.unlinkSync(outputFile);
+                if (fsSync.existsSync(videoUrlsFile)) {
+                    fsSync.unlinkSync(videoUrlsFile);
                 }
                 if (fsSync.existsSync(metaFile)) {
                     fsSync.unlinkSync(metaFile);
