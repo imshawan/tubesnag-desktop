@@ -6,8 +6,12 @@ interface StorageIndicatorProps {
   percentage: number;
 }
 
-export function StorageIndicator({ used, total, percentage }: StorageIndicatorProps) {
+export function StorageIndicator({ used, total, percentage }: Readonly<StorageIndicatorProps>) {
   const { t } = useTranslation();
+
+  if (percentage === 0 && used === "0" && total === "0") {
+    return null; // Don't render the indicator if there's no storage data
+  }
 
   return (
     <div className="mt-auto mb-8 rounded-xl border border-border/50 bg-card p-4 shadow-sm">

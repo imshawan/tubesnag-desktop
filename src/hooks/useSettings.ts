@@ -4,7 +4,7 @@ import {
     selectSetSavePlaylistFolders,
     setSavePlaylistFolders,
     selectAutoStart,
-    selectDownloadPath
+    selectDownloadPath, selectItemsPerPage, selectRecentItemsPerPage
 } from "@/store/slices/settings-slice";
 
 export function useSettings() {
@@ -14,13 +14,16 @@ export function useSettings() {
     const quality = useAppSelector(selectQuality);
     const downloadPath = useAppSelector(selectDownloadPath);
     const autoStart = useAppSelector(selectAutoStart);
-
+    const itemsPerPage = useAppSelector(selectItemsPerPage);
+    const recentItemsPerPage = useAppSelector(selectRecentItemsPerPage)
 
     const setSaveVideosToPlaylistFolders = (value: boolean) => {
         dispatch(setSavePlaylistFolders(value));
     };
 
     return {
+        itemsPerPage,
+        recentItemsPerPage,
         saveVideosToPlaylistFolders,
         quality,
         downloadPath,

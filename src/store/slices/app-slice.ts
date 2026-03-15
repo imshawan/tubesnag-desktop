@@ -6,8 +6,6 @@ export interface AppState {
   activeTab: string;
   activeDialog: DownloadType;
   searchOpen: boolean;
-  itemsPerPage: number;
-  recentItemsPerPage: number;
   historySearch: string;
   historyFilter: string;
   historyTypeFilter: string;
@@ -24,8 +22,6 @@ const initialState: AppState = {
   activeTab: "dashboard",
   activeDialog: null,
   searchOpen: false,
-  itemsPerPage: 5,
-  recentItemsPerPage: 5,
   historySearch: "",
   historyFilter: "all",
   historyTypeFilter: "all",
@@ -56,12 +52,6 @@ const appSlice = createSlice({
     toggleSearchOpen: (state) => {
       state.searchOpen = !state.searchOpen;
     },
-    setItemsPerPage: (state, action: PayloadAction<number>) => {
-      state.itemsPerPage = action.payload;
-    },
-    setRecentItemsPerPage: (state, action: PayloadAction<number>) => {
-      state.recentItemsPerPage = action.payload;
-    },
     setHistorySearch: (state, action: PayloadAction<string>) => {
       state.historySearch = action.payload;
     },
@@ -86,8 +76,6 @@ export const {
   setActiveDialog,
   setSearchOpen,
   toggleSearchOpen,
-  setItemsPerPage,
-  setRecentItemsPerPage,
   setHistorySearch,
   setHistoryFilter,
   setHistoryTypeFilter,
@@ -100,10 +88,9 @@ export default appSlice.reducer;
 export const selectActiveTab = (state: { app: AppState }) => state.app.activeTab;
 export const selectActiveDialog = (state: { app: AppState }) => state.app.activeDialog;
 export const selectSearchOpen = (state: { app: AppState }) => state.app.searchOpen;
-export const selectItemsPerPage = (state: { app: AppState }) => state.app.itemsPerPage;
 export const selectHistorySearch = (state: { app: AppState }) => state.app.historySearch;
 export const selectHistoryFilter = (state: { app: AppState }) => state.app.historyFilter;
 export const selectHistoryTypeFilter = (state: { app: AppState }) => state.app.historyTypeFilter;
 export const selectStorage = (state: { app: AppState }) => state.app.storage;
 export const selectSetupComplete = (state: { app: AppState }) => state.app.setupComplete;
-export const selectDownloadPath = (state: { settings: { downloadPath: string } }) => state.settings.downloadPath;
+export const selectAppVersion = (state: { app: AppState }) => state.app.appVersion;

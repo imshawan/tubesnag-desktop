@@ -12,7 +12,6 @@ import {
 export function useDownloads() {
     const dispatch = useAppDispatch();
     const downloads = useAppSelector((state) => state.downloads.downloads);
-    const recentItemsPerPage = useAppSelector((state) => state.app.recentItemsPerPage);
 
     const isDownloading = useMemo(
         () => downloads.some((d) => d.status === "downloading"),
@@ -49,7 +48,6 @@ export function useDownloads() {
         isDownloading,
         completedDownloads,
         totalProgress,
-        recentItemsPerPage,
         totalSize,
         addDownload: (download: DownloadItem) => dispatch(addDownload(download)),
         setDownloads: (downloads: DownloadItem[]) => dispatch(setDownloads(downloads)),

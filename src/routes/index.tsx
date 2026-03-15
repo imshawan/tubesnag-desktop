@@ -1,6 +1,6 @@
 import {Github, Layers, ListVideo, PlayCircle, Search,} from "lucide-react";
 import {createFileRoute} from "@tanstack/react-router";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import {useTranslation} from "react-i18next";
 import ExternalLink from "@/components/external-link";
 import ToggleTheme from "@/components/toggle-theme";
@@ -39,6 +39,7 @@ import LangDisplay from "@/components/lang-display";
 import {useConfirmation} from "@/context/confirmation-context";
 
 function HomePage() {
+    const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const {t} = useTranslation();
     const {addToast} = useToast();
     const { confirm } = useConfirmation();
@@ -47,7 +48,6 @@ function HomePage() {
         activeTab,
         activeDialog,
         searchOpen,
-        downloadPath,
         setActiveDialog,
         setSearchOpen,
         toggleSearchOpen,
@@ -58,14 +58,13 @@ function HomePage() {
 
     const {
         setDownloads: setCompletedDownloads,
-        downloads: realDownloads,
         completedDownloads,
         clearCompleted,
         clearAll,
         removeDownload
     } = useDownloads();
 
-    const {saveVideosToPlaylistFolders} = useSettings();
+    const {saveVideosToPlaylistFolders, downloadPath} = useSettings();
 
     const {
         setDownloads: setActiveDownloads,
@@ -80,10 +79,31 @@ function HomePage() {
     };
 
     useEffect(() => {
-        updateDiskUsage();
-        const interval = setInterval(updateDiskUsage, 30000);
-        return () => clearInterval(interval);
-    }, [downloadPath, setStorage]);
+        const startPolling = async () => {
+            const data = await updateDiskUsage();
+            if (data === null || data === undefined) {
+                return; // Stop polling
+            }
+            pollingRef.current = setInterval(async () => {
+                const result = await updateDiskUsage();
+                if (result === null || result === undefined) {
+                    if (pollingRef.current) {
+                        clearInterval(pollingRef.current);
+                        pollingRef.current = null;
+                    }
+                }
+            }, 30000);
+        };
+
+        startPolling().catch(console.error);
+
+        return () => {
+            if (pollingRef.current) {
+                clearInterval(pollingRef.current);
+                pollingRef.current = null;
+            }
+        };
+    }, [downloadPath]);
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -106,10 +126,7 @@ function HomePage() {
             });
 
         getCompletedDownloads()
-            .then(e => {
-                setCompletedDownloads(e)
-                console.log("Setting downloads", e)
-            })
+            .then(setCompletedDownloads)
             .catch(err => {
                 console.error("Failed to load completed downloads:", err);
                 addToast(t("dashboard.failedLoadHistory"), "error");
@@ -199,12 +216,10 @@ function HomePage() {
                         updateActiveDownloadItem(download.id, {progress, status: "downloading"});
                     },
                     onData: (data) => {
-                        console.log("ondata", data)
                         updateActiveDownloadItem(download.id, data);
                     },
                     onDuplicate: (filename, metadata) => {
                         addToast(`Duplicate: ${filename}`, "warning");
-                        console.log("Duplicate found:", metadata);
                         updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                     },
                     onComplete: onDownloadComplete,
