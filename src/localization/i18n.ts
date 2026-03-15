@@ -117,15 +117,43 @@ i18n.use(initReactI18next).init({
         faqs: [
           {
             question: "What video formats are supported?",
-            answer: "TubeSnag supports MP4, WebM, and audio formats. You can download in your preferred quality from 480p to 4K."
+            answer: "TubeSnag supports MP4, MKV, WebM for videos, and MP3, M4A, WAV for audio. You can download in your preferred quality from 360p to 4K."
           },
           {
             question: "Can I download playlists?",
-            answer: "Yes! You can download entire YouTube playlists at once. Just paste the playlist URL and select the playlist option."
+            answer: "Yes! You can download entire YouTube playlists at once. Just paste the playlist URL and select the playlist option. You can also reverse the order to download oldest videos first."
           },
           {
             question: "How do I bulk download?",
-            answer: "Simply paste multiple YouTube URLs separated by commas. TubeSnag will process them all automatically."
+            answer: "Simply paste multiple YouTube URLs (one per line) in the Bulk Download dialog. TubeSnag will process them all automatically with your selected quality and format settings."
+          },
+          {
+            question: "Where are my downloads saved?",
+            answer: "Downloads are saved to your configured storage location (shown in Settings). You can change this path anytime in Settings > Storage Location. Playlist videos can optionally be organized into separate folders."
+          },
+          {
+            question: "Can I change the download quality?",
+            answer: "Yes! You can select from Best, 4K, 1440p, 1080p, 720p, 480p, 360p, or Audio Only. The quality setting can be changed for each download or set as default in Settings."
+          },
+          {
+            question: "What audio bitrates are available?",
+            answer: "For audio downloads, you can choose between 128 kbps (low quality), 192 kbps (standard), 256 kbps (high quality), or 320 kbps (maximum quality). Higher bitrates mean better audio quality but larger file sizes."
+          },
+          {
+            question: "How do I track my downloads?",
+            answer: "Active downloads appear in the Downloads tab with real-time progress. Completed downloads are stored in History where you can search, filter by status, and manage your download library."
+          },
+          {
+            question: "Is my data private?",
+            answer: "Absolutely! TubeSnag runs 100% locally on your computer. There's no tracking, no data collection, and no internet connection required except for downloading videos. All your downloads and history are stored locally in a SQLite database."
+          },
+          {
+            question: "What if a download fails?",
+            answer: "Failed downloads are marked in your history. You can retry any failed download by right-clicking and selecting 'Retry Download'. The app will attempt to download it again with the same settings."
+          },
+          {
+            question: "Can I delete downloads from the app?",
+            answer: "Yes! Right-click any download and select 'Delete' to remove both the file from your system and the entry from your history. For playlists, you can delete individual videos or the entire playlist folder."
           }
         ],
         dashboard: {
