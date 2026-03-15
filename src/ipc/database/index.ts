@@ -1,9 +1,11 @@
 import sqlite3, {Database} from 'sqlite3';
 import path from 'path';
 import { app } from 'electron';
+import fsSync from 'fs';
 
 let db: sqlite3.Database | null = null;
 const indexes = ['title', 'parentId', 'parentTitle', 'status'];
+const dbName = 'tubesnag.db';
 
 export enum Databases {
     COMPLETED_DOWNLOADS = 'completed_downloads',
@@ -13,9 +15,13 @@ export enum Databases {
 export const initDatabase = (): Promise<sqlite3.Database> => {
     return new Promise((resolve, reject) => {
         const userDataPath = app.getPath('userData');
-        const dbPath = path.join(userDataPath, 'db', 'tubesnag.db');
+        const dbPath = path.join(userDataPath, 'db');
 
-        db = new sqlite3.Database(dbPath, (err) => {
+        if (!fsSync.existsSync(dbPath)) {
+            fsSync.mkdirSync(dbPath, { recursive: true });
+        }
+
+        db = new sqlite3.Database(path.join(dbPath, dbName), (err) => {
             if (err) {
                 reject(err);
                 return;
