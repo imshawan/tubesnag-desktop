@@ -121,7 +121,7 @@ export function BulkDownloadDialog({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="text-sm p-4">
-                        {t("bulkDownload.cancel")}
+                        {t("common.cancel")}
                     </Button>
                     <Button
                         onClick={handleSubmit}

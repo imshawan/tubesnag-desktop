@@ -184,7 +184,7 @@ i18n.use(initReactI18next).init({
           mockPathSet: "Mock path set! To fix, add 'selectFolder' to your preload.js.",
           failedSelectFolder: "Failed to select folder: {{reason}}",
           openFileConfirm: "Do you want to open this file?",
-          fileOpened: "File opened successfully",
+          fileOpened: "Opening file...",
           failedToOpenFile: "Failed to open file",
           retryingDownload: "Retrying download...",
           deleteConfirm: "Are you sure you want to delete",
@@ -193,6 +193,11 @@ i18n.use(initReactI18next).init({
           failedCopyUrl: "URL copy failed",
           failedLoadHistory: "Failed to load download history",
           failedLoadActiveDownloads: "Failed to load active downloads"
+        },
+        common: {
+          openFile: "Open file?",
+          proceed: "Proceed",
+          cancel: "Cancel",
         },
         downloads: {
           quality: "Quality",
@@ -213,7 +218,6 @@ i18n.use(initReactI18next).init({
           appliesToAll: "Applies to all videos in this batch",
           downloadFormat: "Download Format",
           appliesToAllFormat: "Applies to all video/audio in this batch",
-          cancel: "Cancel",
           queueing: "Queueing...",
           download: "Download",
           downloadVideos: "Download {{count}} Videos",
@@ -228,7 +232,6 @@ i18n.use(initReactI18next).init({
           downloadOldestFirst: "Download oldest videos first",
           errorUrlRequired: "URL is required.",
           errorInvalidPlaylist: "Invalid playlist URL (missing 'list=').",
-          cancel: "Cancel",
           processing: "Processing...",
           processPlaylist: "Process Playlist",
           addedToQueue: "Playlist being added to downloads queue. Please wait while we load the video list.",
@@ -239,7 +242,6 @@ i18n.use(initReactI18next).init({
           videoLink: "Video Link",
           placeholder: "https://youtu.be/...",
           errorEmpty: "Please paste a link first.",
-          cancel: "Cancel",
           starting: "Starting...",
           download: "Download",
           addedToQueue: "Video added to download queue"
@@ -278,7 +280,7 @@ i18n.use(initReactI18next).init({
           help: "Help"
         },
         contextMenu: {
-          openFile: "Open File",
+          openFile: "Preview",
           openFolder: "Open in Folder",
           copyUrl: "Copy URL",
           copyTitle: "Copy Title",

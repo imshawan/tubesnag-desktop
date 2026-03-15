@@ -143,7 +143,7 @@ export function PlaylistDownloadDialog({
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="text-sm p-4">
-                        {t("playlistDownload.cancel")}
+                        {t("common.cancel")}
                     </Button>
                     <Button onClick={handleSubmit} disabled={isLoading} className="text-sm p-4">
                         {isLoading ? t("playlistDownload.processing") : t("playlistDownload.processPlaylist")}

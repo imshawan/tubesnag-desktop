@@ -6,7 +6,6 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {formatBytes} from "@/lib/utils/common";
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
-import {useToast} from "@/context/ToastContext";
 import {timeFromNow} from "@/lib/utils/date";
 
 interface DownloadListProps {
@@ -31,7 +30,6 @@ export function DownloadList({
                                  maxHeight = "h-[600px]"
                              }: DownloadListProps) {
     const {t} = useTranslation();
-    const {addToast} = useToast();
     const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
     const imageCache = useRef<Record<string, string>>({});
 
@@ -138,22 +136,12 @@ export function DownloadList({
     const renderDownloadRow = (download: DownloadItem, isPlaylistChild = false) => {
         const size = formattedSizes[download.id];
 
-        const handleCopyUrl = (url: string) => {
-            navigator.clipboard.writeText(url).then(() => {
-                addToast(t("contextMenu.messages.copiedToClipboard"), "success");
-            }).catch((e) => {
-                console.error("Failed to copy URL:", e);
-                addToast(t("contextMenu.messages.failedCopyToClipboard"), "error");
-            });
-        };
-
         return (
             <DownloadContextMenu
                 key={download.id}
                 download={download}
                 onOpen={onOpenFile}
                 onOpenFolder={onOpenFolder}
-                onCopyUrl={handleCopyUrl}
                 onRetry={onRetry}
                 onDelete={onDelete}
                 onShare={onShare}
@@ -164,7 +152,6 @@ export function DownloadList({
                         "flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors",
                         isPlaylistChild && "pl-12 bg-muted/5"
                     )}
-                    onClick={() => onOpenFile(download)}
                 >
                     <div className="flex items-center gap-4">
                         <ThumbnailIcon item={download}/>

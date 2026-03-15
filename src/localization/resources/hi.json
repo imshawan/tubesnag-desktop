@@ -177,7 +177,7 @@
       "mockPathSet": "मॉक पथ सेट हो गया! ठीक करने के लिए preload.js में 'selectFolder' जोड़ें।",
       "failedSelectFolder": "फ़ोल्डर चुनने में विफल: {{reason}}",
       "openFileConfirm": "क्या आप इस फ़ाइल को खोलना चाहते हैं?",
-      "fileOpened": "फ़ाइल सफलतापूर्वक खुल गई",
+      "fileOpened": "फ़ाइल खोली जा रही है...",
       "failedToOpenFile": "फ़ाइल खोलने में विफल",
       "retryingDownload": "डाउनलोड फिर से प्रयास किया जा रहा है...",
       "deleteConfirm": "क्या आप वास्तव में हटाना चाहते हैं",
@@ -186,6 +186,11 @@
       "failedCopyUrl": "URL कॉपी विफल",
       "failedLoadHistory": "डाउनलोड इतिहास लोड करने में विफल",
       "failedLoadActiveDownloads": "सक्रिय डाउनलोड लोड करने में विफल"
+    },
+    "common": {
+      "openFile": "फ़ाइल खोलें?",
+      "proceed": "आगे बढ़ें",
+      "cancel": "रद्द करें"
     },
     "downloads": {
       "quality": "गुणवत्ता",
@@ -206,7 +211,6 @@
       "appliesToAll": "इस बैच के सभी वीडियो पर लागू",
       "downloadFormat": "डाउनलोड फॉर्मेट",
       "appliesToAllFormat": "इस बैच के सभी वीडियो/ऑडियो पर लागू",
-      "cancel": "रद्द करें",
       "queueing": "कतार में जोड़ा जा रहा है...",
       "download": "डाउनलोड",
       "downloadVideos": "{{count}} वीडियो डाउनलोड करें",
@@ -221,7 +225,6 @@
       "downloadOldestFirst": "सबसे पुराने वीडियो पहले डाउनलोड करें",
       "errorUrlRequired": "URL आवश्यक है।",
       "errorInvalidPlaylist": "अमान्य प्लेलिस्ट URL ( 'list=' गायब है )।",
-      "cancel": "रद्द करें",
       "processing": "प्रोसेस हो रहा है...",
       "processPlaylist": "प्लेलिस्ट प्रोसेस करें",
       "addedToQueue": "प्लेलिस्ट डाउनलोड कतार में जोड़ी जा रही है। कृपया प्रतीक्षा करें जब तक हम वीडियो सूची लोड करते हैं।"
@@ -232,7 +235,6 @@
       "videoLink": "वीडियो लिंक",
       "placeholder": "https://youtu.be/...",
       "errorEmpty": "कृपया पहले एक लिंक पेस्ट करें।",
-      "cancel": "रद्द करें",
       "starting": "शुरू हो रहा है...",
       "download": "डाउनलोड",
       "addedToQueue": "वीडियो डाउनलोड कतार में जोड़ दिया गया"
@@ -271,7 +273,7 @@
       "help": "सहायता"
     },
     "contextMenu": {
-      "openFile": "फ़ाइल खोलें",
+      "openFile": "फ़ाइल पूर्वावलोकन",
       "openFolder": "फ़ोल्डर में खोलें",
       "copyUrl": "URL कॉपी करें",
       "copyTitle": "शीर्षक कॉपी करें",

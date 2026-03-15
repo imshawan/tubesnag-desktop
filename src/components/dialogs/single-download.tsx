@@ -93,7 +93,7 @@ export function SingleDownloadDialog({open, onOpenChange, onDownload, isLoading}
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="text-sm p-4"
-                            disabled={downloading}>{t("singleDownload.cancel")}</Button>
+                            disabled={downloading}>{t("common.cancel")}</Button>
                     <Button onClick={handleSubmit} disabled={isLoading || downloading} className="text-sm p-4">
                         {downloading ? t("singleDownload.starting") : t("singleDownload.download")}
                     </Button>

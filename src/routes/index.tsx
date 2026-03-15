@@ -28,7 +28,7 @@ import {
     openFolder,
     selectFolder
 } from "@/lib/ytdlp/ytdlp";
-import {useToast} from "@/context/ToastContext";
+import {useToast} from "@/context/toast-context";
 import {Statistics} from "@/components/statistics";
 import {generateUUID} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
@@ -36,10 +36,12 @@ import {useSettings} from "@/hooks/useSettings";
 import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
 import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
 import LangDisplay from "@/components/lang-display";
+import {useConfirmation} from "@/context/confirmation-context";
 
 function HomePage() {
     const {t} = useTranslation();
     const {addToast} = useToast();
+    const { confirm } = useConfirmation();
 
     const {
         activeTab,
@@ -290,19 +292,12 @@ function HomePage() {
 
     const handleOpenFile = async (download: DownloadItem) => {
         if (download.status === "completed") {
-            const confirmed = window.confirm(
-                `${t("dashboard.openingFile")}\n\n${download.title}\n\n${t("dashboard.openFileConfirm")}`
-            );
-
-            if (confirmed) {
-                console.log("Opening file:", download.downloadPath)
-                try {
-                    await openFile(download);
-                    addToast(t("dashboard.fileOpened"), "success");
-                } catch (error) {
-                    console.error("Failed to open file:", error);
-                    addToast(t("dashboard.failedToOpenFile"), "error");
-                }
+            try {
+                await openFile(download);
+                addToast(t("dashboard.fileOpened"), "success");
+            } catch (error) {
+                console.error("Failed to open file:", error);
+                addToast(t("dashboard.failedToOpenFile"), "error");
             }
         } else if (download.status === "failed") {
             addToast(t("dashboard.downloadFailed"), "error");
@@ -318,8 +313,15 @@ function HomePage() {
         handleSingleDownload([download.url], download.quality, download.format as FormatType, false, "192" as AudioBitrate);
     };
 
-    const handleDelete = (download: DownloadItem, downloadListType: DownloadListType) => {
-        const confirmed = window.confirm(`${t("dashboard.deleteConfirm")}\n${download.title}?`);
+    const handleDelete = async (download: DownloadItem, downloadListType: DownloadListType) => {
+        const confirmed = await confirm({
+            title: t("dashboard.deleteConfirm"),
+            description: download.title,
+            type: "warning",
+            confirmText: t("contextMenu.delete"),
+            cancelText: t("common.cancel"),
+        })
+
         const parent = download.parentId ? download.parentId : download.id;
         const child = download.parentId ? download.id : undefined; // if parentId exists that means it's an item of playlist
         if (confirmed) {
