@@ -6,8 +6,9 @@ import {
     ContextMenuTrigger,
 } from "@/components/ui/context-menu"
 import {useTranslation} from "react-i18next"
-import {Copy, Download, Folder, Link2, Trash2, RotateCcw, Share2, EyeIcon, FolderOpen, PlayIcon} from "lucide-react"
+import {Copy, Folder, InfoIcon, Link2, PlayIcon, RotateCcw, Share2, Trash2} from "lucide-react"
 import {useToast} from "@/context/toast-context";
+import {useDownloads} from "@/hooks/useDownloads";
 
 interface DownloadContextMenuProps {
     download: DownloadItem
@@ -29,9 +30,10 @@ export function DownloadContextMenu({
                                         onDelete,
                                         onShare,
                                         downloadListType
-                                    }: DownloadContextMenuProps) {
+                                    }: Readonly<DownloadContextMenuProps>) {
     const {t} = useTranslation()
     const {addToast} = useToast();
+    const {setDownloadItemPropertyOpen} = useDownloads();
 
     const copyToClipboard = (content: string) => {
         navigator.clipboard.writeText(content)
@@ -87,6 +89,11 @@ export function DownloadContextMenu({
                 <ContextMenuItem onClick={() => onShare(download)}>
                     <Share2 className="mr-2 h-4 w-4"/>
                     <span>{t("contextMenu.share")}</span>
+                </ContextMenuItem>
+
+                <ContextMenuItem onClick={() => setDownloadItemPropertyOpen(download)}>
+                    <InfoIcon className="mr-2 h-4 w-4"/>
+                    <span className="capitalize">{t("contextMenu.properties", {type: download.type})}</span>
                 </ContextMenuItem>
 
                 <ContextMenuSeparator/>

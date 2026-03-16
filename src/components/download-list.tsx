@@ -28,7 +28,7 @@ export function DownloadList({
                                  onShare,
                                  downloadListType,
                                  maxHeight = "h-[600px]"
-                             }: DownloadListProps) {
+                             }: Readonly<DownloadListProps>) {
     const {t} = useTranslation();
     const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
     const imageCache = useRef<Record<string, string>>({});
@@ -39,7 +39,7 @@ export function DownloadList({
     const formattedSizes = useMemo(() => {
         return items.reduce((acc, item) => {
             acc[item.id] = getSizeString(formatBytes(item.size));
-            if (item.videos && item.videos.length) {
+            if (item.videos?.length) {
                 item.videos.forEach(video => {
                     acc[video.id] = getSizeString(formatBytes(video.size));
                 });

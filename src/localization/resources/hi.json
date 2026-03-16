@@ -280,6 +280,7 @@
       "share": "शेयर करें",
       "retry": "डाउनलोड फिर से प्रयास करें",
       "delete": "हटाएँ",
+      "properties": "{{type}} की विशेषताएं",
       "messages": {
         "fileOpened": "फ़ाइल सफलतापूर्वक खुल गई",
         "failedOpenFile": "फ़ाइल खोलने में विफल",
@@ -291,6 +292,28 @@
     },
     "database": {
       "deleteFailed": "डेटाबेस से डाउनलोड हटाने में विफल"
+    },
+    "itemProperties": {
+      "title": "आइटम गुण",
+      "operationFailed": "ऑपरेशन विफल",
+      "locations": "स्थान",
+      "sourceURL": "स्रोत URL",
+      "localDestination": "स्थानीय गंतव्य",
+      "technicalSpecs": "तकनीकी विशिष्टताएँ",
+      "internalID": "आंतरिक ID",
+      "dateAdded": "जोड़ने की तारीख",
+      "totalSize": "कुल आकार",
+      "mediaFormat": "मीडिया प्रारूप",
+      "requestedQuality": "अनुरोधित गुणवत्ता",
+      "contentType": "सामग्री प्रकार",
+      "calculating": "गणना की जा रही है...",
+      "auto": "स्वचालित",
+      "playlistAssociation": "प्लेलिस्ट संबद्धता",
+      "extractedFromPlaylist": "प्लेलिस्ट से निकाला गया",
+      "playlistItems": "प्लेलिस्ट आइटम",
+      "copyID": "ID कॉपी करें",
+      "openDirectory": "निर्देशिका खोलें",
+      "unknownChannel": "अज्ञात चैनल"
     }
   }
 }

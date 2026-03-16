@@ -287,6 +287,7 @@ i18n.use(initReactI18next).init({
           share: "Share",
           retry: "Retry Download",
           delete: "Delete",
+          properties: "{{type}} properties",
           messages: {
             fileOpened: "File opened successfully",
             failedOpenFile: "Failed to open file",
@@ -298,6 +299,28 @@ i18n.use(initReactI18next).init({
         },
         database: {
           deleteFailed: "Failed to clear download(s) from database",
+        },
+        itemProperties: {
+          title: "Item Properties",
+          operationFailed: "Operation Failed",
+          locations: "Locations",
+          sourceURL: "Source URL",
+          localDestination: "Local Destination",
+          technicalSpecs: "Technical Specs",
+          internalID: "Internal ID",
+          dateAdded: "Date Added",
+          totalSize: "Total Size",
+          mediaFormat: "Media Format",
+          requestedQuality: "Requested Quality",
+          contentType: "Content Type",
+          calculating: "Calculating...",
+          auto: "Auto",
+          playlistAssociation: "Playlist Association",
+          extractedFromPlaylist: "Extracted from Playlist",
+          playlistItems: "Playlist Items",
+          copyID: "Copy ID",
+          openDirectory: "Open Directory",
+          unknownChannel: "Unknown Channel"
         }
       },
     },

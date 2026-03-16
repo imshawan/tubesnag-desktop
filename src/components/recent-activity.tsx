@@ -13,7 +13,7 @@ interface RecentActivityProps {
     onShare: (download: DownloadItem) => void;
 }
 
-export function RecentActivity({onOpenFile, onOpenFolder, onRetry, onDelete, onShare}: RecentActivityProps) {
+export function RecentActivity({onOpenFile, onOpenFolder, onRetry, onDelete, onShare}: Readonly<RecentActivityProps>) {
     const {t} = useTranslation();
     const {downloads} = useDownloads();
     const {setActiveTab} = useApp();

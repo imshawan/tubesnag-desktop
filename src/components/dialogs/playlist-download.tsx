@@ -24,7 +24,7 @@ export function PlaylistDownloadDialog({
                                            onOpenChange,
                                            onDownload,
                                            isLoading,
-                                       }: DownloadDialogProps) {
+                                       }: Readonly<DownloadDialogProps>) {
     const {t} = useTranslation();
     const [url, setUrl] = useState<string>("");
     const [quality, setQuality] = useState<QualityType>("best");

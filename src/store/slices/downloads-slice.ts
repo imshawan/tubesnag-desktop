@@ -2,10 +2,12 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 export interface DownloadsState {
     downloads: DownloadItem[];
+    downloadItemPropertyOpen: DownloadItem | null;
 }
 
 const initialState: DownloadsState = {
     downloads: [],
+    downloadItemPropertyOpen: null
 };
 
 const downloadsSlice = createSlice({
@@ -33,8 +35,13 @@ const downloadsSlice = createSlice({
         clearAll: (state) => {
             state.downloads = [];
         },
+        setDownloadItemPropertyOpen: (state, action: PayloadAction<DownloadItem | null>) => {
+            state.downloadItemPropertyOpen = action.payload;
+        }
     },
 });
 
-export const {setDownloads, addDownload, updateDownload, removeDownload, clearCompleted, clearAll} = downloadsSlice.actions;
+export const {setDownloads, addDownload, updateDownload, removeDownload, clearCompleted, clearAll, setDownloadItemPropertyOpen} = downloadsSlice.actions;
 export default downloadsSlice.reducer;
+
+export const selectDownloadItemPropertyOpen = (state: {downloads: DownloadsState}) => state.downloads.downloadItemPropertyOpen;

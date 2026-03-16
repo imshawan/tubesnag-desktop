@@ -37,6 +37,7 @@ import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
 import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
 import LangDisplay from "@/components/lang-display";
 import {useConfirmation} from "@/context/confirmation-context";
+import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-properties-dialog";
 
 function HomePage() {
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -533,6 +534,7 @@ function HomePage() {
                 onOpenChange={(v) => !v && setActiveDialog(null)}
                 onDownload={handlePlaylistDownload}
             />
+            <ItemPropertiesDialog onOpenFolder={handleOpenFolder} />
         </div>
     );
 }

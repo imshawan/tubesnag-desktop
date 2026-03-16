@@ -4,7 +4,7 @@ import {
     addDownload,
     clearAll,
     clearCompleted,
-    removeDownload,
+    removeDownload, selectDownloadItemPropertyOpen, setDownloadItemPropertyOpen,
     setDownloads,
     updateDownload
 } from "@/store/slices/downloads-slice";
@@ -12,6 +12,7 @@ import {
 export function useDownloads() {
     const dispatch = useAppDispatch();
     const downloads = useAppSelector((state) => state.downloads.downloads);
+    const downloadItemPropertyOpen = useAppSelector(selectDownloadItemPropertyOpen);
 
     const isDownloading = useMemo(
         () => downloads.some((d) => d.status === "downloading"),
@@ -49,6 +50,7 @@ export function useDownloads() {
         completedDownloads,
         totalProgress,
         totalSize,
+        downloadItemPropertyOpen,
         addDownload: (download: DownloadItem) => dispatch(addDownload(download)),
         setDownloads: (downloads: DownloadItem[]) => dispatch(setDownloads(downloads)),
         updateDownload: (id: string, updates: Partial<DownloadItem>) =>
@@ -57,6 +59,7 @@ export function useDownloads() {
             parent, child
         })),
         clearCompleted: () => dispatch(clearCompleted()),
-        clearAll: () => dispatch(clearAll())
+        clearAll: () => dispatch(clearAll()),
+        setDownloadItemPropertyOpen: (property: DownloadItem | null) => dispatch(setDownloadItemPropertyOpen(property)),
     };
 }
