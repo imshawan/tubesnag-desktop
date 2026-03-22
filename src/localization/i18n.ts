@@ -47,22 +47,17 @@ i18n.use(initReactI18next).init({
           failed: "Failed",
           showing: "Showing",
           pending: "Pending",
+          deletingProgress: "Deleting {{current}}/{{total}}",
           items: "items",
           noResults: "No results found",
-          tryAdjusting: "Try adjusting your filters or search query."
+          tryAdjusting: "Try adjusting your filters or search query.",
+          clearAllTitle: "Clear All Download History?",
+          clearAllDesc: "Are you sure you want to clear your entire download history? This will also permanently delete all associated files from your device. This action cannot be undone."
         },
         settings: {
           title: "Settings",
           subtitle: "Customize your download preferences.",
           downloadQuality: "Download Quality",
-          bestQuality: "Best Quality",
-          bestQualityDesc: "Highest available resolution and bitrate (4K/8K)",
-          highQuality: "High Quality",
-          highQualityDesc: "1080p or best available",
-          mediumQuality: "Medium Quality",
-          mediumQualityDesc: "720p or best available",
-          lowQuality: "Low Quality",
-          lowQualityDesc: "480p (Data saver)",
           storageLocation: "Storage Location",
           saveDownloadsTo: "Save downloads to",
           browse: "Browse",
@@ -72,6 +67,11 @@ i18n.use(initReactI18next).init({
           autoStartDesc: "Begin downloading immediately when added",
           savePlaylistFolders: "Save videos in playlist named folders",
           savePlaylistFoldersDesc: "Organize playlist downloads into separate folders by playlist name",
+          displayPreferences: "Display Preferences",
+          itemsPerPage: "Downloads per page",
+          itemsPerPageDesc: "Choose how many items are displayed at once in the main downloads and history lists.",
+          recentItems: "Dashboard recent activity",
+          recentItemsDesc: "The number of recent downloads to show on your home dashboard overview."
         },
         videoQualities: {
           best: { label: "Best Available", sub: "Max Resolution" },

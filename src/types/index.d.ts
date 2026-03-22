@@ -3,6 +3,8 @@
  */
 
 import {DOWNLOAD_FORMATS} from "@/lib/ytdlp/constants";
+import {ForwardRefExoticComponent, RefAttributes} from "react";
+import {LucideProps} from "lucide-react";
 
 declare global {
     interface Window {
@@ -139,6 +141,13 @@ declare global {
         existingId?: string,
         runBotVerificationFirst?: boolean
     ) => void;
+
+    interface VideoQuality {
+        id: QualityType
+        label: () => string
+        sub: () => string
+        icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>
+    }
 }
 
 export interface YtDlpConfig {

@@ -18,14 +18,16 @@ import {parseUrlList} from "@/lib/ytdlp/download";
 import {QualitySelector} from "@/components/quality-selector";
 import {FormatSelector} from "@/components/format-selector";
 import {AudioBitrateSelector} from "@/components/audio-bitrate-selector";
+import {useSettings} from "@/hooks/useSettings";
 
 export function BulkDownloadDialog({
                                        open,
                                        onOpenChange,
                                        onDownload,
                                        isLoading,
-                                   }: DownloadDialogProps) {
+                                   }: Readonly<DownloadDialogProps>) {
     const {t} = useTranslation();
+    const {quality: selectedQuality} = useSettings();
     const [text, setText] = useState("");
     const [quality, setQuality] = useState<QualityType>("best");
     const [error, setError] = useState("");
@@ -43,6 +45,12 @@ export function BulkDownloadDialog({
             setError("");
         }
     }, [open]);
+
+    useEffect(() => {
+        if (selectedQuality) {
+            setQuality(selectedQuality);
+        }
+    }, [selectedQuality]);
 
     const handleFormatChange = (value: FormatType) => {
         setFormat(value);
@@ -120,13 +128,13 @@ export function BulkDownloadDialog({
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)} className="text-sm p-4">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} className="p-4" size="sm">
                         {t("common.cancel")}
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         disabled={isLoading || linkCount === 0}
-                        className="text-sm p-4"
+                        className="p-4" size="sm"
                     >
                         {isLoading
                             ? t("bulkDownload.queueing")

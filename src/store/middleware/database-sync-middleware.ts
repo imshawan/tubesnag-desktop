@@ -7,7 +7,7 @@ import {
     updateActivePlaylistVideoDownload,
     clearActiveDownloads
 } from '../slices/active-downloads-slice';
-import {addDownload, removeDownload} from "@/store/slices/downloads-slice";
+import {addDownload, clearAll, removeDownload} from "@/store/slices/downloads-slice";
 
 const DB_FIELDS: (keyof DownloadItem)[] = [
     'id',
@@ -124,9 +124,9 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
         } catch (error) {
             console.error('Failed to delete download from DB:', error);
         }
-
-        return result;
     }
+
+    return result;
 };
 
 /**

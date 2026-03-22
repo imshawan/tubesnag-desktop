@@ -12,7 +12,7 @@ import {
 import {useTranslation} from "react-i18next";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {cn} from "@/lib/utils/tailwind";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {formatBytes} from "@/lib/utils/common";
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
@@ -28,6 +28,7 @@ interface DownloadListProps {
 	onShare: (download: DownloadItem) => void;
 	maxHeight?: string;
 	downloadListType: DownloadListType;
+	maxItems?: number;
 }
 
 export function DownloadList({
@@ -38,7 +39,8 @@ export function DownloadList({
 	                             onDelete,
 	                             onShare,
 	                             downloadListType,
-	                             maxHeight = "h-[600px]"
+	                             maxHeight = "h-[600px]",
+	                             maxItems = 0
                              }: Readonly<DownloadListProps>) {
 	const {t} = useTranslation();
 	const {currentDownloadId} = useActiveDownloads();
@@ -48,22 +50,9 @@ export function DownloadList({
 	const getSizeString = (size: string) =>
 		size.includes("NaN") || size.includes("undefined") ? "0 B" : size;
 
-	const formattedSizes = useMemo(() => {
-		return items.reduce((acc, item) => {
-			acc[item.id] = getSizeString(formatBytes(item.size));
-			if (item.videos?.length) {
-				item.videos.forEach(video => {
-					acc[video.id] = getSizeString(formatBytes(video.size));
-				});
-			}
-
-			return acc;
-		}, {} as Record<string, string>);
-	}, [items]);
-
 	const renderStatusBadge = (download: DownloadItem) => {
 		const isDownloadErrored = (download.status === "downloading" || download.status === "pending")
-			&& currentDownloadId !== download.id;
+			&& !currentDownloadId;
 
 		if (download.status === "completed" || download.progress === 100) {
 			return (
@@ -135,8 +124,9 @@ export function DownloadList({
 		);
 	}
 
-	const renderDownloadRow = (download: DownloadItem, isPlaylistChild = false) => {
-		const size = formattedSizes[download.id];
+	const renderDownloadRow = (download: DownloadItem, idx: number, isPlaylistChild = false) => {
+		const size = getSizeString(formatBytes(download.size));
+		const disabled = !!(maxItems) && !!(idx) && maxItems === idx;
 
 		return (
 			<DownloadContextMenu
@@ -148,11 +138,13 @@ export function DownloadList({
 				onDelete={onDelete}
 				onShare={onShare}
 				downloadListType={downloadListType}
+				disabled={disabled}
 			>
 				<div
 					className={cn(
-						"flex items-center justify-between p-4 hover:bg-muted/30 cursor-pointer transition-colors",
-						isPlaylistChild && "pl-12 bg-muted/5"
+						"flex items-center justify-between p-4 transition-colors",
+						isPlaylistChild && "pl-12 bg-muted/5",
+						disabled ? "cursor-auto" : "cursor-pointer hover:bg-muted/30",
 					)}
 				>
 					<div className="flex items-center gap-4">
@@ -192,7 +184,7 @@ export function DownloadList({
 	return (
 		<ScrollArea className={maxHeight}>
 			<div className="divide-y divide-border/40">
-				{items.map((item) => (
+				{items.map((item, idx) => (
 					item.type === "playlist" ? (
 						<div key={item.id}>
 							<div
@@ -226,12 +218,12 @@ export function DownloadList({
 							</div>
 							{expandedPlaylist === item.id && item.videos && (
 								<div className="bg-muted/5 divide-y divide-border/20">
-									{item.videos.map((video) => renderDownloadRow(video, true))}
+									{item.videos.map((video, i) => renderDownloadRow(video, 0, true))}
 								</div>
 							)}
 						</div>
 					) : (
-						renderDownloadRow(item, false)
+						renderDownloadRow(item, idx, false)
 					)
 				))}
 			</div>
@@ -241,11 +233,17 @@ export function DownloadList({
 
 function QualityBadge({quality}: Readonly<{ quality: string }>) {
 	const getQualityColor = (q: string) => {
-		if (q.includes("4K") || q.includes("2160")) return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+		if (q.includes("best")) return "bg-yellow-500/10 text-yellow-600 border-yellow-500/20 font-medium";
+		if (q.includes("8k") || q.includes("4320")) return "bg-violet-600/10 text-violet-600 border-violet-600/20 font-bold";
+		if (q.includes("4k") || q.includes("2160")) return "bg-purple-500/10 text-purple-500 border-purple-500/20";
 		if (q.includes("1440") || q.includes("2K")) return "bg-blue-500/10 text-blue-500 border-blue-500/20";
 		if (q.includes("1080") || q.includes("FHD")) return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
 		if (q.includes("720") || q.includes("HD")) return "bg-amber-500/10 text-amber-500 border-amber-500/20";
 		if (q.includes("480") || q.includes("SD")) return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+		if (q.includes("360")) return "bg-sky-500/10 text-sky-500 border-sky-500/20";
+		if (q.includes("240") || q.includes("144")) return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+		if (q.includes("audio") || q.includes("kbps")) return "bg-pink-500/10 text-pink-500 border-pink-500/20";
+
 		return "bg-gray-500/10 text-gray-500 border-gray-500/20";
 	};
 

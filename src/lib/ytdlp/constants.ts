@@ -1,18 +1,10 @@
-import {ForwardRefExoticComponent, RefAttributes} from "react";
-import {FileVideo, LucideProps, Monitor, Music, Smartphone, Sparkles, Tv,} from "lucide-react";
+import {FileVideo, Monitor, Music, Smartphone, Sparkles, Tv,} from "lucide-react";
 import i18n from "i18next";
 
 interface AudioQuality {
 	bitrate: AudioBitrate;
 	label: () => string;
 	sub: () => string;
-}
-
-interface VideoQuality {
-	id: string
-	label: () => string
-	sub: () => string
-	icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>
 }
 
 export const VIDEO_QUALITIES: VideoQuality[] = [

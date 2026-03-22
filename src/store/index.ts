@@ -4,18 +4,22 @@ import settingsReducer from "./slices/settings-slice";
 import downloadsReducer from "./slices/downloads-slice";
 import activeDownloadsReducer from "./slices/active-downloads-slice";
 import {databaseSyncMiddleware} from "@/store/middleware/database-sync-middleware";
+import {settingsSyncMiddleware} from "@/store/middleware/settings-sync-middleware";
 
 export const store = configureStore({
-    reducer: {
-        app: appReducer,
-        settings: settingsReducer,
-        downloads: downloadsReducer,
-        activeDownloads: activeDownloadsReducer,
-    },
-    middleware: getDefaultMiddleware =>
-        getDefaultMiddleware({
-            serializableCheck: false,
-        }).concat(databaseSyncMiddleware),
+	reducer: {
+		app: appReducer,
+		settings: settingsReducer,
+		downloads: downloadsReducer,
+		activeDownloads: activeDownloadsReducer,
+	},
+	middleware: getDefaultMiddleware =>
+		getDefaultMiddleware({
+			serializableCheck: false,
+		}).concat(
+			databaseSyncMiddleware,
+			settingsSyncMiddleware
+		),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

@@ -36,7 +36,7 @@ export function ActiveDownloadsBanner() {
 				{/* Status Text */}
 				<div className="flex flex-col min-w-[140px]">
                     <span className="text-sm font-semibold text-foreground leading-none mb-1.5 tracking-tight">
-                        Downloading {currentDownloads.length} item{currentDownloads.length === 1 ? '' : 's'}...
+                        Downloading {currentDownloads.length - 1} item{currentDownloads.length === 1 ? '' : 's'}...
                     </span>
 
 					{/* Live Metrics */}

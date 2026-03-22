@@ -1,13 +1,15 @@
-import {Filter, Search} from "lucide-react";
+import {Filter, Loader2, Search} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {useAppSelector} from "@/store/hooks";
 import {useTranslation} from "react-i18next";
 import {DownloadList} from "@/components/download-list";
 import {useDownloads} from "@/hooks/useDownloads";
-import {useMemo} from "react";
+import {useMemo, useState} from "react";
 import {useApp} from "@/hooks/useApp";
+import {useConfirmation} from "@/context/confirmation-context";
+import {ActionProgress} from "@/components/action-progress";
+import {deleteFileFromSystem} from "@/lib/ytdlp/ytdlp";
 
 interface HistoryProps {
 	onOpenFile: (download: DownloadItem) => void;
@@ -16,14 +18,12 @@ interface HistoryProps {
 	onDelete: (download: DownloadItem, downloadListType: DownloadListType) => void;
 	onShare: (download: DownloadItem) => void;
 	onClearCompleted: () => void;
-	onClearAll: () => void;
 	completedCount: number;
 }
 
 export function History({
 	                        onOpenFile,
 	                        onClearCompleted,
-	                        onClearAll,
 	                        completedCount,
 	                        onOpenFolder,
 	                        onRetry,
@@ -31,7 +31,9 @@ export function History({
 	                        onShare
                         }: Readonly<HistoryProps>) {
 	const {t} = useTranslation();
-	const {downloads} = useDownloads();
+	const {downloads, removeDownload} = useDownloads();
+	const [deleting, setDeleting] = useState(0);
+	const { confirm } = useConfirmation();
 	const {
 		historySearch,
 		historyFilter,
@@ -40,6 +42,38 @@ export function History({
 		setHistoryTypeFilter,
 		setHistoryFilter
 	} = useApp();
+
+	const sleep = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
+
+	const clearAllDownloads = () => {
+		confirm({
+			title: t("history.clearAllTitle"),
+			description: t("history.clearAllDesc"),
+			type: "warning",
+			confirmText: t("contextMenu.delete"),
+			cancelText: t("common.cancel"),
+		}).then(async (yes) => {
+			if (yes && downloads.length > 0) {
+				const sleepDuration = downloads.length > 100 ? 100 : 250;
+				let idx = 0;
+				for (const download of downloads) {
+					setDeleting(idx + 1);
+					removeDownload(download.id);
+
+					try {
+						await deleteFileFromSystem(download);
+					} catch (err) {
+						console.log("Error deleting downloadId", download.id, err);
+					}
+
+					await sleep(sleepDuration) // to allow UI to update and show progress, especially for large batches
+					idx++
+				}
+
+				setDeleting(0);
+			}
+		});
+	}
 
 	const filteredDownloads = useMemo(() => {
 		return downloads.filter((item) => {
@@ -55,16 +89,17 @@ export function History({
 					<p className="text-sm text-muted-foreground">{t("history.subtitle")}</p>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" size="sm" onClick={onClearCompleted} disabled={completedCount === 0}>
+					<Button variant="outline" className="p-4" size="sm" onClick={onClearCompleted} disabled={completedCount === 0}>
 						{t("history.clearCompleted")}
 					</Button>
-					<Button variant="destructive" size="sm" onClick={onClearAll} disabled={downloads.length === 0}>
+					<Button variant="destructive" className="p-4" size="sm" onClick={clearAllDownloads} disabled={downloads.length === 0}>
 						{t("history.clearAll")}
 					</Button>
 				</div>
 			</div>
 
-			<div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
+			<div className="rounded-xl relative border border-border/50 bg-card shadow-sm overflow-hidden">
+				<ActionProgress message={t("history.deletingProgress", {current: deleting, total: downloads.length})} visible={deleting > 0} />
 				<div
 					className="p-4 border-b border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 					<div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
@@ -78,7 +113,7 @@ export function History({
 							/>
 						</div>
 						<Select value={historyFilter} onValueChange={(v) => setHistoryFilter(v)}>
-							<SelectTrigger className="h-8 w-[130px] text-xs bg-background">
+							<SelectTrigger className="h-8 w-32.5 text-xs bg-background">
 								<div className="flex items-center gap-2">
 									<Filter className="size-3 text-muted-foreground"/>
 									<SelectValue placeholder={t("history.allStatus")}/>
@@ -92,7 +127,7 @@ export function History({
 							</SelectContent>
 						</Select>
 						<Select value={historyTypeFilter} onValueChange={(v) => setHistoryTypeFilter(v)}>
-							<SelectTrigger className="h-8 w-[130px] text-xs bg-background">
+							<SelectTrigger className="h-8 w-32.5 text-xs bg-background">
 								<div className="flex items-center gap-2">
 									<Filter className="size-3 text-muted-foreground"/>
 									<SelectValue placeholder="Type"/>
@@ -115,9 +150,11 @@ export function History({
 					<DownloadList
 						onOpenFolder={onOpenFolder}
 						onRetry={onRetry} onDelete={onDelete} onShare={onShare}
-						items={filteredDownloads} onOpenFile={onOpenFile} downloadListType="completed"/>
+						items={filteredDownloads} onOpenFile={onOpenFile} downloadListType="completed"
+						maxHeight={"h-[700px]"}
+					/>
 				) : (
-					<div className="py-16 flex flex-col items-center justify-center text-muted-foreground">
+					<div className="py-16 flex flex-col items-center justify-center text-muted-foreground h-175">
 						<div className="bg-muted/50 p-4 rounded-full mb-3">
 							<Search className="size-6 opacity-50"/>
 						</div>

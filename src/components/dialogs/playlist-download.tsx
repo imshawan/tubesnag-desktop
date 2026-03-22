@@ -18,6 +18,7 @@ import {QualitySelector} from "@/components/quality-selector";
 import {FormatSelector} from "@/components/format-selector";
 import {AudioBitrateSelector} from "@/components/audio-bitrate-selector";
 import {audioFormats} from "@/lib/ytdlp/constants";
+import {useSettings} from "@/hooks/useSettings";
 
 export function PlaylistDownloadDialog({
                                            open,
@@ -26,6 +27,8 @@ export function PlaylistDownloadDialog({
                                            isLoading,
                                        }: Readonly<DownloadDialogProps>) {
     const {t} = useTranslation();
+    const {quality: selectedQuality} = useSettings();
+
     const [url, setUrl] = useState<string>("");
     const [quality, setQuality] = useState<QualityType>("best");
     const [format, setFormat] = useState<FormatType>("mp4");
@@ -45,6 +48,12 @@ export function PlaylistDownloadDialog({
             // setReverse(false);
         }
     }, [open]);
+
+    useEffect(() => {
+        if (selectedQuality) {
+            setQuality(selectedQuality);
+        }
+    }, [selectedQuality]);
 
     const handleFormatChange: (value: FormatType) => void = (value: FormatType) => {
         setFormat(value);
@@ -142,10 +151,10 @@ export function PlaylistDownloadDialog({
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)} className="text-sm p-4">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} className="p-4" size="sm">
                         {t("common.cancel")}
                     </Button>
-                    <Button onClick={handleSubmit} disabled={isLoading} className="text-sm p-4">
+                    <Button onClick={handleSubmit} disabled={isLoading} className="p-4" size="sm">
                         {isLoading ? t("playlistDownload.processing") : t("playlistDownload.processPlaylist")}
                     </Button>
                 </DialogFooter>

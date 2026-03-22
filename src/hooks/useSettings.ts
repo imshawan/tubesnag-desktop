@@ -4,7 +4,8 @@ import {
     selectSetSavePlaylistFolders,
     setSavePlaylistFolders,
     selectAutoStart,
-    selectDownloadPath, selectItemsPerPage, selectRecentItemsPerPage
+    selectDownloadPath, selectItemsPerPage, selectRecentItemsPerPage, setQuality, setDownloadPath, setAutoStart,
+    setRecentItemsPerPage, setItemsPerPage
 } from "@/store/slices/settings-slice";
 
 export function useSettings() {
@@ -21,6 +22,26 @@ export function useSettings() {
         dispatch(setSavePlaylistFolders(value));
     };
 
+    const setSelectedQuality = (value: QualityType) => {
+        dispatch(setQuality(value));
+    }
+
+    const setSelectedDownloadPath = (value: string) => {
+        dispatch(setDownloadPath(value));
+    }
+
+    const setAutoStartForDownloads = (value: boolean) => {
+        dispatch(setAutoStart(value));
+    };
+
+    const setRecentDownloadItemsPerPage = (value: number) => {
+        dispatch(setRecentItemsPerPage(value));
+    }
+
+    const setDownloadItemsPerPage = (value: number) => {
+        dispatch(setItemsPerPage(value));
+    }
+
     return {
         itemsPerPage,
         recentItemsPerPage,
@@ -28,6 +49,11 @@ export function useSettings() {
         quality,
         downloadPath,
         autoStart,
-        setSaveVideosToPlaylistFolders
+        setSaveVideosToPlaylistFolders,
+        setSelectedQuality,
+        setSelectedDownloadPath,
+        setAutoStartForDownloads,
+        setRecentDownloadItemsPerPage,
+        setDownloadItemsPerPage
     };
 }

@@ -22,6 +22,7 @@ interface DownloadContextMenuProps {
 	onDelete: (download: DownloadItem, downloadListType: DownloadListType) => void
 	onShare: (download: DownloadItem) => void
 	downloadListType: DownloadListType
+	disabled?: boolean
 }
 
 export function DownloadContextMenu({
@@ -32,7 +33,8 @@ export function DownloadContextMenu({
 	                                    onRetry,
 	                                    onDelete,
 	                                    onShare,
-	                                    downloadListType
+	                                    downloadListType,
+	                                    disabled,
                                     }: Readonly<DownloadContextMenuProps>) {
 	const {t} = useTranslation()
 	const {addToast} = useToast();
@@ -68,7 +70,7 @@ export function DownloadContextMenu({
 			<ContextMenuTrigger asChild>
 				{children}
 			</ContextMenuTrigger>
-			<ContextMenuContent className="w-56">
+			{!disabled && <ContextMenuContent className="w-56">
 				{/* Open file - only for completed downloads */}
 				{download.status === "completed" && (
 					<>
@@ -132,7 +134,7 @@ export function DownloadContextMenu({
 					<Trash2 className="mr-2 h-4 w-4"/>
 					<span>{t("contextMenu.delete")}</span>
 				</ContextMenuItem>
-			</ContextMenuContent>
+			</ContextMenuContent>}
 		</ContextMenu>
 	)
 }

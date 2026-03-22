@@ -16,7 +16,7 @@ export function ActionCard({
   gradient,
   iconColor,
   onClick,
-}: ActionCardProps) {
+}: Readonly<ActionCardProps>) {
   return (
     <button
       onClick={onClick}

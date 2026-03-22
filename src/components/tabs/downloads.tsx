@@ -36,7 +36,7 @@ export function Downloads({onOpenFile, onOpenFolder, onRetry, onDelete, onShare}
 				)}
 			</div>
 
-			<div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
+			<div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden h-75">
 				{hasDownloads ? (
 					<DownloadList items={currentDownloads} onOpenFile={onOpenFile} onOpenFolder={onOpenFolder}
 					              onRetry={onRetry} onDelete={onDelete} onShare={onShare} downloadListType="active"/>

@@ -88,7 +88,7 @@ export function ConfirmationProvider({children}: Readonly<{ children: React.Reac
             {children}
             {options && (
                 <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
-                    <DialogContent className="sm:max-w-[440px]">
+                    <DialogContent className="sm:max-w-110">
                         <div className="flex gap-4 items-start pt-2">
                             <Icon className={cn("size-6 shrink-0 mt-0.5", iconClass)} strokeWidth={2}/>
                             <div className="flex-1 space-y-3">
@@ -110,7 +110,8 @@ export function ConfirmationProvider({children}: Readonly<{ children: React.Reac
                                 <Button
                                     variant="outline"
                                     onClick={handleCancel}
-                                    className="min-w-[100px] text-sm p-4"
+                                    className="min-w-25 p-4"
+                                    size={"sm"}
                                 >
                                     {options.cancelText || "Cancel"}
                                 </Button>
@@ -118,7 +119,8 @@ export function ConfirmationProvider({children}: Readonly<{ children: React.Reac
                             <Button
                                 variant={type === "danger" ? "destructive" : "default"}
                                 onClick={handleConfirm}
-                                className={cn("min-w-[100px] p-4 text-sm", options.confirmClassname)}
+                                size={"sm"}
+                                className={cn("min-w-25 p-4", options.confirmClassname)}
                             >
                                 {options.confirmText || "OK"}
                             </Button>
