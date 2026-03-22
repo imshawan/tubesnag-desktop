@@ -2,10 +2,14 @@ import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 
 export interface ActiveDownloadsState {
     items: DownloadItem[];
+    isDownloading: string;
+    downloadSpeed: string;
 }
 
 const initialState: ActiveDownloadsState = {
     items: [],
+    isDownloading: "",
+    downloadSpeed: "",
 };
 
 const activeDownloadsSlice = createSlice({
@@ -35,7 +39,7 @@ const activeDownloadsSlice = createSlice({
             updates: Partial<DownloadItem>
         }>) {
             const item = state.items.find((d) => d.id === action.payload.playlistId);
-            if (item && item.videos) {
+            if (item?.videos) {
                 const idx = item.videos.findIndex(v => v.id === action.payload.downloadId);
                 if (idx !== -1) {
                     let isCompleted = item.videos.filter(e => e.status === "completed").length;
@@ -62,6 +66,12 @@ const activeDownloadsSlice = createSlice({
         clearActiveDownloads: (state) => {
             state.items = [];
         },
+        setIsDownloading: (state, action: PayloadAction<string>) => {
+            state.isDownloading = action.payload;
+        },
+        setDownloadSpeed: (state, action: PayloadAction<string>) => {
+            state.downloadSpeed = action.payload;
+        }
     },
 });
 
@@ -71,8 +81,12 @@ export const {
     updateActiveDownload,
     removeActiveDownload,
     clearActiveDownloads,
-    updateActivePlaylistVideoDownload
+    updateActivePlaylistVideoDownload,
+    setIsDownloading,
+    setDownloadSpeed,
 } = activeDownloadsSlice.actions;
 export default activeDownloadsSlice.reducer;
 
 export const selectActiveDownloads = (state: {activeDownloads: ActiveDownloadsState}) => state.activeDownloads.items;
+export const selectIsDownloading = (state: {activeDownloads: ActiveDownloadsState}) => state.activeDownloads.isDownloading;
+export const selectDownloadSpeed = (state: {activeDownloads: ActiveDownloadsState}) => state.activeDownloads.downloadSpeed;

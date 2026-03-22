@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('electron', {
     installDependencies: () => ipcRenderer.invoke('setup:install-dependencies'),
     getPlatform: () => ipcRenderer.invoke('app:get-platform'),
     getAppVersion: () => ipcRenderer.invoke('app:get-version'),
+    openYtUrl: (url: string) => ipcRenderer.invoke('app:open-yt-url', url),
     fileToDataUrl: (filePath: string) => ipcRenderer.invoke('file:to-data-url', filePath),
     onInstallProgress: (callback: any) =>
         ipcRenderer.on('install-progress', (event, data) => callback(data)),

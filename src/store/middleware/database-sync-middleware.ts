@@ -76,7 +76,7 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
             const state = store.getState();
             const playlist = state.activeDownloads.items.find((item: any) => item.id === playlistId);
 
-            if (playlist && playlist.status === 'completed') {
+            if (playlist?.status === 'completed') {
                 console.log('Moving playlist to completed downloads');
 
                 await db.moveActiveToCompleted(playlistId);

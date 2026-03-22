@@ -1,4 +1,5 @@
 import i18n from "i18next";
+import {getElectron} from "@/lib/utils/common";
 
 export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<void> => {
     const {
@@ -17,11 +18,9 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
         audioBitrate
     } = options;
 
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
+    
 
-    const electron = globalThis.electron;
+    const electron = getElectron();
 
     return new Promise((resolve, reject) => {
         let isCompleted = false;
@@ -36,7 +35,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
             console.log('[ytdlp utility] received:', data);
 
             if (data.type === "progress") {
-                onProgress?.(data.progress);
+                onProgress?.(data.progress, data.speed);
             } else if (data.type === "metadata") {
                 onData?.(data.data);
             } else if (data.type === "duplicate" && !isDuplicated) {
@@ -51,7 +50,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
                 resolve();
             } else if (data.type === "error") {
                 electron.off("ytdlp:progress", handleProgress);
-                onError?.({error: data.error, downloadId});
+                onError?.({...data.data, downloadId});
                 isCompleted = true;
                 resolve();
             }
@@ -76,52 +75,35 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 };
 
 export const fileToDataUrl = async (filePath: string): Promise<string> => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    return await globalThis.electron.fileToDataUrl(filePath);
+    return await getElectron().fileToDataUrl(filePath);
 };
 
 export const selectFolder = async () => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    return await globalThis.electron.selectFolder();
+    return await getElectron().selectFolder();
 };
 
 export const openFile = async (item: DownloadItem): Promise<void> => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    await globalThis.electron.openFile(item);
+    return await getElectron().openFile(item);
 }
 
 export const openFolder = async (item: DownloadItem): Promise<void> => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    await globalThis.electron.openFolder(item);
+    return await getElectron().openFolder(item);
+}
+
+export const openYouTubeUrl = async (url: string): Promise<void> => {
+    return await getElectron().openYtUrl(url);
 }
 
 export const deleteFileFromSystem = async (item: DownloadItem): Promise<void> => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    await globalThis.electron.deleteFileFromSystem(item);
+    return await getElectron().deleteFileFromSystem(item);
 }
 
 export const deletePlaylistFolder = async (item: DownloadItem): Promise<void> => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    await globalThis.electron.deleteDownloadedPlaylistResources(item);
+    return await getElectron().deleteDownloadedPlaylistResources(item);
 }
 
 export const getPlaylistVideos = async (
-    url: string, reverse: boolean = false, playlistId: string
+    url: string, reverse: boolean, playlistId: string
 ): Promise<PlaylistInfo> => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    return await globalThis.electron.getPlaylistVideos(url, reverse, playlistId);
+    return await getElectron().getPlaylistVideos(url, reverse, playlistId);
 };

@@ -29,6 +29,7 @@ import {MediaTypeBadge} from "@/components/dialogs/item-properties/media-type-ba
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {useTranslation} from "react-i18next";
+import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 
 interface ItemPropertiesDialogProps {
 	onOpenFolder: (download: DownloadItem) => void;
@@ -41,7 +42,7 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 	const imageCache = useRef<Record<string, string>>({});
 
 	const {downloadItemPropertyOpen: item, setDownloadItemPropertyOpen} = useDownloads()
-	// Cache item for smooth exit animations
+	const {currentDownloadId} = useActiveDownloads();
 
 	const [displayItem, setDisplayItem] = useState(item)
 
@@ -50,7 +51,7 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 	}, [item])
 
 	useEffect(() => {
-		if (!item || !item.thumbnail) return;
+		if (!item?.thumbnail) return;
 
 		if (item.thumbnail.startsWith("http"))
 			return setDataUrl(item.thumbnail || "");
@@ -97,8 +98,10 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 
 	if (!displayItem) return null
 
-	const isPlaylist = displayItem.type === "playlist"
-	const hasChildren = isPlaylist && displayItem.videos && displayItem.videos.length > 0
+	const isPlaylist = displayItem.type === "playlist";
+	const hasChildren = isPlaylist && displayItem.videos && displayItem.videos.length > 0;
+	const isDownloadErrored = (displayItem && (displayItem.status === "downloading" || displayItem.status === "pending"))
+		&& currentDownloadId !== displayItem.id;
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,9 +146,9 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 								{/* Dynamic Status / Progress Area */}
 								<div className="space-y-2 mt-1">
 									<div className="flex items-center gap-2">
-										<Badge variant={getStatusVariant(displayItem.status)}
+										<Badge variant={isDownloadErrored ? "destructive" : getStatusVariant(displayItem.status)}
 										       className="capitalize px-2.5 shadow-sm">
-											{displayItem.status}
+											{isDownloadErrored ? t("common.broken") : displayItem.status}
 										</Badge>
 										<MediaTypeBadge type={displayItem.type} format={displayItem.format} />
 									</div>

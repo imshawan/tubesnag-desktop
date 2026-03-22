@@ -16,6 +16,7 @@ declare global {
             fileToDataUrl: (filePath: string) => Promise<string>;
             getPlatform: () => Promise<NodeJS.Platform>;
             getAppVersion: () => Promise<string>;
+            openYtUrl: (url: string) => Promise<void>;
             on: (channel: string, listener: (data: any) => void) => void;
             off: (channel: string, listener: (data: any) => void) => void;
             invoke: (channel: string, args: any) => Promise<any>;
@@ -51,7 +52,7 @@ declare global {
 
     type AudioBitrate = "128" | "192" | "256" | "320";
     type DownloadItemType = "video" | "audio" | "playlist";
-    type QualityType = "best" | "4k" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "audio"
+    type QualityType = "best" | "8k" | "4k" | "1440p" | "1080p" | "720p" | "480p" | "360p" | "240p" | "144p" | "audio" | "unknown"
     type DownloadStatus = "pending" | "downloading" | "completed" | "failed" | "duplicate"
     type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
 
@@ -73,7 +74,7 @@ declare global {
         type: DownloadItemType;
         date: string;
         channel: string;
-        format?: string;
+        format?: FormatType;
         thumbnail?: string;
         videos?: DownloadItem[];
         downloadPath: string;
@@ -97,6 +98,12 @@ declare global {
         format_id: string;
         format: string;
         quality: string;
+        height: number;
+        width: number;
+        audio_codec: string;
+        audio_bitrate: number;
+        audio_sample_rate: number;
+        audio_ext: string | null
     }
 
     interface YtDlpDownloadOptions {
@@ -106,11 +113,11 @@ declare global {
         format?: FormatType;
         audioBitrate?: AudioBitrate;
         downloadId: string;
-        onProgress?: (progress: number) => void;
+        onProgress?: (progress: number, speed?: string) => void;
         onData?: (data: Partial<DownloadItem>) => void;
         onComplete?: (data: Partial<DownloadItem>) => void;
         onDuplicate?: (filename: string, metadata: any) => void;
-        onError?: (data: {error: string; downloadId: string }) => void;
+        onError?: (data: {error: string; key: string, downloadId: string }) => void;
         saveToPlaylistFolder?: boolean
         playlistName?: string
     }
@@ -129,7 +136,9 @@ declare global {
         quality: QualityType,
         format: FormatType,
         reverse: boolean,
-        audioBitrate: AudioBitrate
+        audioBitrate: AudioBitrate,
+        existingId?: string,
+        runBotVerificationFirst?: boolean
     ) => void;
 }
 

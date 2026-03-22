@@ -1,14 +1,19 @@
-import os from "os";
-import {app, dialog, shell} from "electron";
-import fs from "fs/promises";
-import * as path from "path";
-import {audioFormats, DEPENDENCY_CONFIG, downloadQualityMap} from "@/lib/ytdlp/constants";
-import fsSync from "fs";
+import os from "node:os";
+import {app, dialog, shell, ipcMain, BrowserWindow, session} from "electron";
+import fs from "node:fs/promises";
+import * as path from "node:path";
+import {
+	audioFormats,
+	DEPENDENCY_CONFIG,
+	downloadItemJsonInfoStructure,
+	downloadQualityMap
+} from "@/lib/ytdlp/constants";
+import fsSync from "node:fs";
 import * as child_process from "node:child_process";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/lib/utils/downloader";
-import {isYtdlpError, parseYtdlpError, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
-import {readYtVideoInfoJsonFile, resolveDownloadedFilePath} from "@/lib/ytdlp/utils";
+import {isValidYouTubeUrl, isYtdlpError, parseYtDlpError, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
+import {readYtVideoInfoJsonFile, resolveDownloadedFilePath, resolveQualityByResolution} from "@/lib/ytdlp/utils";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 
 export const getYtDlpConfig = () => {
@@ -175,17 +180,6 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
     const mainWindow = ipcContext.mainWindow;
     const jsonInfoFile = path.join(tempDir, `${downloadId}.json`);
 
-    const jsonInfoStructure = `{
-        "title":"%(title)s.%(ext)s",
-        "channel":"%(channel)s",
-        "ext":"%(ext)s",
-        "filesize":%(filesize)j,
-        "filesize_approx":%(filesize_approx)j,
-        "format_id":"%(format_id)s",
-        "format":"%(format)s",
-        "quality":"%(height)sp"
-    }`;
-
     const isAudioFormat = format != null && audioFormats.includes(format);
 
     // Build format string with both quality and format
@@ -204,7 +198,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 
     const args = [
         '-f', selectedFormat,
-        '--print-to-file', jsonInfoStructure, jsonInfoFile,
+        '--print-to-file', downloadItemJsonInfoStructure, jsonInfoFile,
         '--write-thumbnail',
         '--convert-thumbnail', 'webp',
         '-o', `thumbnail:${path.join(thumbnailPath, downloadId + '.%(ext)s')}`,
@@ -226,11 +220,17 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
         }
     }
 
+    // Clean up existing JSON info file if it's a retry download
+    if (fsSync.existsSync(jsonInfoFile)) {
+        fsSync.unlinkSync(jsonInfoFile);
+    }
+
     return new Promise((resolve, reject) => {
         const {spawn} = child_process;
         const child = spawn(ytDlpExe, args, {stdio: ['ignore', 'pipe', 'pipe']});
         let lastProgress = 0;
         const videoInfoData: YtDlpMeta = {
+            audio_bitrate: 0, audio_codec: "", audio_ext: null, audio_sample_rate: 0,
             quality: "",
             filesize: 0,
             title: '',
@@ -238,7 +238,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
             ext: '',
             filesize_approx: 0,
             format: '',
-            format_id: ''
+            format_id: '',
+            height: 0,
+            width: 0
         }
         const dataSentState = {
             metadata: false,
@@ -259,6 +261,11 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                 if (videoInfo && !dataSentState.metadata) {
                     videoInfo.filesize = videoInfo.filesize ?? videoInfo.filesize_approx ?? 0;
                     let quality = isAudioFormat ? `${audioBitrate} kbps` : videoInfo.quality;
+
+                    if (!Object.keys(downloadQualityMap).includes(quality)) {
+                        quality = resolveQualityByResolution(videoInfo.width, videoInfo.height) || "unknown";
+                        videoInfo.quality = quality;
+                    }
 
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'metadata',
@@ -368,6 +375,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                 }
 
                 const progressMatch = line.match(/\[\s*download\s*\]\s+(\d+(?:\.\d+)?)%/);
+                const speedMatch = new RegExp(/at\s+([\d.]+[KMG]iB\/s)/).exec(line);
                 if (progressMatch) {
                     const progress = Math.min(100, Math.max(0, Number.parseFloat(progressMatch[1])));
                     if (Math.abs(progress - lastProgress) >= 1) {
@@ -375,6 +383,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                         mainWindow?.webContents.send('ytdlp:progress', {
                             type: 'progress',
                             progress: Math.round(progress),
+                            speed: speedMatch?.length ? speedMatch[1] : undefined,
                             downloadId
                         });
                     }
@@ -386,12 +395,10 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
                 console.error('[yt-dlp stderr]', line);
 
                 if (isYtdlpError(line)) {
-                    const ytdlpError = parseYtdlpError(line);
+                    const ytdlpError = parseYtDlpError(line);
                     mainWindow?.webContents.send('ytdlp:progress', {
                         type: 'error',
-                        data: {
-                            error: ytdlpError
-                        },
+                        data: ytdlpError,
                         downloadId
                     });
                 }
@@ -577,6 +584,12 @@ export const openFolder = async (event: IpcMainInvokeEvent, item: DownloadItem) 
     }
 }
 
+export const openYouTubeUrl = async (event: IpcMainInvokeEvent, url: string) => {
+    if (url.startsWith('http') && isValidYouTubeUrl(url)) {
+        await shell.openExternal(url);
+    }
+}
+
 export const deleteDownloadedResources = (event: IpcMainInvokeEvent, item: DownloadItem) => {
     const {thumbnail} = item;
 
@@ -608,4 +621,24 @@ export const deleteDownloadedPlaylistResources = (event: IpcMainInvokeEvent, ite
             }
         });
     }
+}
+
+async function openVerificationWindow (url: string) {
+	const win = new BrowserWindow({ width: 800, height: 600, show: true });
+	await win.loadURL(url);
+
+	return new Promise((resolve) => {
+		win.on('close', async () => {
+			const cookies = await session.defaultSession.cookies.get({ domain: '.youtube.com' });
+			let cookieContent = "# Netscape HTTP Cookie File\n";
+			cookies.forEach(c => {
+				const expiry = Math.floor(c.expirationDate || (Date.now() / 1000) + 3600);
+				cookieContent += `${c.domain}\tTRUE\t${c.path}\t${c.secure ? 'TRUE' : 'FALSE'}\t${expiry}\t${c.name}\t${c.value}\n`;
+			});
+
+			const cookiePath = path.join(app.getPath('userData'), 'temp_cookies.txt');
+			fsSync.writeFileSync(cookiePath, cookieContent);
+			resolve(cookiePath);
+		});
+	});
 }

@@ -1,11 +1,4 @@
-import i18n from "i18next";
-
-const getElectron = () => {
-    if (!globalThis.electron) {
-        throw new Error(i18n.t("dashboard.electronNotDetected"));
-    }
-    return globalThis.electron;
-};
+import {getElectron} from "@/lib/utils/common";
 
 export const createActiveDownload = async (downloadItem: DownloadItem): Promise<{ success: boolean }> => {
     return await getElectron().db.createActiveDownload(downloadItem);

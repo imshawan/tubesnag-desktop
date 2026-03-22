@@ -1,3 +1,5 @@
+import i18n from "i18next";
+
 export function formatBytes(bytes: number) {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -13,3 +15,10 @@ export function generateUUID(): string {
     ).join('');
     return timestamp + random;
 }
+
+export const getElectron = () => {
+    if (!globalThis.electron) {
+        throw new Error(i18n.t("dashboard.electronNotDetected"));
+    }
+    return globalThis.electron;
+};

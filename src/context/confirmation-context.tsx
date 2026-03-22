@@ -22,6 +22,7 @@ interface ConfirmationOptions {
     onConfirm?: () => void;
     onCancel?: () => void;
     confirmClassname?: string
+    hideCancel?: boolean;
 }
 
 interface ConfirmationContextType {
@@ -49,7 +50,7 @@ const typeConfig = {
     },
 };
 
-export function ConfirmationProvider({children}: { children: React.ReactNode }) {
+export function ConfirmationProvider({children}: Readonly<{ children: React.ReactNode }>) {
     const [open, setOpen] = useState(false);
     const [options, setOptions] = useState<ConfirmationOptions | null>(null);
     const [resolvePromise, setResolvePromise] = useState<((value: boolean) => void) | null>(null);
@@ -105,13 +106,15 @@ export function ConfirmationProvider({children}: { children: React.ReactNode }) 
                         </div>
 
                         <DialogFooter className="mt-6">
-                            <Button
-                                variant="outline"
-                                onClick={handleCancel}
-                                className="min-w-[100px] text-sm p-4"
-                            >
-                                {options.cancelText || "Cancel"}
-                            </Button>
+                            {options.hideCancel ? null : (
+                                <Button
+                                    variant="outline"
+                                    onClick={handleCancel}
+                                    className="min-w-[100px] text-sm p-4"
+                                >
+                                    {options.cancelText || "Cancel"}
+                                </Button>
+                            )}
                             <Button
                                 variant={type === "danger" ? "destructive" : "default"}
                                 onClick={handleConfirm}

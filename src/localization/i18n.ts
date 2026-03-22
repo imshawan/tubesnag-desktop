@@ -75,12 +75,15 @@ i18n.use(initReactI18next).init({
         },
         videoQualities: {
           best: { label: "Best Available", sub: "Max Resolution" },
+          "8k": { label: "8K Ultra HD", sub: "4320p Extreme" },
           "4k": { label: "4K Ultra HD", sub: "2160p HDR" },
           "1440p": { label: "1440p QHD", sub: "2K Resolution" },
           "1080p": { label: "High Def", sub: "1080p @ 60fps" },
           "720p": { label: "Standard", sub: "720p / Data Saver" },
           "480p": { label: "Medium", sub: "480p / Medium quality" },
           "360p": { label: "Low", sub: "360p / Low quality" },
+          "240p": { label: "Very Low", sub: "240p / Small size" },
+          "144p": { label: "Tiny", sub: "144p / Minimum data" },
           audio: { label: "Audio Only", sub: "MP3 / M4A" }
         },
         downloadFormats: {
@@ -186,7 +189,7 @@ i18n.use(initReactI18next).init({
           openFileConfirm: "Do you want to open this file?",
           fileOpened: "Opening file...",
           failedToOpenFile: "Failed to open file",
-          retryingDownload: "Retrying download...",
+          retryingDownload: "Retrying \"{{title}}\"",
           deleteConfirm: "Are you sure you want to delete",
           downloadDeleted: "Download deleted",
           urlCopied: "URL copied to clipboard",
@@ -198,6 +201,12 @@ i18n.use(initReactI18next).init({
           openFile: "Open file?",
           proceed: "Proceed",
           cancel: "Cancel",
+          errored: "Errored",
+          broken: "Broken",
+          unableRetry: "Unable to retry download",
+          duplicate: "Duplicate file \"{{title}}\"",
+          botVerificationComplete: "Bot Verification Complete, please proceed to retry download",
+          ok: "OK",
         },
         downloads: {
           quality: "Quality",
@@ -244,7 +253,7 @@ i18n.use(initReactI18next).init({
           errorEmpty: "Please paste a link first.",
           starting: "Starting...",
           download: "Download",
-          addedToQueue: "Video added to download queue"
+          addedToQueue: "Video added to download queue",
         },
         storageIndicator: {
           storage: "Storage",
@@ -283,6 +292,7 @@ i18n.use(initReactI18next).init({
           openFile: "Preview",
           openFolder: "Open in Folder",
           copyUrl: "Copy URL",
+          openInYt: "Open in YouTube",
           copyTitle: "Copy Title",
           share: "Share",
           retry: "Retry Download",
@@ -294,7 +304,9 @@ i18n.use(initReactI18next).init({
             fileDeleted: "File deleted successfully",
             failedDeleteFile: "Failed to delete file",
             copiedToClipboard: "Copied to clipboard",
-            failedCopyToClipboard: "Failed to copy to clipboard"
+            failedCopyToClipboard: "Failed to copy to clipboard",
+            failedOpenYtUrl: "Failed to open link in browser",
+            openingYtUrl: "Opening link in browser...",
           }
         },
         database: {
@@ -321,8 +333,20 @@ i18n.use(initReactI18next).init({
           copyID: "Copy ID",
           openDirectory: "Open Directory",
           unknownChannel: "Unknown Channel"
+        },
+        ytDlpErrors: {
+          botVerification: "Verification Required: Open this video in your browser for a few seconds to solve the security check, then try again.",
+          formatUnavailable: "Format not available. Try a different quality or format.",
+          videoUnavailable: "Video is unavailable or has been removed.",
+          privateVideo: "This video is private.",
+          ageRestricted: "This video is age-restricted.",
+          directoryMissing: "Output directory does not exist.",
+          geoBlocked: "Access denied. Video may be geo-blocked.",
+          notFound: "Video not found.",
+          networkFailed: "Network connection failed.",
+          playlistEmpty: "The playlist contains no videos."
         }
-      },
+      }
     },
     hi
   },

@@ -33,11 +33,13 @@ import {Statistics} from "@/components/statistics";
 import {generateUUID} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
-import {getActiveDownloads, getCompletedDownloads} from "@/lib/database";
+import {getActiveDownloadById, getActiveDownloads, getCompletedDownloads} from "@/lib/database";
 import {createDownloadItemFromUrls} from "@/lib/ytdlp/download";
 import LangDisplay from "@/components/lang-display";
 import {useConfirmation} from "@/context/confirmation-context";
 import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-properties-dialog";
+import {BotVerificationError} from "@/lib/errors/bot-verification-error";
+import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
 
 function HomePage() {
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,7 +73,7 @@ function HomePage() {
         setDownloads: setActiveDownloads,
         addPlaylistDownload, addActiveDownloadItem,
         updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem,
-        removeActiveDownloadItem
+        removeActiveDownloadItem, setCurrentDownloadId, setItemDownloadSpeed
     } = useActiveDownloads();
 
     const updateDiskUsage = async () => {
@@ -134,10 +136,70 @@ function HomePage() {
             });
     }, []);
 
-    // Do not do writes to DB here or something because this does not have complete/updated video list info
+    // Do not do write to DB here or something because this does not have complete/updated video list info
     const onDownloadComplete = (download: Partial<DownloadItem>) => {
         const message = t("downloads.completedDownloading", {title: download.title});
         addToast(message, "success", 5000);
+    }
+
+    const handleRetrySingleItemFromPlaylist = async (download: DownloadItem) => {
+        if (!download.parentId) {
+            addToast(t("common.unableRetry"), "error");
+            return;
+        }
+        const parentDownload = await getActiveDownloadById(download.parentId);
+        if (!parentDownload) {
+            addToast(t("common.unableRetry"), "error");
+            return;
+        }
+
+        const child = parentDownload.videos?.find(v => v.id === download.id);
+        if (!child) {
+            addToast(t("common.unableRetry"), "error");
+            return;
+        }
+
+        const playlistId = child.id;
+
+        setCurrentDownloadId(child.id);
+        try {
+            await downloadWithYtdlp({
+                url: child.url,
+                outputPath: downloadPath,
+                quality: child.quality,
+                downloadId: child.id,
+                format: child.format,
+                audioBitrate: "192",
+                saveToPlaylistFolder: saveVideosToPlaylistFolders,
+                playlistName: child.title,
+                onProgress: (progress, speed) => {
+                    updateActivePlaylistVideoDownloadItem(playlistId, child.id, {
+                        progress,
+                        status: "downloading"
+                    });
+                    if (speed) {
+                        setItemDownloadSpeed(speed);
+                    }
+                },
+                onData: (data) => {
+                    updateActivePlaylistVideoDownloadItem(playlistId, child.id, data);
+                },
+                onDuplicate: (filename, metadata) => {
+                    addToast(t("common.duplicate", {title: filename}), "warning");
+                    updateActivePlaylistVideoDownloadItem(playlistId, child.id, {status: "duplicate", ...metadata});
+                },
+                onError: (e) => {
+                    addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error", 5000);
+                    updateActiveDownloadItem(child.id, {status: "failed"});
+                }
+            });
+        } catch (error) {
+            console.error("Download failed:", error);
+            updateActivePlaylistVideoDownloadItem(playlistId, child.id, {status: "failed"});
+        } finally {
+            setCurrentDownloadId("");
+            setItemDownloadSpeed("");
+        }
     }
 
     const handleSingleDownload: OnDownloadFn = async (
@@ -146,46 +208,79 @@ function HomePage() {
         format: FormatType,
         reverse,
         audioBitrate: AudioBitrate,
+        existingId,
+        runBotVerificationFirst
     ) => {
-        const newDownloads = createDownloadItemFromUrls(url, selectedQuality, format, downloadPath);
-        if (newDownloads.length === 0) return;
 
-        const download = newDownloads[0];
-        addActiveDownloadItem(download);
+        let download: DownloadItem;
+
+        if (existingId) {
+            const existingDownload = await getActiveDownloadById(existingId);
+            console.log("Found existing download:", existingDownload);
+            if (!existingDownload) {
+                addToast(t("common.unableRetry"), "error");
+                return;
+            }
+            download = existingDownload;
+        } else {
+            download = createDownloadItemFromUrls(url, selectedQuality, format, downloadPath)[0];
+            addActiveDownloadItem(download);
+            addToast(t("singleDownload.addedToQueue"), "success");
+        }
         setActiveDialog(null);
-        setActiveTab("downloads");
-
-        addToast(t("singleDownload.addedToQueue"), "success");
+        setCurrentDownloadId(download.id);
 
         try {
             await downloadWithYtdlp({
-                url: url[0],
+                url: download.url,
                 outputPath: downloadPath,
                 quality: selectedQuality,
                 downloadId: download.id,
                 format,
                 audioBitrate,
-                onProgress: (progress) => {
+                onProgress: (progress, speed) => {
                     // console.log(progress)
                     updateActiveDownloadItem(download.id, {progress, status: "downloading"});
+                    if (speed) {
+                        setItemDownloadSpeed(speed);
+                    }
                 },
                 onData: (data) => {
                     updateActiveDownloadItem(download.id, data);
                 },
                 onDuplicate: (filename, metadata) => {
-                    addToast(`File already downloaded: ${filename}`, "warning");
+                    addToast(t("common.duplicate", {title: filename}), "warning");
                     updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                 },
                 onComplete: onDownloadComplete,
                 onError: (e) => {
                     console.error("Download error:", e);
-                    addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
+                    addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, "error", 5000);
+
+                    if (e.error.startsWith("bot")) {
+                        throw new BotVerificationError(t(e.error));
+                    }
+
                     updateActiveDownloadItem(download.id, {status: "failed"});
                 }
             });
         } catch (error) {
+            console.log("Error here -- >", error)
+            if (error instanceof BotVerificationError) {
+                await confirm({
+                    title: t("common.botVerificationComplete"),
+                    description: download.title,
+                    type: "info",
+                    confirmText: t("common.ok"),
+                    hideCancel: true,
+                });
+            }
+
             console.error("Download failed:", error);
             updateActiveDownloadItem(download.id, {status: "failed"});
+        } finally {
+            setCurrentDownloadId("");
+            setItemDownloadSpeed("");
         }
     };
 
@@ -198,12 +293,13 @@ function HomePage() {
     ) => {
         const newDownloads = createDownloadItemFromUrls(urls, selectedQuality, format, downloadPath);
         setActiveDialog(null);
-        setActiveTab("downloads");
+        setCurrentDownloadId("");
 
         addToast(t("bulkDownload.addedToQueue"), "success");
 
         for (const download of newDownloads) {
             addActiveDownloadItem(download);
+            setCurrentDownloadId(download.id);
 
             try {
                 await downloadWithYtdlp({
@@ -213,19 +309,19 @@ function HomePage() {
                     downloadId: download.id,
                     format,
                     audioBitrate,
-                    onProgress: (progress) => {
+                    onProgress: (progress, speed) => {
                         updateActiveDownloadItem(download.id, {progress, status: "downloading"});
                     },
                     onData: (data) => {
                         updateActiveDownloadItem(download.id, data);
                     },
                     onDuplicate: (filename, metadata) => {
-                        addToast(`Duplicate: ${filename}`, "warning");
+                        addToast(t("common.duplicate", {title: filename}), "warning");
                         updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
                     },
                     onComplete: onDownloadComplete,
                     onError: (e) => {
-                        addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
+                        addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, "error", 5000);
                         updateActiveDownloadItem(download.id, {status: "failed"});
                     }
                 });
@@ -234,6 +330,9 @@ function HomePage() {
                 updateActiveDownloadItem(download.id, {status: "failed"});
             }
         }
+
+        setCurrentDownloadId("");
+        setItemDownloadSpeed("");
     };
 
     const handlePlaylistDownload: OnDownloadFn = async (
@@ -248,7 +347,6 @@ function HomePage() {
 
         try {
             addToast(t("playlistDownload.addedToQueue"), "info");
-            setActiveTab("downloads")
 
             const playlistId = generateUUID();
 
@@ -263,6 +361,7 @@ function HomePage() {
             const playlistItem = addPlaylistDownload(playlistId, playlistUrl, result, selectedQuality, format, downloadPath);
 
             for (const download of playlistItem.videos || []) {
+                setCurrentDownloadId(download.id);
                 try {
                     await downloadWithYtdlp({
                         url: download.url,
@@ -273,21 +372,24 @@ function HomePage() {
                         audioBitrate,
                         saveToPlaylistFolder: saveVideosToPlaylistFolders,
                         playlistName: result.title,
-                        onProgress: (progress) => {
+                        onProgress: (progress, speed) => {
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {
                                 progress,
                                 status: "downloading"
                             });
+                            if (speed) {
+                                setItemDownloadSpeed(speed);
+                            }
                         },
                         onData: (data) => {
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, data);
                         },
                         onDuplicate: (filename, metadata) => {
-                            addToast(`Duplicate: ${filename}`, "warning");
+                            addToast(t("common.duplicate", {title: filename}), "warning");
                             updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
                         },
                         onError: (e) => {
-                            addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error");
+                            addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, "error", 5000);
                             updateActiveDownloadItem(download.id, {status: "failed"});
                         }
                     });
@@ -303,6 +405,9 @@ function HomePage() {
                 error instanceof Error ? error.message : t("playlistDownload.processingFailed"),
                 "error"
             );
+        } finally {
+            setCurrentDownloadId("");
+            setItemDownloadSpeed("");
         }
     };
 
@@ -325,8 +430,23 @@ function HomePage() {
     };
 
     const handleRetry = async (download: DownloadItem) => {
-        addToast(t("dashboard.retryingDownload"), "info");
-        handleSingleDownload([download.url], download.quality, download.format as FormatType, false, "192" as AudioBitrate);
+        const parentId = download.parentId ? download.parentId : download.id;
+        const childId = download.parentId ? download.id : undefined;
+
+        addToast(t("dashboard.retryingDownload", {title: download.title}), "info");
+
+        if (parentId && childId) {
+            await handleRetrySingleItemFromPlaylist(download);
+        } else {
+            handleSingleDownload(
+                [download.url],
+                download.quality,
+                download.format as FormatType,
+                false,
+                "192" as AudioBitrate,
+                parentId
+            );
+        }
     };
 
     const handleDelete = async (download: DownloadItem, downloadListType: DownloadListType) => {
@@ -535,6 +655,8 @@ function HomePage() {
                 onDownload={handlePlaylistDownload}
             />
             <ItemPropertiesDialog onOpenFolder={handleOpenFolder} />
+
+            <ActiveDownloadsBanner />
         </div>
     );
 }

@@ -9,7 +9,7 @@ interface QualitySelectorProps {
     onValueChange: (quality: QualityType) => void;
 }
 
-export function QualitySelector({value, onValueChange}: QualitySelectorProps) {
+export function QualitySelector({value, onValueChange}: Readonly<QualitySelectorProps>) {
     const { t } = useTranslation();
 
     const selectedQuality = useMemo(() =>

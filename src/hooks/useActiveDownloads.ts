@@ -1,7 +1,9 @@
 import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
-    addActiveDownload, removeActiveDownload, selectActiveDownloads, setActiveDownloads,
+    addActiveDownload, removeActiveDownload, selectActiveDownloads,
+    selectDownloadSpeed, selectIsDownloading, setActiveDownloads, setDownloadSpeed,
+    setIsDownloading,
     updateActiveDownload,
     updateActivePlaylistVideoDownload
 } from "@/store/slices/active-downloads-slice";
@@ -10,9 +12,16 @@ import {createPlaylistDownloadItemFromUrls} from "@/lib/ytdlp/download";
 export function useActiveDownloads() {
     const dispatch = useAppDispatch();
     const activeDownloads = useAppSelector(selectActiveDownloads);
+    const currentDownloadId = useAppSelector(selectIsDownloading);
+    const downloadSpeed = useAppSelector(selectDownloadSpeed);
 
     const currentDownloads = useMemo(
-        () => activeDownloads.filter((d) => d.status === "downloading"),
+        () => activeDownloads.filter((d) => (d.status === "downloading" || d.status === "pending")),
+        [activeDownloads]
+    );
+
+    const failedDownloads = useMemo(
+        () => activeDownloads.filter((d) => d.status === "failed"),
         [activeDownloads]
     );
 
@@ -60,16 +69,18 @@ export function useActiveDownloads() {
 
     const getActiveDownloadById = (id: string) => activeDownloads.find((d) => d.id === id);
 
-    const failedDownloads = useMemo(
-        () => activeDownloads.filter((d) => d.status === "failed"),
-        [activeDownloads]
-    );
+    const setCurrentDownloadId = (downloadId: string) => dispatch(setIsDownloading(downloadId));
+
+    const setItemDownloadSpeed = (downloadId: string) => dispatch(setDownloadSpeed(downloadId));
 
     return {
         currentDownloads,
-        isDownloading: currentDownloads.length > 0,
+        currentDownloadId,
+        downloadSpeed,
         downloadCount: currentDownloads.length,
         setDownloads,
+        setCurrentDownloadId,
+        setItemDownloadSpeed,
         getActiveDownloadById,
         addPlaylistDownload,
         addActiveDownloadItem,
