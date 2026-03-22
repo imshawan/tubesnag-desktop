@@ -99,7 +99,6 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 
 	const isPlaylist = displayItem.type === "playlist"
 	const hasChildren = isPlaylist && displayItem.videos && displayItem.videos.length > 0
-	const TypeIcon = displayItem.type === "audio" ? Music : isPlaylist ? ListVideo : FileVideo
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,7 +116,7 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 									<img src={dataUrl} alt="Thumbnail"
 									     className="w-full h-full object-cover"/>
 								) : (
-									<TypeIcon className="size-10 text-muted-foreground/30"/>
+									<TypeIcon displayItem={displayItem} isPlaylist={isPlaylist} className="size-10 text-muted-foreground/30"/>
 								)}
 								<div
 									className="absolute bottom-1.5 right-1.5 bg-black/70 backdrop-blur-md px-1.5 py-0.5 rounded text-[10px] font-bold text-white uppercase tracking-wider">
@@ -322,4 +321,18 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 			</DialogContent>
 		</Dialog>
 	)
+}
+
+function TypeIcon ({displayItem, isPlaylist, className}: Readonly<{
+	displayItem: DownloadItem,
+	isPlaylist: boolean,
+	className?: string
+}>) {
+	if (displayItem.type === "audio") {
+		return <Music className={className} />;
+	} else if (isPlaylist) {
+		return <ListVideo className={className} />;
+	} else {
+		return <FileVideo className={className} />;
+	}
 }
