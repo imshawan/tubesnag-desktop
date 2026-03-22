@@ -10,7 +10,8 @@ import {Copy, ExternalLink, Folder, InfoIcon, PlayIcon, RotateCcw, Share2, Trash
 import {useToast} from "@/context/toast-context";
 import {useDownloads} from "@/hooks/useDownloads";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
-import {openYouTubeUrl} from "@/lib/ytdlp/ytdlp";
+import {openExternalLink} from "@/actions/shell";
+import {isValidYouTubeUrl} from "@/lib/ytdlp/download";
 
 interface DownloadContextMenuProps {
 	download: DownloadItem
@@ -52,10 +53,14 @@ export function DownloadContextMenu({
 	const handleOpenUrl = async (url: string) => {
 		addToast(t("contextMenu.messages.openingYtUrl"), "info");
 
-		openYouTubeUrl(url).catch((e) => {
-			console.error("Failed to open URL in browser:", e);
+		try {
+			if (url && isValidYouTubeUrl(url)) {
+				openExternalLink(url);
+			}
+		} catch (error) {
+			console.error("Failed to open URL in browser:", error);
 			addToast(t("contextMenu.messages.failedOpenYtUrl"), "error");
-		});
+		}
 	};
 
 	return (

@@ -90,10 +90,6 @@ export const openFolder = async (item: DownloadItem): Promise<void> => {
     return await getElectron().openFolder(item);
 }
 
-export const openYouTubeUrl = async (url: string): Promise<void> => {
-    return await getElectron().openYtUrl(url);
-}
-
 export const deleteFileFromSystem = async (item: DownloadItem): Promise<void> => {
     return await getElectron().deleteFileFromSystem(item);
 }

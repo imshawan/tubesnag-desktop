@@ -18,7 +18,7 @@ import {
 	getPlaylistVideos,
 	installDependencies,
 	openFile,
-	openFolder, openYouTubeUrl,
+	openFolder,
 	selectFolder
 } from "@/ipc/app/handlers";
 import * as dbHandlers from "@/ipc/database/handlers";
@@ -38,7 +38,7 @@ function createWindow() {
 	const primaryDisplay = screen.getPrimaryDisplay();
 	const { width, height } = primaryDisplay.workAreaSize;
 	const windowWidth = Math.floor(width * 0.7); // Occupy 70% of the screen as width
-	const windowHeight = Math.floor(height * 0.8); // 80% of screen = height
+	const windowHeight = Math.floor(height * 0.9); // 90% of screen = height
 
 	const mainWindow = new BrowserWindow({
 		width: windowWidth,
@@ -107,9 +107,7 @@ function setupIpcHandlers() {
 
 	ipcMain.handle('app:get-platform', getPlatform);
 	ipcMain.handle('app:get-version', getAppVersion);
-	ipcMain.handle('app:open-yt-url', openYouTubeUrl);
 	ipcMain.handle('ytdlp:download', downloadWithYtdlp);
-
 
 	ipcMain.handle('ytdlp:get-playlist-videos', getPlaylistVideos);
 

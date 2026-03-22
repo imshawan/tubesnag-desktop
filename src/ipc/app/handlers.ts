@@ -584,12 +584,6 @@ export const openFolder = async (event: IpcMainInvokeEvent, item: DownloadItem) 
     }
 }
 
-export const openYouTubeUrl = async (event: IpcMainInvokeEvent, url: string) => {
-    if (url.startsWith('http') && isValidYouTubeUrl(url)) {
-        await shell.openExternal(url);
-    }
-}
-
 export const deleteDownloadedResources = (event: IpcMainInvokeEvent, item: DownloadItem) => {
     const {thumbnail} = item;
 
