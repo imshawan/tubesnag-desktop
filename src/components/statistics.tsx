@@ -8,7 +8,7 @@ import {useMemo} from "react";
 
 export function Statistics() {
     const { t } = useTranslation();
-    const {downloadCount, isDownloading, failedDownloadsCount} = useActiveDownloads();
+    const {downloadCount, currentDownloadId, failedDownloadsCount} = useActiveDownloads();
     const {totalSize, completedDownloads} = useDownloads();
 
     const sizeString = useMemo(() => formatBytes(totalSize), [totalSize]);
@@ -21,7 +21,7 @@ export function Statistics() {
                 value={downloadCount}
                 colorClass="text-amber-500"
                 subtext={
-                    isDownloading ? t("dashboard.processing") : t("dashboard.idle")
+                    currentDownloadId.length > 0 ? t("dashboard.processing") : t("dashboard.idle")
                 }
             />
             <StatCard

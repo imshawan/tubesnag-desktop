@@ -311,6 +311,9 @@ function HomePage() {
 					audioBitrate,
 					onProgress: (progress, speed) => {
 						updateActiveDownloadItem(download.id, {progress, status: "downloading"});
+						if (speed) {
+							setItemDownloadSpeed(speed);
+						}
 					},
 					onData: (data) => {
 						updateActiveDownloadItem(download.id, data);
