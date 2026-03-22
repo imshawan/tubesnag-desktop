@@ -5,7 +5,7 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import {useTranslation} from "react-i18next";
 import {DownloadList} from "@/components/download-list";
 import {useDownloads} from "@/hooks/useDownloads";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useApp} from "@/hooks/useApp";
 import {useConfirmation} from "@/context/confirmation-context";
 import {ActionProgress} from "@/components/action-progress";
@@ -33,6 +33,8 @@ export function History({
 	const {t} = useTranslation();
 	const {downloads, removeDownload} = useDownloads();
 	const [deleting, setDeleting] = useState(0);
+	const [totalCount, setTotalCount] = useState(0);
+
 	const { confirm } = useConfirmation();
 	const {
 		historySearch,
@@ -42,6 +44,12 @@ export function History({
 		setHistoryTypeFilter,
 		setHistoryFilter
 	} = useApp();
+
+	useEffect(() => {
+		if (downloads.length) {
+			setTotalCount(downloads.length);
+		}
+	}, []);
 
 	const sleep = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -99,7 +107,7 @@ export function History({
 			</div>
 
 			<div className="rounded-xl relative border border-border/50 bg-card shadow-sm overflow-hidden">
-				<ActionProgress message={t("history.deletingProgress", {current: deleting, total: downloads.length})} visible={deleting > 0} />
+				<ActionProgress message={t("history.deletingProgress", {current: deleting, total: totalCount})} visible={deleting > 0} />
 				<div
 					className="p-4 border-b border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 					<div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
