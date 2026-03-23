@@ -5,9 +5,9 @@ import {ConfirmationProvider} from "@/context/confirmation-context";
 
 export default function BaseLayout({
                                        children,
-                                   }: {
+                                   }: Readonly<{
     children: React.ReactNode;
-}) {
+}>) {
     return (
         <ToastProvider>
             <ConfirmationProvider>

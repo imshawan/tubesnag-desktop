@@ -26,5 +26,5 @@ export const closeWindow = os
   .handler(({ context }) => {
     const { window } = context;
 
-    window.close();
+    window.destroy();
   });
