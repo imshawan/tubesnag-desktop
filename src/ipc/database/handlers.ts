@@ -1,4 +1,4 @@
-import {Databases, getDatabase} from "@/ipc/database/index";
+import { Databases, getDatabase } from "@/ipc/database/index";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 
 type DownloadItemRow = Omit<DownloadItem, 'videos'> & {
@@ -12,25 +12,15 @@ export const createActiveDownload = async (event: IpcMainInvokeEvent, downloadIt
 };
 
 export const getActiveDownloads = async (event: IpcMainInvokeEvent): Promise<DownloadItem[]> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.all('SELECT * FROM active_downloads ORDER BY date DESC', (err, rows: DownloadItemRow[]) => {
-            if (err) reject(err);
-            else {
-                resolve(rows.map(serialize));
-            }
-        });
-    });
+    const db = getDatabase();
+    const rows = db.prepare('SELECT * FROM active_downloads ORDER BY date DESC').all() as DownloadItemRow[];
+    return rows.map(serialize);
 };
 
 export const getActiveDownloadById = async (event: IpcMainInvokeEvent, id: string): Promise<DownloadItem | null> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.get('SELECT * FROM active_downloads WHERE id = ?', [id], (err, row: DownloadItemRow) => {
-            if (err) reject(err);
-            else resolve(serialize(row));
-        });
-    });
+    const db = getDatabase();
+    const row = db.prepare('SELECT * FROM active_downloads WHERE id = ?').get(id) as DownloadItemRow | undefined;
+    return row ? serialize(row) : null;
 };
 
 export const updateActiveDownload = async (event: IpcMainInvokeEvent, parentId: string, childId: string | null, updates: Partial<DownloadItem>): Promise<{
@@ -40,69 +30,41 @@ export const updateActiveDownload = async (event: IpcMainInvokeEvent, parentId: 
 };
 
 export const deleteActiveDownload = async (event: IpcMainInvokeEvent, id: string): Promise<{ success: boolean }> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.run('DELETE FROM active_downloads WHERE id = ?', [id], (err) => {
-            if (err) reject(err);
-            else resolve({success: true});
-        });
-    });
+    const db = getDatabase();
+    db.prepare('DELETE FROM active_downloads WHERE id = ?').run(id);
+    return { success: true };
 };
 
 export const deleteAllActiveDownloads = async (event: IpcMainInvokeEvent): Promise<{ success: boolean }> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.run('DELETE FROM active_downloads', (err) => {
-            if (err) reject(err);
-            else resolve({success: true});
-        });
-    });
+    const db = getDatabase();
+    db.prepare('DELETE FROM active_downloads').run();
+    return { success: true };
 };
 
 // ============ COMPLETED DOWNLOADS CRUD ============
 
 export const getCompletedDownloads = async (event: IpcMainInvokeEvent): Promise<DownloadItem[]> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.all('SELECT * FROM completed_downloads ORDER BY date DESC', (err, rows: DownloadItemRow[]) => {
-            if (err) reject(err);
-            else {
-                resolve(rows.map(serialize));
-            }
-        });
-    });
+    const db = getDatabase();
+    const rows = db.prepare('SELECT * FROM completed_downloads ORDER BY date DESC').all() as DownloadItemRow[];
+    return rows.map(serialize);
 };
 
 export const getCompletedDownloadById = async (event: IpcMainInvokeEvent, id: string): Promise<DownloadItem | null> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.get('SELECT * FROM completed_downloads WHERE id = ?', [id], (err, row: DownloadItemRow) => {
-            if (err) reject(err);
-            else {
-                resolve(serialize(row));
-            }
-        });
-    });
+    const db = getDatabase();
+    const row = db.prepare('SELECT * FROM completed_downloads WHERE id = ?').get(id) as DownloadItemRow | undefined;
+    return row ? serialize(row) : null;
 };
 
 export const deleteCompletedDownload = async (event: IpcMainInvokeEvent, id: string): Promise<{ success: boolean }> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.run('DELETE FROM completed_downloads WHERE id = ?', [id], (err) => {
-            if (err) reject(err);
-            else resolve({success: true});
-        });
-    });
+    const db = getDatabase();
+    db.prepare('DELETE FROM completed_downloads WHERE id = ?').run(id);
+    return { success: true };
 };
 
 export const deleteAllCompletedDownloads = async (event: IpcMainInvokeEvent): Promise<{ success: boolean }> => {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
-        db.run('DELETE FROM completed_downloads', (err) => {
-            if (err) reject(err);
-            else resolve({success: true});
-        });
-    });
+    const db = getDatabase();
+    db.prepare('DELETE FROM completed_downloads').run();
+    return { success: true };
 };
 
 export const deleteActiveDownloadsVideoFromPlaylist = async (
@@ -122,65 +84,54 @@ export const deleteCompletedDownloadsVideoFromPlaylist = async (
 };
 
 export const moveActiveToCompleted = async (event: IpcMainInvokeEvent, id: string): Promise<{ success: boolean }> => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const activeDownload = await getActiveDownloadById(event, id);
-            if (!activeDownload) {
-                reject(new Error('Active download not found'));
-                return;
-            }
+    const activeDownload = await getActiveDownloadById(event, id);
+    if (!activeDownload) {
+        throw new Error('Active download not found');
+    }
 
-            await createDownloadItem(Databases.COMPLETED_DOWNLOADS, {...activeDownload, status: 'completed', progress: 100});
-            await deleteActiveDownload(event, id);
+    // In better-sqlite3, synchronous calls ensure sequential execution
+    await createDownloadItem(Databases.COMPLETED_DOWNLOADS, { ...activeDownload, status: 'completed', progress: 100 });
+    await deleteActiveDownload(event, id);
 
-            resolve({success: true});
-        } catch (err) {
-            reject(err);
-        }
-    });
+    return { success: true };
 };
 
 // ============ Helper Methods ============
 
-export async function createDownloadItem (dbName: Databases, downloadItem: DownloadItem): Promise<{
+export async function createDownloadItem(dbName: Databases, downloadItem: DownloadItem): Promise<{
     success: boolean
 }> {
-    return new Promise((resolve, reject) => {
-        const db = getDatabase();
+    const db = getDatabase();
 
-        const stmt = db.prepare(`
-            INSERT INTO ${dbName}
-            (id, url, title, status, progress, error, size, quality, type, date, channel, format, thumbnail, videos,
-             downloadPath, parentId, parentTitle)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
+    const stmt = db.prepare(`
+        INSERT INTO ${dbName}
+        (id, url, title, status, progress, error, size, quality, type, date, channel, format, thumbnail, videos,
+         downloadPath, parentId, parentTitle)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
 
-        stmt.run(
-            downloadItem.id,
-            downloadItem.url,
-            downloadItem.title,
-            downloadItem.status,
-            downloadItem.progress,
-            downloadItem.error || null,
-            downloadItem.size,
-            downloadItem.quality,
-            downloadItem.type,
-            downloadItem.date,
-            downloadItem.channel,
-            downloadItem.format || null,
-            downloadItem.thumbnail || null,
-            downloadItem.videos ? JSON.stringify(downloadItem.videos) : null,
-            downloadItem.downloadPath,
-            downloadItem.parentId || null,
-            downloadItem.parentTitle || null,
-            (err: any) => {
-                if (err) reject(err);
-                else resolve({success: true});
-            }
-        );
+    stmt.run(
+        downloadItem.id,
+        downloadItem.url,
+        downloadItem.title,
+        downloadItem.status,
+        downloadItem.progress,
+        downloadItem.error || null,
+        downloadItem.size,
+        downloadItem.quality,
+        downloadItem.type,
+        downloadItem.date,
+        downloadItem.channel,
+        downloadItem.format || null,
+        downloadItem.thumbnail || null,
+        downloadItem.videos ? JSON.stringify(downloadItem.videos) : null,
+        downloadItem.downloadPath,
+        downloadItem.parentId || null,
+        downloadItem.parentTitle || null
+    );
 
-        stmt.finalize();
-    });
+    // better-sqlite3 automatically handles statement cleanup, no need for stmt.finalize()
+    return { success: true };
 };
 
 export async function updateDownloadItem(event: IpcMainInvokeEvent, dbName: Databases, parentId: string, childId: string | null, updates: Partial<DownloadItem>): Promise<{
@@ -188,55 +139,48 @@ export async function updateDownloadItem(event: IpcMainInvokeEvent, dbName: Data
 }> {
     const activeDownload = await getActiveDownloadById(event, parentId);
 
-    return new Promise((resolve, reject) => {
-        if (!activeDownload) {
-            reject(new Error('Active download not found'));
-            return;
-        }
+    if (!activeDownload) {
+        throw new Error('Active download not found');
+    }
 
-        const db = getDatabase();
+    const db = getDatabase();
 
-        if (!childId && !updates.parentId) {
-            const deserialized = deserialize(updates as DownloadItem);
-            const fields = Object.keys(deserialized).map(key => `${key} = ?`).join(', ');
-            const values = [...Object.values(deserialized), parentId];
+    if (!childId && !updates.parentId) {
+        const deserialized = deserialize(updates as DownloadItem);
+        const fields = Object.keys(deserialized).map(key => `${key} = ?`).join(', ');
+        const values = [...Object.values(deserialized), parentId];
 
-            db.run(
-                `UPDATE ${dbName}
-                 SET ${fields}
-                 WHERE id = ?`,
-                values,
-                (err) => {
-                    if (err) reject(err);
-                    else resolve({success: true});
-                }
-            );
-        } else if (parentId && childId) {
-            const idx = activeDownload.videos?.findIndex(vid => vid.id === childId);
-            if (idx !== undefined && idx > -1) {
-                activeDownload.videos![idx] = {
-                    ...activeDownload.videos![idx],
-                    ...updates
-                };
+        db.prepare(`
+            UPDATE ${dbName}
+            SET ${fields}
+            WHERE id = ?
+        `).run(...values);
 
-                db.run(
-                    `UPDATE ${dbName}
-                     SET videos = ?
-                     WHERE id = ?`,
-                    [JSON.stringify(activeDownload.videos), parentId],
-                    (err) => {
-                        if (err) reject(err);
-                        else resolve({success: true});
-                    }
-                );
+        return { success: true };
 
-            } else {
-                reject(new Error('Video not found in playlist'));
-            }
+    } else if (parentId && childId) {
+        const idx = activeDownload.videos?.findIndex(vid => vid.id === childId);
+
+        if (idx !== undefined && idx > -1) {
+            activeDownload.videos![idx] = {
+                ...activeDownload.videos![idx],
+                ...updates
+            };
+
+            db.prepare(`
+                UPDATE ${dbName}
+                SET videos = ?
+                WHERE id = ?
+            `).run(JSON.stringify(activeDownload.videos), parentId);
+
+            return { success: true };
+
         } else {
-            reject(new Error('Invalid update parameters'));
+            throw new Error('Video not found in playlist');
         }
-    });
+    } else {
+        throw new Error('Invalid update parameters');
+    }
 };
 
 async function removeVideoFromPlaylist(
@@ -246,50 +190,33 @@ async function removeVideoFromPlaylist(
     playlistId: string,
     videoId: string
 ): Promise<{ success: boolean }> {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const db = getDatabase();
+    const db = getDatabase();
 
-            // Get the playlist from the db based on dbName
-            const playlist = await getDownloadItem(event, playlistId);
+    // Get the playlist from the db based on dbName
+    const playlist = await getDownloadItem(event, playlistId);
 
-            if (!playlist) {
-                reject(new Error('Playlist not found'));
-                return;
-            }
+    if (!playlist) {
+        throw new Error('Playlist not found');
+    }
 
-            if (!playlist.videos || playlist.videos.length === 0) {
-                reject(new Error('No videos in playlist'));
-                return;
-            }
+    if (!playlist.videos || playlist.videos.length === 0) {
+        throw new Error('No videos in playlist');
+    }
 
-            const updatedVideos = playlist.videos.filter(video => video.id !== videoId);
+    const updatedVideos = playlist.videos.filter(video => video.id !== videoId);
 
-            const stmt = db.prepare(`
-                UPDATE ${dbName}
-                SET videos = ?
-                WHERE id = ?
-            `);
+    db.prepare(`
+        UPDATE ${dbName}
+        SET videos = ?
+        WHERE id = ?
+    `).run(JSON.stringify(updatedVideos), playlistId);
 
-            stmt.run(
-                JSON.stringify(updatedVideos),
-                playlistId,
-                (err: any) => {
-                    if (err) reject(err);
-                    else resolve({success: true});
-                }
-            );
-
-            stmt.finalize();
-        } catch (error) {
-            reject(error);
-        }
-    });
+    return { success: true };
 }
 
 function serialize(row: DownloadItemRow): DownloadItem {
-    const {videos, ...rest} = row;
-    const serialized: Partial<DownloadItem> = {...rest};
+    const { videos, ...rest } = row;
+    const serialized: Partial<DownloadItem> = { ...rest };
 
     if (videos) {
         serialized['videos'] = JSON.parse(videos as any as string) as DownloadItem[];
@@ -299,8 +226,8 @@ function serialize(row: DownloadItemRow): DownloadItem {
 }
 
 function deserialize(row: DownloadItem): DownloadItemRow {
-    const {videos, ...rest} = row;
-    const deserialized: Partial<DownloadItemRow> = {...rest};
+    const { videos, ...rest } = row;
+    const deserialized: Partial<DownloadItemRow> = { ...rest };
 
     if (videos) {
         deserialized['videos'] = JSON.stringify(videos);

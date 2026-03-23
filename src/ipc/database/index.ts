@@ -1,9 +1,9 @@
-import sqlite3, {Database} from 'sqlite3';
-import path from 'path';
+import Database, { Database as BetterSqlite3Database } from 'better-sqlite3';
+import path from 'node:path';
 import { app } from 'electron';
-import fsSync from 'fs';
+import fsSync from 'node:fs';
 
-let db: sqlite3.Database | null = null;
+let db: BetterSqlite3Database | null = null;
 const indexes = ['title', 'parentId', 'parentTitle', 'status'];
 const dbName = 'tubesnag.db';
 
@@ -12,107 +12,99 @@ export enum Databases {
     ACTIVE_DOWNLOADS = 'active_downloads'
 }
 
-export const initDatabase = (): Promise<sqlite3.Database> => {
-    return new Promise((resolve, reject) => {
-        const userDataPath = app.getPath('userData');
-        const dbPath = path.join(userDataPath, 'db');
+export const initDatabase = async (): Promise<BetterSqlite3Database> => {
+    const userDataPath = app.getPath('userData');
+    const dbPath = path.join(userDataPath, 'db');
 
-        if (!fsSync.existsSync(dbPath)) {
-            fsSync.mkdirSync(dbPath, { recursive: true });
-        }
+    if (!fsSync.existsSync(dbPath)) {
+        fsSync.mkdirSync(dbPath, { recursive: true });
+    }
 
-        db = new sqlite3.Database(path.join(dbPath, dbName), (err) => {
-            if (err) {
-                reject(err);
-                return;
-            }
+    try {
+        // Initialize the database synchronously
+        db = new Database(path.join(dbPath, dbName));
 
-            // Create completed_downloads table
-            db!.run(`
-                CREATE TABLE IF NOT EXISTS completed_downloads (
-                    id TEXT PRIMARY KEY,
-                    url TEXT NOT NULL,
-                    title TEXT NOT NULL,
-                    status TEXT NOT NULL,
-                    progress INTEGER DEFAULT 100,
-                    error TEXT,
-                    size INTEGER DEFAULT 0,
-                    quality TEXT,
-                    type TEXT NOT NULL,
-                    date TEXT NOT NULL,
-                    channel TEXT,
-                    format TEXT,
-                    thumbnail TEXT,
-                    videos TEXT,
-                    downloadPath TEXT,
-                    parentId TEXT,
-                    parentTitle TEXT
-                )
-            `, (err) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
+        // Enable WAL mode for significantly better performance with better-sqlite3
+        db.pragma('journal_mode = WAL');
 
-                // Create active_downloads table
-                db!.run(`
-                    CREATE TABLE IF NOT EXISTS active_downloads (
-                        id TEXT PRIMARY KEY,
-                        url TEXT NOT NULL,
-                        title TEXT NOT NULL,
-                        status TEXT NOT NULL,
-                        progress INTEGER DEFAULT 0,
-                        error TEXT,
-                        size INTEGER DEFAULT 0,
-                        quality TEXT,
-                        type TEXT NOT NULL,
-                        date TEXT NOT NULL,
-                        channel TEXT,
-                        format TEXT,
-                        thumbnail TEXT,
-                        videos TEXT,
-                        downloadPath TEXT,
-                        parentId TEXT,
-                        parentTitle TEXT
-                    )
-                `, (err) => {
-                    if (err) reject(err);
-                    else {
-                        createIndexes(db!);
-                        resolve(db!);
-                    }
-                });
-            });
-        });
-    });
+        // Create completed_downloads table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS completed_downloads (
+                id TEXT PRIMARY KEY,
+                url TEXT NOT NULL,
+                title TEXT NOT NULL,
+                status TEXT NOT NULL,
+                progress INTEGER DEFAULT 100,
+                error TEXT,
+                size INTEGER DEFAULT 0,
+                quality TEXT,
+                type TEXT NOT NULL,
+                date TEXT NOT NULL,
+                channel TEXT,
+                format TEXT,
+                thumbnail TEXT,
+                videos TEXT,
+                downloadPath TEXT,
+                parentId TEXT,
+                parentTitle TEXT
+            )
+        `);
+
+        // Create active_downloads table
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS active_downloads (
+                id TEXT PRIMARY KEY,
+                url TEXT NOT NULL,
+                title TEXT NOT NULL,
+                status TEXT NOT NULL,
+                progress INTEGER DEFAULT 0,
+                error TEXT,
+                size INTEGER DEFAULT 0,
+                quality TEXT,
+                type TEXT NOT NULL,
+                date TEXT NOT NULL,
+                channel TEXT,
+                format TEXT,
+                thumbnail TEXT,
+                videos TEXT,
+                downloadPath TEXT,
+                parentId TEXT,
+                parentTitle TEXT
+            )
+        `);
+
+        createIndexes(db);
+        return db;
+
+    } catch (err) {
+        console.error('Failed to initialize database:', err);
+        throw err; // Throws as a rejected promise because the function is async
+    }
 };
 
-export const getDatabase = () => {
+export const getDatabase = (): BetterSqlite3Database => {
     if (!db) {
         throw new Error('Database not initialized');
     }
     return db;
 };
 
-export const closeDatabase = () => {
-    return new Promise<void>((resolve) => {
-        if (db) {
-            db.close(() => {
-                db = null;
-                resolve();
-            });
-        } else {
-            resolve();
-        }
-    });
+export const closeDatabase = async (): Promise<void> => {
+    if (db) {
+        db.close();
+        db = null;
+    }
 };
 
-function createIndexes(db: Database) {
+function createIndexes(dbInstance: BetterSqlite3Database) {
     [Databases.ACTIVE_DOWNLOADS, Databases.COMPLETED_DOWNLOADS].forEach(database => {
         indexes.forEach(index => {
-            db!.run(`CREATE INDEX IF NOT EXISTS idx_${database}_${index} ON ${database}(${index})`, (err) => {
-                if (err) console.error('Failed to create index on ${database}.${index}:', err);
-            });
-        })
-    })
+            try {
+                dbInstance.exec(`CREATE INDEX IF NOT EXISTS idx_${database}_${index} ON ${database}(${index})`);
+            } catch (err) {
+                // Fixed the string interpolation here (changed ' to `)
+                console.error(`Failed to create index on ${database}.${index}:`, err);
+            }
+        });
+    });
 }

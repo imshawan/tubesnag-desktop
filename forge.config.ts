@@ -10,7 +10,14 @@ import path from "node:path";
 
 const config: ForgeConfig = {
   packagerConfig: {
-    asar: true,
+    asar: {
+      unpack: "*.{node,dll}",
+    },
+    // Source - https://stackoverflow.com/a/79553208
+    // Posted by Fairy Jack, modified by community. See post 'Timeline' for change history
+    // Retrieved 2026-03-23, License - CC BY-SA 4.0
+    ignore:[ /node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/, ],
+
     icon: path.join(__dirname, "assets/icons"),
     darwinDarkModeSupport: true
   },
