@@ -78,7 +78,7 @@ i18n.use(initReactI18next).init({
 					"8k": {label: "8K Ultra HD", sub: "4320p Extreme"},
 					"4k": {label: "4K Ultra HD", sub: "2160p HDR"},
 					"1440p": {label: "1440p QHD", sub: "2K Resolution"},
-					"1080p": {label: "High Def", sub: "1080p @ 60fps"},
+					"1080p": {label: "High Definition", sub: "1080p @ 30/50/60fps"},
 					"720p": {label: "Standard", sub: "720p / Data Saver"},
 					"480p": {label: "Medium", sub: "480p / Medium quality"},
 					"360p": {label: "Low", sub: "360p / Low quality"},
