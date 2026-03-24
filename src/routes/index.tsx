@@ -303,7 +303,6 @@ function HomePage() {
 		newDownloads.forEach(addActiveDownloadItem);
 
 		for (const download of newDownloads) {
-			addActiveDownloadItem(download);
 			setCurrentDownloadId(download.id);
 
 			try {

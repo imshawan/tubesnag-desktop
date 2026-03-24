@@ -190,6 +190,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 	} else if (format) {
 		// For video formats, use the pre-built format strings
 		selectedFormat = downloadQualityMap[quality][0];
+		if (format !== "mp4") {
+			selectedFormat = selectedFormat.replaceAll("mp4", format);
+		}
 	} else {
 		// No format specified, use quality only
 		const qualityFormats = downloadQualityMap[quality];
@@ -219,6 +222,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 			args.push('--audio-quality', audioBitrate);
 		}
 	}
+
+	console.log("Options ->",options);
+	console.log("Args ->",args);
 
 	// Clean up existing JSON info file if it's a retry download
 	if (fsSync.existsSync(jsonInfoFile)) {
