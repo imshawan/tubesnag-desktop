@@ -36,10 +36,10 @@ export function Downloads({onOpenFile, onOpenFolder, onRetry, onDelete, onShare}
 				)}
 			</div>
 
-			<div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden h-75">
+			<div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden min-h-75">
 				{hasDownloads ? (
 					<DownloadList items={currentDownloads} onOpenFile={onOpenFile} onOpenFolder={onOpenFolder}
-					              onRetry={onRetry} onDelete={onDelete} onShare={onShare} downloadListType="active"/>
+					              onRetry={onRetry} onDelete={onDelete} onShare={onShare} downloadListType="active" maxHeight={"h-[calc(100vh-240px)]"}/>
 				) : (
 					<div className="py-16 flex flex-col items-center justify-center text-muted-foreground">
 						<div className="bg-muted/50 p-4 rounded-full mb-3">

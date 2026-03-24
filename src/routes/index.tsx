@@ -564,9 +564,9 @@ function HomePage() {
 				</header>
 
 				<ScrollArea className="flex-1">
-					<div className="p-8 pb-20 max-w-6xl mx-auto">
+					<div className="p-8 max-w-6xl mx-auto">
 						{activeTab === "dashboard" && (
-							<div className="flex flex-col gap-8 animate-in fade-in duration-500">
+							<div className="flex flex-col pb-20 gap-8 animate-in fade-in duration-500">
 								<div className="space-y-1">
 									<h2 className="text-2xl font-semibold tracking-tight">
 										{t("dashboard.overview")}

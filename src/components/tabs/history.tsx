@@ -1,4 +1,4 @@
-import {Filter, Loader2, Search} from "lucide-react";
+import {Filter, Search} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
@@ -35,7 +35,7 @@ export function History({
 	const [deleting, setDeleting] = useState(0);
 	const [totalCount, setTotalCount] = useState(0);
 
-	const { confirm } = useConfirmation();
+	const {confirm} = useConfirmation();
 	const {
 		historySearch,
 		historyFilter,
@@ -97,17 +97,20 @@ export function History({
 					<p className="text-sm text-muted-foreground">{t("history.subtitle")}</p>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" className="p-4" size="sm" onClick={onClearCompleted} disabled={completedCount === 0}>
+					<Button variant="outline" className="p-4" size="sm" onClick={onClearCompleted}
+					        disabled={completedCount === 0}>
 						{t("history.clearCompleted")}
 					</Button>
-					<Button variant="destructive" className="p-4" size="sm" onClick={clearAllDownloads} disabled={downloads.length === 0}>
+					<Button variant="destructive" className="p-4" size="sm" onClick={clearAllDownloads}
+					        disabled={downloads.length === 0}>
 						{t("history.clearAll")}
 					</Button>
 				</div>
 			</div>
 
 			<div className="rounded-xl relative border border-border/50 bg-card shadow-sm overflow-hidden">
-				<ActionProgress message={t("history.deletingProgress", {current: deleting, total: totalCount})} visible={deleting > 0} />
+				<ActionProgress message={t("history.deletingProgress", {current: deleting, total: totalCount})}
+				                visible={deleting > 0}/>
 				<div
 					className="p-4 border-b border-border/40 bg-muted/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 					<div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
@@ -159,7 +162,7 @@ export function History({
 						onOpenFolder={onOpenFolder}
 						onRetry={onRetry} onDelete={onDelete} onShare={onShare}
 						items={filteredDownloads} onOpenFile={onOpenFile} downloadListType="completed"
-						maxHeight={"h-[700px]"}
+						maxHeight={"h-[calc(100vh-308px)]"}
 					/>
 				) : (
 					<div className="py-16 flex flex-col items-center justify-center text-muted-foreground h-175">
