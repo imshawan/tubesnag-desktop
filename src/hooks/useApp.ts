@@ -41,7 +41,6 @@ export function useApp() {
 		setSearchOpen: (open: boolean) => dispatch(setSearchOpen(open)),
 		toggleSearchOpen: () => dispatch(toggleSearchOpen()),
 		setStorage: (data: any) => dispatch(setStorage(data)),
-		setDownloadPath: (path: string) => dispatch(setDownloadPath(path)),
 		setHistorySearch: (search: string) => dispatch(setHistorySearch(search)),
 		setHistoryFilter: (filter: string) => dispatch(setHistoryFilter(filter)),
 		setHistoryTypeFilter: (filter: string) => dispatch(setHistoryTypeFilter(filter)),

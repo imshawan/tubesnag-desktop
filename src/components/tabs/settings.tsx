@@ -202,7 +202,7 @@ export function Settings({onBrowseFolder}: Readonly<SettingsProps>) {
 								placeholder="C:/Users/Downloads"
 								className="font-mono text-sm bg-muted/30"
 							/>
-							<Button variant="outline" onClick={onBrowseFolder}>
+							<Button variant="outline" size={"sm"} className={"p-4"} onClick={onBrowseFolder}>
 								{t("settings.browse")}
 							</Button>
 						</div>

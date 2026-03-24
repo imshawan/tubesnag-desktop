@@ -12,7 +12,7 @@ import {
 	deleteDownloadedResources,
 	downloadWithYtdlp,
 	fileToDataUrl,
-	getAppVersion,
+	getAppVersion, getDefaultDownloadsPath,
 	getDiskUsage,
 	getPlatform,
 	getPlaylistVideos,
@@ -107,6 +107,7 @@ function setupIpcHandlers() {
 
 	ipcMain.handle('app:get-platform', getPlatform);
 	ipcMain.handle('app:get-version', getAppVersion);
+	ipcMain.handle('app:get-default-dl-location', getDefaultDownloadsPath);
 	ipcMain.handle('ytdlp:download', downloadWithYtdlp);
 
 	ipcMain.handle('ytdlp:get-playlist-videos', getPlaylistVideos);

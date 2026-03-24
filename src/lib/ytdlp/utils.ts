@@ -1,5 +1,5 @@
-import fsSync from "fs";
-import path from "path";
+import fsSync from "node:fs";
+import path from "node:path";
 import {sanitizeFilename} from "@/lib/ytdlp/download";
 
 export function getNormalizedFileListMap(directory: string): Map<string, string> {

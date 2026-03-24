@@ -40,6 +40,7 @@ import {useConfirmation} from "@/context/confirmation-context";
 import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-properties-dialog";
 import {BotVerificationError} from "@/lib/errors/bot-verification-error";
 import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
+import {getDefaultDownloadLocation} from "@/lib/utils/app";
 
 function HomePage() {
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -55,7 +56,6 @@ function HomePage() {
 		setSearchOpen,
 		toggleSearchOpen,
 		setStorage,
-		setDownloadPath,
 	} = useApp();
 
 	const {
@@ -65,7 +65,7 @@ function HomePage() {
 		removeDownload
 	} = useDownloads();
 
-	const {saveVideosToPlaylistFolders, downloadPath} = useSettings();
+	const {saveVideosToPlaylistFolders, downloadPath, setSelectedDownloadPath} = useSettings();
 
 	const {
 		setDownloads: setActiveDownloads,
@@ -132,6 +132,11 @@ function HomePage() {
 				console.error("Failed to load completed downloads:", err);
 				addToast(t("dashboard.failedLoadHistory"), "error");
 			});
+
+		if (downloadPath.trim().length === 0) {
+			getDefaultDownloadLocation().then(setSelectedDownloadPath).catch(console.error);
+		}
+
 	}, []);
 
 	// Do not do write to DB here or something because this does not have complete/updated video list info
@@ -513,7 +518,7 @@ function HomePage() {
 		try {
 			const path = await selectFolder();
 			if (path) {
-				setDownloadPath(path);
+				setSelectedDownloadPath(path);
 			}
 		} catch (error: any) {
 			console.error(t("dashboard.failedSelectFolder"), error);

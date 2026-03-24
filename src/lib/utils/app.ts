@@ -1,5 +1,6 @@
 import {VIDEO_QUALITIES} from "@/lib/ytdlp/constants";
 import {SettingsState} from "@/store/slices/settings-slice";
+import {getElectron} from "@/lib/utils/common";
 
 enum AppSettingsKeys {
 	DOWNLOAD_QUALITY = "downloadQuality",
@@ -23,7 +24,7 @@ const getInitialDownloadQuality = (): QualityType => {
 const getDownloadPath = () => {
 	const downloadPath = localStorage.getItem(AppSettingsKeys.DOWNLOAD_PATH);
 	if (!downloadPath) {
-		return "./";
+		return "";
 	}
 
 	return downloadPath;
@@ -89,4 +90,8 @@ export const saveItemsPerPage = (itemsPerPage: number): void => {
 
 export const saveRecentItemsPerPage = (recentItemsPerPage: number): void => {
 	localStorage.setItem(AppSettingsKeys.RECENT_ITEMS_PER_PAGE, String(recentItemsPerPage));
+}
+
+export const getDefaultDownloadLocation = async () => {
+	return await getElectron().getDefaultDownloadLocation();
 }
