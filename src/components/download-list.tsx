@@ -171,6 +171,58 @@ export function DownloadList({
 		);
 	}
 
+	const renderPlaylistRow = (item: DownloadItem) => {
+		return (
+			<DownloadContextMenu
+				key={item.id}
+				download={item}
+				onOpen={onOpenFile}
+				onOpenFolder={onOpenFolder}
+				onRetry={onRetry}
+				onDelete={onDelete}
+				onShare={onShare}
+				downloadListType={downloadListType}
+			>
+				<div key={item.id}>
+					<div
+						className="flex items-center justify-between p-4 hover:bg-blue-500/5 cursor-pointer transition-colors border-l-4 border-blue-500"
+						onClick={() => setExpandedPlaylist(expandedPlaylist === item.id ? null : item.id)}
+					>
+						<div className="flex items-center gap-4 flex-1">
+							{item.thumbnail ? (
+								<img src={item.thumbnail} alt={item.title}
+								     className="size-10 rounded-lg object-cover border border-blue-500/30"/>
+							) : (
+								<DefaultIcon item={item}/>
+							)}
+							<div className="flex flex-col">
+								<span className="font-semibold text-sm text-blue-600">{item.title}</span>
+								<span
+									className="text-xs text-muted-foreground">{item.videos?.length || 0} videos</span>
+							</div>
+						</div>
+						<div className="flex items-center gap-4">
+                  <span className="text-xs text-muted-foreground hidden sm:block">
+                    {item.quality}
+                  </span>
+							{renderStatusBadge(item)}
+							{expandedPlaylist === item.id ? (
+								<ChevronUp className="size-4 text-muted-foreground"/>
+							) : (
+								<ChevronDown className="size-4 text-muted-foreground"/>
+							)}
+						</div>
+					</div>
+					{expandedPlaylist === item.id && item.videos && (
+						<div className="bg-muted/5 divide-y divide-border/20">
+							{item.videos.map((video, i) => renderDownloadRow(video, 0, true))}
+						</div>
+					)}
+				</div>
+			</DownloadContextMenu>
+		)
+	}
+
 	const DefaultIcon = ({item}: { item: DownloadItem }) => {
 		const Icon = item.type === "audio" ? Music : FileVideo;
 		return (
@@ -185,46 +237,7 @@ export function DownloadList({
 		<ScrollArea className={maxHeight}>
 			<div className="divide-y divide-border/40">
 				{items.map((item, idx) => (
-					item.type === "playlist" ? (
-						<div key={item.id}>
-							<div
-								className="flex items-center justify-between p-4 hover:bg-blue-500/5 cursor-pointer transition-colors border-l-4 border-blue-500"
-								onClick={() => setExpandedPlaylist(expandedPlaylist === item.id ? null : item.id)}
-							>
-								<div className="flex items-center gap-4 flex-1">
-									{item.thumbnail ? (
-										<img src={item.thumbnail} alt={item.title}
-										     className="size-10 rounded-lg object-cover border border-blue-500/30"/>
-									) : (
-										<DefaultIcon item={item}/>
-									)}
-									<div className="flex flex-col">
-										<span className="font-semibold text-sm text-blue-600">{item.title}</span>
-										<span
-											className="text-xs text-muted-foreground">{item.videos?.length || 0} videos</span>
-									</div>
-								</div>
-								<div className="flex items-center gap-4">
-                  <span className="text-xs text-muted-foreground hidden sm:block">
-                    {item.quality}
-                  </span>
-									{renderStatusBadge(item)}
-									{expandedPlaylist === item.id ? (
-										<ChevronUp className="size-4 text-muted-foreground"/>
-									) : (
-										<ChevronDown className="size-4 text-muted-foreground"/>
-									)}
-								</div>
-							</div>
-							{expandedPlaylist === item.id && item.videos && (
-								<div className="bg-muted/5 divide-y divide-border/20">
-									{item.videos.map((video, i) => renderDownloadRow(video, 0, true))}
-								</div>
-							)}
-						</div>
-					) : (
-						renderDownloadRow(item, idx, false)
-					)
+					item.type === "playlist" ? renderPlaylistRow(item) : renderDownloadRow(item, idx, false)
 				))}
 			</div>
 		</ScrollArea>

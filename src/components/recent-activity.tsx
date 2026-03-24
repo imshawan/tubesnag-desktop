@@ -54,7 +54,7 @@ export function RecentActivity({onOpenFile, onOpenFolder, onRetry, onDelete, onS
 						/>
 
 						<div
-							className="pointer-events-none absolute bottom-0 left-0 right-0 h-18 flex items-end justify-center z-10 transition-all duration-300 overflow-hidden">
+							className="pointer-events-none absolute bottom-0 left-0 right-0 h-18 flex items-end justify-center z-1 transition-all duration-300 overflow-hidden">
 							<div className={cn(
 								"absolute inset-0 z-0",
 								// The core frosting: heavy blur + dynamic backdrop color stain

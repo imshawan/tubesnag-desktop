@@ -70,14 +70,14 @@ export function DownloadContextMenu({
 			<ContextMenuTrigger asChild>
 				{children}
 			</ContextMenuTrigger>
-			{!disabled && <ContextMenuContent className="w-56">
+			{!disabled && <ContextMenuContent className="w-56 z-10">
 				{/* Open file - only for completed downloads */}
 				{download.status === "completed" && (
 					<>
-						<ContextMenuItem onClick={() => onOpen(download)}>
-							<PlayIcon className="mr-2 h-4 w-4"/>
-							<span>{t("contextMenu.openFile")}</span>
-						</ContextMenuItem>
+						{download.type !== "playlist" && <ContextMenuItem onClick={() => onOpen(download)}>
+                            <PlayIcon className="mr-2 h-4 w-4"/>
+                            <span>{t("contextMenu.openFile")}</span>
+                        </ContextMenuItem>}
 						<ContextMenuItem onClick={() => onOpenFolder(download)}>
 							<Folder className="mr-2 h-4 w-4"/>
 							<span>{t("contextMenu.openFolder")}</span>
@@ -86,33 +86,33 @@ export function DownloadContextMenu({
 				)}
 
 				{/* Open URL */}
-				<ContextMenuItem onClick={() => handleOpenUrl(download.url)}>
-					<ExternalLink className="mr-2 h-4 w-4"/>
-					<span>{t("contextMenu.openInYt")}</span>
-				</ContextMenuItem>
+                <ContextMenuItem onClick={() => handleOpenUrl(download.url)}>
+                    <ExternalLink className="mr-2 h-4 w-4"/>
+                    <span>{t("contextMenu.openInYt")}</span>
+                </ContextMenuItem>
 
-				<ContextMenuSeparator/>
+                <ContextMenuSeparator/>
 
 				{/* Copy title */}
-				<ContextMenuItem onClick={() => copyToClipboard(download.title)}>
-					<Copy className="mr-2 h-4 w-4"/>
-					<span>{t("contextMenu.copyTitle")}</span>
-				</ContextMenuItem>
+                <ContextMenuItem onClick={() => copyToClipboard(download.title)}>
+                    <Copy className="mr-2 h-4 w-4"/>
+                    <span>{t("contextMenu.copyTitle")}</span>
+                </ContextMenuItem>
 
-				<ContextMenuSeparator/>
+                <ContextMenuSeparator/>
 
 				{/* Share */}
-				<ContextMenuItem onClick={() => onShare(download)}>
-					<Share2 className="mr-2 h-4 w-4"/>
-					<span>{t("contextMenu.share")}</span>
-				</ContextMenuItem>
+                <ContextMenuItem onClick={() => onShare(download)}>
+                    <Share2 className="mr-2 h-4 w-4"/>
+                    <span>{t("contextMenu.share")}</span>
+                </ContextMenuItem>
 
-				<ContextMenuItem onClick={() => setDownloadItemPropertyOpen(download)}>
-					<InfoIcon className="mr-2 h-4 w-4"/>
-					<span className="capitalize">{t("contextMenu.properties", {type: download.type})}</span>
-				</ContextMenuItem>
+                <ContextMenuItem onClick={() => setDownloadItemPropertyOpen(download)}>
+                    <InfoIcon className="mr-2 h-4 w-4"/>
+                    <span className="capitalize">{t("contextMenu.properties", {type: download.type})}</span>
+                </ContextMenuItem>
 
-				<ContextMenuSeparator/>
+                <ContextMenuSeparator/>
 
 				{/* Retry - only for failed downloads */}
 				{isDownloadFailed ? (
@@ -126,15 +126,15 @@ export function DownloadContextMenu({
 				) : null}
 
 				{/* Delete */}
-				<ContextMenuItem
-					onClick={() => onDelete(download, downloadListType)}
-					className="text-destructive focus:text-destructive"
-					disabled={itemIsDownloading}
-				>
-					<Trash2 className="mr-2 h-4 w-4"/>
-					<span>{t("contextMenu.delete")}</span>
-				</ContextMenuItem>
-			</ContextMenuContent>}
+                <ContextMenuItem
+                    onClick={() => onDelete(download, downloadListType)}
+                    className="text-destructive focus:text-destructive"
+                    disabled={itemIsDownloading}
+                >
+                    <Trash2 className="mr-2 h-4 w-4"/>
+                    <span>{t("contextMenu.delete")}</span>
+                </ContextMenuItem>
+            </ContextMenuContent>}
 		</ContextMenu>
 	)
 }

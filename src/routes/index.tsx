@@ -21,7 +21,7 @@ import {Sidebar} from "@/components/sidebar";
 import {RecentActivity} from "@/components/recent-activity";
 import {getDiskUsageStats} from "@/lib/utils/setup";
 import {
-	deleteFileFromSystem,
+	deleteFileFromSystem, deletePlaylistFolder,
 	downloadWithYtdlp,
 	getPlaylistVideos,
 	openFile,
@@ -490,8 +490,12 @@ function HomePage() {
 			} else if (downloadListType === "completed") {
 				removeDownload(parent, child);
 			}
-			deleteFileFromSystem(download).finally(() => {
-			});
+
+			if (download.type === "playlist") {
+				deletePlaylistFolder(download).then(() => console.info("Deleted entire playlist"));
+			} else {
+				deleteFileFromSystem(download).then(() => console.info("Deleted the file"));
+			}
 			addToast(t("dashboard.downloadDeleted"), "success");
 		}
 	};

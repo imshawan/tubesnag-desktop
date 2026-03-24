@@ -571,7 +571,14 @@ export const openFile = async (event: IpcMainInvokeEvent, item: DownloadItem) =>
 }
 
 export const openFolder = async (event: IpcMainInvokeEvent, item: DownloadItem) => {
-	const folderPath = item.parentTitle ? path.join(item.downloadPath, item.parentTitle) : item.downloadPath;
+	let folderPath;
+	if (item.parentTitle) {
+		folderPath = path.join(item.downloadPath, item.parentTitle);
+	} else if (item.type === "playlist") {
+		folderPath = path.join(item.downloadPath, item.title);
+	} else {
+		folderPath = item.downloadPath;
+	}
 
 	if (!fsSync.existsSync(folderPath)) return {success: false};
 
