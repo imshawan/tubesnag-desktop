@@ -28,8 +28,8 @@ export function QualitySelector({value, onValueChange}: Readonly<QualitySelector
                         <div className="flex items-center gap-2">
                             <SelectedIcon className="size-4"/>
                             <div className="text-left">
-                                <span className="text-xs">{selectedQuality.label()}</span>
-                                <div className="text-xs text-muted-foreground">{selectedQuality.sub()}</div>
+                                <span className="text-xs">{t(selectedQuality.label)}</span>
+                                <div className="text-xs text-muted-foreground">{t(selectedQuality.sub)}</div>
                             </div>
                         </div>
                     )}
@@ -42,8 +42,8 @@ export function QualitySelector({value, onValueChange}: Readonly<QualitySelector
                                 <div className="flex items-center gap-2">
                                     <Icon className="size-4"/>
                                     <div>
-                                        <div className="text-xs font-medium">{q.label()}</div>
-                                        <div className="text-xs text-muted-foreground">{q.sub()}</div>
+                                        <div className="text-xs font-medium">{t(q.label)}</div>
+                                        <div className="text-xs text-muted-foreground">{t(q.sub)}</div>
                                     </div>
                                 </div>
                             </SelectItem>

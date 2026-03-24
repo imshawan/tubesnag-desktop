@@ -3,75 +3,75 @@ import i18n from "i18next";
 
 interface AudioQuality {
 	bitrate: AudioBitrate;
-	label: () => string;
-	sub: () => string;
+	label: string;
+	sub: string;
 }
 
 export const VIDEO_QUALITIES: VideoQuality[] = [
 	{
 		id: "best",
-		label: () => i18n.t("videoQualities.best.label"),
-		sub: () => i18n.t("videoQualities.best.sub"),
+		label: "videoQualities.best.label",
+		sub: "videoQualities.best.sub",
 		icon: Sparkles
 	},
 	{
 		id: "8k",
-		label: () => i18n.t("videoQualities.8k.label"),
-		sub: () => i18n.t("videoQualities.8k.sub"),
+		label: "videoQualities.8k.label",
+		sub: "videoQualities.8k.sub",
 		icon: Sparkles
 	},
 	{
 		id: "4k",
-		label: () => i18n.t("videoQualities.4k.label"),
-		sub: () => i18n.t("videoQualities.4k.sub"),
+		label: "videoQualities.4k.label",
+		sub: "videoQualities.4k.sub",
 		icon: Tv
 	},
 	{
 		id: "1440p",
-		label: () => i18n.t("videoQualities.1440p.label"),
-		sub: () => i18n.t("videoQualities.1440p.sub"),
+		label: "videoQualities.1440p.label",
+		sub: "videoQualities.1440p.sub",
 		icon: Tv
 	},
 	{
 		id: "1080p",
-		label: () => i18n.t("videoQualities.1080p.label"),
-		sub: () => i18n.t("videoQualities.1080p.sub"),
+		label: "videoQualities.1080p.label",
+		sub: "videoQualities.1080p.sub",
 		icon: Monitor
 	},
 	{
 		id: "720p",
-		label: () => i18n.t("videoQualities.720p.label"),
-		sub: () => i18n.t("videoQualities.720p.sub"),
+		label: "videoQualities.720p.label",
+		sub: "videoQualities.720p.sub",
 		icon: Monitor
 	},
 	{
 		id: "480p",
-		label: () => i18n.t("videoQualities.480p.label"),
-		sub: () => i18n.t("videoQualities.480p.sub"),
+		label: "videoQualities.480p.label",
+		sub: "videoQualities.480p.sub",
 		icon: Smartphone
 	},
 	{
 		id: "360p",
-		label: () => i18n.t("videoQualities.360p.label"),
-		sub: () => i18n.t("videoQualities.360p.sub"),
+		label: "videoQualities.360p.label",
+		sub: "videoQualities.360p.sub",
 		icon: Smartphone
 	},
 	{
 		id: "240p",
-		label: () => i18n.t("videoQualities.240p.label"),
-		sub: () => i18n.t("videoQualities.240p.sub"),
+		label: "videoQualities.240p.label",
+		sub: "videoQualities.240p.sub",
 		icon: Smartphone
 	},
 	{
 		id: "144p",
-		label: () => i18n.t("videoQualities.144p.label"),
-		sub: () => i18n.t("videoQualities.144p.sub"),
+		label: "videoQualities.144p.label",
+		sub: "videoQualities.144p.sub",
 		icon: Smartphone
 	},
 	{
 		id: "audio",
-		label: () => i18n.t("videoQualities.audio.label"),
-		sub: () => i18n.t("videoQualities.audio.sub"),
+		label: "videoQualities.audio.label",
+		sub: "videoQualities.audio.sub",
 		icon: Music
 	},
 ];
@@ -79,38 +79,38 @@ export const VIDEO_QUALITIES: VideoQuality[] = [
 export const DOWNLOAD_FORMATS = [
 	{
 		value: "mp4",
-		label: () => i18n.t("downloadFormats.mp4"),
-		sub: () => i18n.t("downloadFormats.mp4Sub"),
+		label: "downloadFormats.mp4",
+		sub: "downloadFormats.mp4Sub",
 		icon: FileVideo
 	},
 	{
 		value: "webm",
-		label: () => i18n.t("downloadFormats.webm"),
-		sub: () => i18n.t("downloadFormats.webmSub"),
+		label: "downloadFormats.webm",
+		sub: "downloadFormats.webmSub",
 		icon: FileVideo
 	},
 	{
 		value: "mkv",
-		label: () => i18n.t("downloadFormats.mkv"),
-		sub: () => i18n.t("downloadFormats.mkvSub"),
+		label: "downloadFormats.mkv",
+		sub: "downloadFormats.mkvSub",
 		icon: FileVideo
 	},
 	{
 		value: "mp3",
-		label: () => i18n.t("downloadFormats.mp3"),
-		sub: () => i18n.t("downloadFormats.mp3Sub"),
+		label: "downloadFormats.mp3",
+		sub: "downloadFormats.mp3Sub",
 		icon: Music
 	},
 	{
 		value: "m4a",
-		label: () => i18n.t("downloadFormats.m4a"),
-		sub: () => i18n.t("downloadFormats.m4aSub"),
+		label: "downloadFormats.m4a",
+		sub: "downloadFormats.m4aSub",
 		icon: Music
 	},
 	{
 		value: "wav",
-		label: () => i18n.t("downloadFormats.wav"),
-		sub: () => i18n.t("downloadFormats.wavSub"),
+		label: "downloadFormats.wav",
+		sub: "downloadFormats.wavSub",
 		icon: Music
 	},
 ] as const;
@@ -118,23 +118,23 @@ export const DOWNLOAD_FORMATS = [
 export const AUDIO_BITRATES: Record<AudioBitrate, AudioQuality> = {
 	"128": {
 		bitrate: "128",
-		label: () => i18n.t("audioBitrates.128.label"),
-		sub: () => i18n.t("audioBitrates.128.description")
+		label: "audioBitrates.128.label",
+		sub: "audioBitrates.128.description"
 	},
 	"192": {
 		bitrate: "192",
-		label: () => i18n.t("audioBitrates.192.label"),
-		sub: () => i18n.t("audioBitrates.192.description")
+		label: "audioBitrates.192.label",
+		sub: "audioBitrates.192.description"
 	},
 	"256": {
 		bitrate: "256",
-		label: () => i18n.t("audioBitrates.256.label"),
-		sub: () => i18n.t("audioBitrates.256.description")
+		label: "audioBitrates.256.label",
+		sub: "audioBitrates.256.description"
 	},
 	"320": {
 		bitrate: "320",
-		label: () => i18n.t("audioBitrates.320.label"),
-		sub: () => i18n.t("audioBitrates.320.description")
+		label: "audioBitrates.320.label",
+		sub: "audioBitrates.320.description"
 	}
 };
 

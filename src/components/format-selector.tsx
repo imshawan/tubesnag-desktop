@@ -11,7 +11,7 @@ interface FormatSelectorProps {
     quality: QualityType;
 }
 
-export function FormatSelector({value, onValueChange, quality}: FormatSelectorProps) {
+export function FormatSelector({value, onValueChange, quality}: Readonly<FormatSelectorProps>) {
     const {t} = useTranslation();
 
     const enableAudioFormats = useMemo(() => quality && quality === "audio", [quality])
@@ -37,8 +37,8 @@ export function FormatSelector({value, onValueChange, quality}: FormatSelectorPr
                         <div className="flex items-center gap-2">
                             <SelectedIcon className="size-4"/>
                             <div className="text-left">
-                                <span className="text-xs">{selectedFormat.label()}</span>
-                                <div className="text-xs text-muted-foreground">{selectedFormat.sub()}</div>
+                                <span className="text-xs">{t(selectedFormat.label)}</span>
+                                <div className="text-xs text-muted-foreground">{t(selectedFormat.sub)}</div>
                             </div>
                         </div>
                     )}
@@ -50,7 +50,7 @@ export function FormatSelector({value, onValueChange, quality}: FormatSelectorPr
                             <SelectItem key={f.value} value={f.value}>
                                 <div className="flex items-center gap-2">
                                     <Icon className="size-4"/>
-                                    <span className="text-xs">{f.label()}</span>
+                                    <span className="text-xs">{t(f.label)}</span>
                                 </div>
                             </SelectItem>
                         )

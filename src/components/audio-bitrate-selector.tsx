@@ -21,7 +21,7 @@ export function AudioBitrateSelector({
   value,
   onChange,
   disabled = false
-}: AudioBitrateSelectorProps) {
+}: Readonly<AudioBitrateSelectorProps>) {
   const { t } = useTranslation()
 
   const selectedBitrate = AUDIO_BITRATES[value as keyof typeof AUDIO_BITRATES]
@@ -41,8 +41,8 @@ export function AudioBitrateSelector({
               <div className="flex items-center gap-2">
                 <SelectedIcon className="size-4" />
                 <div className="text-left">
-                  <span className="text-xs">{selectedBitrate.label()}</span>
-                  <div className="text-xs text-muted-foreground">{selectedBitrate.sub()}</div>
+                  <span className="text-xs">{t(selectedBitrate.label)}</span>
+                  <div className="text-xs text-muted-foreground">{t(selectedBitrate.sub)}</div>
                 </div>
               </div>
             )}
@@ -54,8 +54,8 @@ export function AudioBitrateSelector({
               <div className="flex items-center gap-2">
                 <Music className="size-4" />
                 <div>
-                  <div className="text-xs font-medium">{bitrate.label()}</div>
-                  <div className="text-xs text-muted-foreground">{bitrate.sub()}</div>
+                  <div className="text-xs font-medium">{t(bitrate.label)}</div>
+                  <div className="text-xs text-muted-foreground">{t(bitrate.sub)}</div>
                 </div>
               </div>
             </SelectItem>

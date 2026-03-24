@@ -145,8 +145,8 @@ declare global {
 
     interface VideoQuality {
         id: QualityType
-        label: () => string
-        sub: () => string
+        label: string
+        sub: string
         icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>
     }
 }

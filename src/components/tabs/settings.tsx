@@ -226,6 +226,7 @@ function VideoQualitySelector({qualityItem, selected, setSelectedQuality}: Reado
 	selected: QualityType,
 	setSelectedQuality: (value: QualityType) => void
 }>) {
+	const {t} = useTranslation();
 	const isSelected = selected === qualityItem.id;
 	const Icon = qualityItem.icon;
 
@@ -263,7 +264,7 @@ function VideoQualitySelector({qualityItem, selected, setSelectedQuality}: Reado
 						"font-semibold tracking-tight transition-colors",
 						isSelected ? "text-primary" : "text-foreground"
 					)}>
-                  {qualityItem.label()}
+                  {t(qualityItem.label)}
                 </span>
 				</div>
 
@@ -275,7 +276,7 @@ function VideoQualitySelector({qualityItem, selected, setSelectedQuality}: Reado
 
 			{/* pl-[26px] aligns the sub-text cleanly underneath the label text, skipping the icon */}
 			<span className="text-xs text-muted-foreground leading-relaxed pl-6.5">
-              {qualityItem.sub()}
+              {t(qualityItem.sub)}
             </span>
 		</label>
 	)
