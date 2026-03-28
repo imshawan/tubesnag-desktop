@@ -230,9 +230,6 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 		}
 	}
 
-	console.log("Options ->",options);
-	console.log("Args ->",args);
-
 	// Clean up existing JSON info file if it's a retry download
 	if (fsSync.existsSync(jsonInfoFile)) {
 		fsSync.unlinkSync(jsonInfoFile);
