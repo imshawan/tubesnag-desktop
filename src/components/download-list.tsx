@@ -106,7 +106,7 @@ export function DownloadList({
 			}
 		}, [item.thumbnail]);
 
-		if (item.thumbnail) {
+		if (item.thumbnail && dataUrl) {
 			return (
 				<img
 					src={dataUrl}
