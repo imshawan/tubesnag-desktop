@@ -345,6 +345,9 @@ i18n.use(initReactI18next).init({
 					notFound: "Video not found.",
 					networkFailed: "Network connection failed.",
 					playlistEmpty: "The playlist contains no videos."
+				},
+				errors: {
+					fileNotFound: "The requested file/folder was not found or has been removed.",
 				}
 			}
 		},

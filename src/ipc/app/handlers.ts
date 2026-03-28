@@ -15,6 +15,7 @@ import {downloadFile} from "@/lib/utils/downloader";
 import {isYtdlpError, parseYtDlpError, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
 import {readYtVideoInfoJsonFile, resolveDownloadedFilePath, resolveQualityByResolution} from "@/lib/ytdlp/utils";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
+import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
 export const getYtDlpConfig = () => {
 	const platform = process.platform;
@@ -563,20 +564,26 @@ export const fileToDataUrl = async (event: IpcMainInvokeEvent, filePath: string)
 	}
 };
 
-export const openFile = async (event: IpcMainInvokeEvent, item: DownloadItem) => {
+export const openFile: (event: Electron.IpcMainInvokeEvent, item: DownloadItem) => Promise<{
+	success: boolean;
+	error: FileNotFoundError | null
+}> = async (event: IpcMainInvokeEvent, item: DownloadItem) =>  {
 	const filePath = resolveDownloadedFilePath(item);
-	if (!filePath) return {success: false};
+	if (!filePath) return {success: false, error: new FileNotFoundError("errors.fileNotFound")};
 
 	try {
 		await shell.openPath(filePath);
-		return {success: true};
+		return {success: true, error: null};
 	} catch (error) {
 		console.error('Failed to open file:', error);
 		throw error;
 	}
 }
 
-export const openFolder = async (event: IpcMainInvokeEvent, item: DownloadItem) => {
+export const openFolder: (event: Electron.IpcMainInvokeEvent, item: DownloadItem) => Promise<{
+	success: boolean;
+	error: FileNotFoundError | null
+}> = async (event: IpcMainInvokeEvent, item: DownloadItem) => {
 	let folderPath;
 	if (item.parentTitle) {
 		folderPath = path.join(item.downloadPath, item.parentTitle);
@@ -586,11 +593,11 @@ export const openFolder = async (event: IpcMainInvokeEvent, item: DownloadItem) 
 		folderPath = item.downloadPath;
 	}
 
-	if (!fsSync.existsSync(folderPath)) return {success: false};
+	if (!fsSync.existsSync(folderPath)) return {success: false, error: new FileNotFoundError("errors.fileNotFound")};
 
 	try {
 		await shell.openPath(folderPath);
-		return {success: true};
+		return {success: true, error: null};
 	} catch (error) {
 		console.error('Failed to open folder:', error);
 		throw error;

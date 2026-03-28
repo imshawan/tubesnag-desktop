@@ -41,6 +41,7 @@ import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-pr
 import {BotVerificationError} from "@/lib/errors/bot-verification-error";
 import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
 import {getDefaultDownloadLocation} from "@/lib/utils/app";
+import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
 function HomePage() {
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -437,7 +438,10 @@ function HomePage() {
 	const handleOpenFile = async (download: DownloadItem) => {
 		if (download.status === "completed") {
 			try {
-				await openFile(download);
+				const {error} = await openFile(download);
+				if (error) {
+					return addToast(t(error.message), "error");
+				}
 				addToast(t("dashboard.fileOpened"), "success");
 			} catch (error) {
 				console.error("Failed to open file:", error);
@@ -449,7 +453,10 @@ function HomePage() {
 	};
 
 	const handleOpenFolder = async (download: DownloadItem) => {
-		await openFolder(download);
+		const {error} = await openFolder(download);
+		if (error) {
+			addToast(t(error.message), "error");
+		}
 	};
 
 	const handleRetry = async (download: DownloadItem) => {

@@ -71,4 +71,4 @@ contextBridge.exposeInMainWorld('electron', {
             ipcRenderer.invoke('db:delete-completed-downloads-video-from-playlist', playlistId, videoId),
 
     }
-})
+});

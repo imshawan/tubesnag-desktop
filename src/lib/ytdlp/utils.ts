@@ -1,6 +1,7 @@
 import fsSync from "node:fs";
 import path from "node:path";
 import {sanitizeFilename} from "@/lib/ytdlp/download";
+import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
 export function getNormalizedFileListMap(directory: string): Map<string, string> {
 	const files = fsSync.readdirSync(directory);
