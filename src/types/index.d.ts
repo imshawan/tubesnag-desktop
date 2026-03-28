@@ -66,7 +66,7 @@ declare global {
 	var electron: Window['electron'];
 
 	type AudioBitrate = "128" | "192" | "256" | "320";
-	type DownloadItemType = "video" | "audio" | "playlist";
+	type DownloadItemType = "video" | "audio" | "playlist" | "unknown";
 	type QualityType =
 		"best"
 		| "8k"
@@ -80,8 +80,16 @@ declare global {
 		| "144p"
 		| "audio"
 		| "unknown"
-	type DownloadStatus = "pending" | "downloading" | "completed" | "failed" | "duplicate"
+	type DownloadStatus =
+		"pending"
+		| "downloading"
+		| "completed"
+		| "failed"
+		| "duplicate"
+		| "downloading_audio_track"
+		| "merging_formats"
 	type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
+	type AudioPartDownloadStatus = "pending" | "downloading" | "completed" | "failed" | "unknown";
 
 	interface DependencyStatus {
 		db: boolean;
@@ -94,6 +102,7 @@ declare global {
 		url: string;
 		title: string;
 		status: DownloadStatus;
+		audioStatus: AudioPartDownloadStatus;
 		progress: number;
 		error?: string;
 		size: number;
@@ -127,6 +136,7 @@ declare global {
 		quality: string;
 		height: number;
 		width: number;
+		video_codec: string;
 		audio_codec: string;
 		audio_bitrate: number;
 		audio_sample_rate: number;
@@ -139,8 +149,9 @@ declare global {
 		quality: QualityType;
 		format?: FormatType;
 		audioBitrate?: AudioBitrate;
+		type: DownloadItemType;
 		downloadId: string;
-		onProgress?: (progress: number, speed?: string) => void;
+		onProgress?: (data: Partial<DownloadItem>, speed?: string) => void;
 		onData?: (data: Partial<DownloadItem>) => void;
 		onComplete?: (data: Partial<DownloadItem>) => void;
 		onDuplicate?: (filename: string, metadata: any) => void;

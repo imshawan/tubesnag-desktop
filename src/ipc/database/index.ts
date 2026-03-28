@@ -2,15 +2,11 @@ import Database, { Database as BetterSqlite3Database } from 'better-sqlite3';
 import path from 'node:path';
 import { app } from 'electron';
 import fsSync from 'node:fs';
+import {Databases} from "@/lib/utils/enums";
 
 let db: BetterSqlite3Database | null = null;
 const indexes = ['title', 'parentId', 'parentTitle', 'status'];
 const dbName = 'tubesnag.db';
-
-export enum Databases {
-    COMPLETED_DOWNLOADS = 'completed_downloads',
-    ACTIVE_DOWNLOADS = 'active_downloads'
-}
 
 export const initDatabase = async (): Promise<BetterSqlite3Database> => {
     const userDataPath = app.getPath('userData');
@@ -33,7 +29,8 @@ export const initDatabase = async (): Promise<BetterSqlite3Database> => {
                 id TEXT PRIMARY KEY,
                 url TEXT NOT NULL,
                 title TEXT NOT NULL,
-                status TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                audioStatus TEXT NOT NULL DEFAULT 'pending',                
                 progress INTEGER DEFAULT 100,
                 error TEXT,
                 size INTEGER DEFAULT 0,
@@ -56,7 +53,8 @@ export const initDatabase = async (): Promise<BetterSqlite3Database> => {
                 id TEXT PRIMARY KEY,
                 url TEXT NOT NULL,
                 title TEXT NOT NULL,
-                status TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending',
+                audioStatus TEXT NOT NULL DEFAULT 'pending',
                 progress INTEGER DEFAULT 0,
                 error TEXT,
                 size INTEGER DEFAULT 0,

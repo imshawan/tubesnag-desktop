@@ -1,4 +1,3 @@
-import i18n from "i18next";
 import {getElectron} from "@/lib/utils/common";
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
@@ -16,7 +15,8 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 		downloadId,
 		saveToPlaylistFolder,
 		playlistName,
-		audioBitrate
+		audioBitrate,
+		type
 	} = options;
 
 
@@ -32,10 +32,10 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 				return resolve();
 			}
 
-			console.log('[ytdlp utility] received:', data);
+			console.info('[ytdlp utility] received:', data);
 
 			if (data.type === "progress") {
-				onProgress?.(data.progress, data.speed);
+				onProgress?.(data, data.speed);
 			} else if (data.type === "metadata") {
 				onData?.(data.data);
 			} else if (data.type === "duplicate" && !isDuplicated) {
@@ -66,7 +66,8 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 			downloadId,
 			saveToPlaylistFolder,
 			playlistName,
-			audioBitrate
+			audioBitrate,
+			type
 		}).catch((err: Error) => {
 			electron.off("ytdlp:progress", handleProgress);
 			reject(err);

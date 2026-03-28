@@ -41,7 +41,6 @@ import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-pr
 import {BotVerificationError} from "@/lib/errors/bot-verification-error";
 import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
 import {getDefaultDownloadLocation} from "@/lib/utils/app";
-import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
 function HomePage() {
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -144,6 +143,10 @@ function HomePage() {
 	const onDownloadComplete = (download: Partial<DownloadItem>) => {
 		const message = t("downloads.completedDownloading", {title: download.title});
 		addToast(message, "success", 5000);
+
+		if (download.id) {
+			updateActiveDownloadItem(download.id, {audioStatus: "completed"});
+		}
 	}
 
 	const handleRetrySingleItemFromPlaylist = async (download: DownloadItem) => {
@@ -176,10 +179,11 @@ function HomePage() {
 				audioBitrate: "192",
 				saveToPlaylistFolder: saveVideosToPlaylistFolders,
 				playlistName: child.title,
-				onProgress: (progress, speed) => {
+				type: child.type,
+				onProgress: (data, speed) => {
 					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {
-						progress,
-						status: "downloading"
+						progress: data.progress,
+						status: data.status
 					});
 					if (speed) {
 						setItemDownloadSpeed(speed);
@@ -187,6 +191,9 @@ function HomePage() {
 				},
 				onData: (data) => {
 					updateActivePlaylistVideoDownloadItem(playlistId, child.id, data);
+				},
+				onComplete: (data) => {
+					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {audioStatus: "completed"});
 				},
 				onDuplicate: (filename, metadata) => {
 					addToast(t("common.duplicate", {title: filename}), "warning");
@@ -242,9 +249,11 @@ function HomePage() {
 				downloadId: download.id,
 				format,
 				audioBitrate,
-				onProgress: (progress, speed) => {
+				type: download.type,
+				onProgress: (data, speed) => {
 					// console.log(progress)
-					updateActiveDownloadItem(download.id, {progress, status: "downloading"});
+					updateActiveDownloadItem(download.id, {progress: data.progress,
+						status: data.status});
 					if (speed) {
 						setItemDownloadSpeed(speed);
 					}
@@ -314,8 +323,10 @@ function HomePage() {
 					downloadId: download.id,
 					format,
 					audioBitrate,
-					onProgress: (progress, speed) => {
-						updateActiveDownloadItem(download.id, {progress, status: "downloading"});
+					type: download.type,
+					onProgress: (data, speed) => {
+						updateActiveDownloadItem(download.id, {progress: data.progress,
+							status: data.status});
 						if (speed) {
 							setItemDownloadSpeed(speed);
 						}
@@ -396,10 +407,11 @@ function HomePage() {
 						audioBitrate,
 						saveToPlaylistFolder: saveVideosToPlaylistFolders,
 						playlistName: result.title,
-						onProgress: (progress, speed) => {
+						type: download.type,
+						onProgress: (data, speed) => {
 							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {
-								progress,
-								status: "downloading"
+								progress: data.progress,
+								status: data.status
 							});
 							if (speed) {
 								setItemDownloadSpeed(speed);
@@ -407,6 +419,9 @@ function HomePage() {
 						},
 						onData: (data) => {
 							updateActivePlaylistVideoDownloadItem(playlistId, download.id, data);
+						},
+						onComplete: (data) => {
+							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {audioStatus: "completed"});
 						},
 						onDuplicate: (filename, metadata) => {
 							addToast(t("common.duplicate", {title: filename}), "warning");

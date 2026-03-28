@@ -8,6 +8,7 @@ import {
     setDownloads,
     updateDownload
 } from "@/store/slices/downloads-slice";
+import {isDownloadCompleteState, isDownloadingState} from "@/lib/utils/common";
 
 export function useDownloads() {
     const dispatch = useAppDispatch();
@@ -15,12 +16,12 @@ export function useDownloads() {
     const downloadItemPropertyOpen = useAppSelector(selectDownloadItemPropertyOpen);
 
     const isDownloading = useMemo(
-        () => downloads.some((d) => d.status === "downloading"),
+        () => downloads.some(isDownloadingState),
         [downloads]
     );
 
     const completedDownloads = useMemo(
-        () => downloads.filter((d) => d.status === "completed"),
+        () => downloads.filter(isDownloadCompleteState),
         [downloads]
     );
 

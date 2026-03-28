@@ -1,5 +1,4 @@
 import {FileVideo, Monitor, Music, Smartphone, Sparkles, Tv,} from "lucide-react";
-import i18n from "i18next";
 
 interface AudioQuality {
 	bitrate: AudioBitrate;
@@ -204,6 +203,7 @@ export const downloadItemJsonInfoStructure = `{
     "quality":"%(height)sp",
     "width": %(width)j,
     "height": %(height)j,
+    "video_codec": "%(vcodec)s",
     "audio_codec": "%(acodec)s",
     "audio_bitrate": %(abr)j,
     "audio_sample_rate": %(asr)j,

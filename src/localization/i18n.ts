@@ -207,6 +207,8 @@ i18n.use(initReactI18next).init({
 					duplicate: "Duplicate file \"{{title}}\"",
 					botVerificationComplete: "Bot Verification Complete, please proceed to retry download",
 					ok: "OK",
+					downloadingAudio: "Audio - {{progress}}%",
+					merging: "Merging"
 				},
 				downloads: {
 					quality: "Quality",
@@ -348,6 +350,22 @@ i18n.use(initReactI18next).init({
 				},
 				errors: {
 					fileNotFound: "The requested file/folder was not found or has been removed.",
+				},
+				timeAgo: {
+					justNow: "just now",
+					min: "{{time}} min",
+					mins: "{{time}} mins",
+					hour: "{{time}} hour",
+					hours: "{{time}} hours",
+					day: "{{time}} day",
+					days: "{{time}} days",
+					week: "{{time}} week",
+					weeks: "{{time}} weeks",
+					month: "{{time}} month",
+					months: "{{time}} months",
+					year: "{{time}} year",
+					years: "{{time}} years",
+					ago: "ago",
 				}
 			}
 		},

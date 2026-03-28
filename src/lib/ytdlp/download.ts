@@ -2,8 +2,8 @@
  * Download Utilities
  * Helper functions for download operations
  */
-import {generateUUID} from "@/lib/utils/common";
-import {DOWNLOAD_FORMAT_TYPES, ytDlpErrorMap} from "@/lib/ytdlp/constants";
+import {generateUUID, resolveDownloadItemType} from "@/lib/utils/common";
+import {ytDlpErrorMap} from "@/lib/ytdlp/constants";
 
 export function isValidYouTubeUrl(url: string): boolean {
 	const youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/
@@ -17,6 +17,7 @@ export function isValidPlaylistUrl(url: string): boolean {
 
 export function createDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string) {
 	return urls.map((url) => {
+		const type: DownloadItemType = resolveDownloadItemType(url, format);
 		const tempId = generateUUID();
 		return {
 			id: tempId,
@@ -24,10 +25,11 @@ export function createDownloadItemFromUrls(urls: string[], quality: QualityType,
 			title: "Fetching video info...",
 			channel: "Please wait",
 			status: "pending" as const,
+			audioStatus: type === "video" ? "pending" : "completed" as const,
 			progress: 0,
 			size: 0,
 			quality: quality,
-			type: "video",
+			type,
 			date: new Date().toISOString(),
 			format,
 			downloadPath
@@ -37,7 +39,8 @@ export function createDownloadItemFromUrls(urls: string[], quality: QualityType,
 
 export function createPlaylistDownloadItemFromUrls(urls: string[], quality: QualityType, format: FormatType, downloadPath: string, playlistId: string, playlistName: string): DownloadItem[] {
 	return urls.map((url) => {
-		const type = isValidPlaylistUrl(url) ? "playlist" : (format ? DOWNLOAD_FORMAT_TYPES[format] : "")
+		const type: DownloadItemType = resolveDownloadItemType(url, format);
+
 		const tempId = generateUUID();
 		return {
 			id: tempId,
@@ -45,6 +48,7 @@ export function createPlaylistDownloadItemFromUrls(urls: string[], quality: Qual
 			title: "Fetching video info...",
 			channel: "Please wait",
 			status: "pending" as const,
+			audioStatus: type === "audio" ? "completed" : "pending", // If audio, we do not need to download a separate audio track
 			progress: 0,
 			size: 0,
 			quality: quality,

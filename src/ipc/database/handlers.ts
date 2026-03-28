@@ -1,5 +1,6 @@
-import { Databases, getDatabase } from "@/ipc/database/index";
+import { getDatabase } from "@/ipc/database/index";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
+import {Databases} from "@/lib/utils/enums";
 
 type DownloadItemRow = Omit<DownloadItem, 'videos'> & {
     videos?: string | null;
@@ -29,10 +30,15 @@ export const updateActiveDownload = async (event: IpcMainInvokeEvent, parentId: 
     return await updateDownloadItem(event, Databases.ACTIVE_DOWNLOADS, parentId, childId, updates);
 };
 
-export const deleteActiveDownload = async (event: IpcMainInvokeEvent, id: string): Promise<{ success: boolean }> => {
-    const db = getDatabase();
-    db.prepare('DELETE FROM active_downloads WHERE id = ?').run(id);
-    return { success: true };
+export const deleteActiveDownload = async (event: IpcMainInvokeEvent, id: string): Promise<{ success: boolean, error: Error | null }> => {
+    try {
+        const db = getDatabase();
+        db.prepare('DELETE FROM active_downloads WHERE id = ?').run(id);
+        return { success: true, error: null };
+    } catch (error: any) {
+        console.error(error);
+        return { success: false, error: error };
+    }
 };
 
 export const deleteAllActiveDownloads = async (event: IpcMainInvokeEvent): Promise<{ success: boolean }> => {
@@ -99,39 +105,44 @@ export const moveActiveToCompleted = async (event: IpcMainInvokeEvent, id: strin
 // ============ Helper Methods ============
 
 export async function createDownloadItem(dbName: Databases, downloadItem: DownloadItem): Promise<{
-    success: boolean
+    success: boolean, error: Error | null
 }> {
-    const db = getDatabase();
+    try {
+        const db = getDatabase();
 
-    const stmt = db.prepare(`
+        const stmt = db.prepare(`
         INSERT INTO ${dbName}
-        (id, url, title, status, progress, error, size, quality, type, date, channel, format, thumbnail, videos,
+        (id, url, title, status, audioStatus, progress, error, size, quality, type, date, channel, format, thumbnail, videos,
          downloadPath, parentId, parentTitle)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    stmt.run(
-        downloadItem.id,
-        downloadItem.url,
-        downloadItem.title,
-        downloadItem.status,
-        downloadItem.progress,
-        downloadItem.error || null,
-        downloadItem.size,
-        downloadItem.quality,
-        downloadItem.type,
-        downloadItem.date,
-        downloadItem.channel,
-        downloadItem.format || null,
-        downloadItem.thumbnail || null,
-        downloadItem.videos ? JSON.stringify(downloadItem.videos) : null,
-        downloadItem.downloadPath,
-        downloadItem.parentId || null,
-        downloadItem.parentTitle || null
-    );
+        stmt.run(
+            downloadItem.id,
+            downloadItem.url,
+            downloadItem.title,
+            downloadItem.status,
+            downloadItem.audioStatus,
+            downloadItem.progress,
+            downloadItem.error || null,
+            downloadItem.size,
+            downloadItem.quality,
+            downloadItem.type,
+            downloadItem.date,
+            downloadItem.channel,
+            downloadItem.format || null,
+            downloadItem.thumbnail || null,
+            downloadItem.videos ? JSON.stringify(downloadItem.videos) : null,
+            downloadItem.downloadPath,
+            downloadItem.parentId || null,
+            downloadItem.parentTitle || null
+        );
 
-    // better-sqlite3 automatically handles statement cleanup, no need for stmt.finalize()
-    return { success: true };
+        return { success: true, error: null };
+    } catch (error: any) {
+        console.error(error);
+        return { success: false, error };
+    }
 };
 
 export async function updateDownloadItem(event: IpcMainInvokeEvent, dbName: Databases, parentId: string, childId: string | null, updates: Partial<DownloadItem>): Promise<{

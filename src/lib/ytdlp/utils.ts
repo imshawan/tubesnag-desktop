@@ -1,7 +1,6 @@
 import fsSync from "node:fs";
 import path from "node:path";
 import {sanitizeFilename} from "@/lib/ytdlp/download";
-import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
 export function getNormalizedFileListMap(directory: string): Map<string, string> {
 	const files = fsSync.readdirSync(directory);
@@ -56,4 +55,9 @@ export function resolveQualityByResolution(w: number, h: number): QualityType | 
 	if (mainDim >= 256) return "144p";
 
 	return null;
+}
+
+export function resolveIfAudioOnlyDownload(stdoutLine: string): boolean {
+	const match = stdoutLine.match(/^\[download\] Destination:\s+.+\.(m4a|mp3|opus)\s*$/i);
+	return !!match?.length;
 }

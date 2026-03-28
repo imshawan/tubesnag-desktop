@@ -1,15 +1,7 @@
 import {VIDEO_QUALITIES} from "@/lib/ytdlp/constants";
 import {SettingsState} from "@/store/slices/settings-slice";
 import {getElectron} from "@/lib/utils/common";
-
-enum AppSettingsKeys {
-	DOWNLOAD_QUALITY = "downloadQuality",
-	DOWNLOAD_PATH = "downloadPath",
-	AUTO_START = "autoStart",
-	SAVE_PLAYLIST_FOLDERS = "savePlaylistFolders",
-	ITEMS_PER_PAGE = "itemsPerPage",
-	RECENT_ITEMS_PER_PAGE = "recentItemsPerPage"
-}
+import {AppSettingsKeys} from "@/lib/utils/enums";
 
 const getInitialDownloadQuality = (): QualityType => {
 	const supportedQualities = VIDEO_QUALITIES.map(q => q.id);

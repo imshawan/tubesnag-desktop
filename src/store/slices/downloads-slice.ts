@@ -1,4 +1,5 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {isDownloadCompleteState, isFailedState} from "@/lib/utils/common";
 
 export interface DownloadsState {
     downloads: DownloadItem[];
@@ -30,7 +31,7 @@ const downloadsSlice = createSlice({
             state.downloads = state.downloads.filter((d) => d.id !== action.payload.parent);
         },
         clearCompleted: (state) => {
-            state.downloads = state.downloads.filter((d) => d.status !== "completed" && d.status !== "failed");
+            state.downloads = state.downloads.filter((d) => !isDownloadCompleteState(d) && !isFailedState(d));
         },
         clearAll: (state) => {
             state.downloads = [];

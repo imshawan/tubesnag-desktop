@@ -1,15 +1,4 @@
-import {
-	AlertCircle,
-	CheckCircle2,
-	ChevronDown,
-	ChevronUp,
-	FileVideo,
-	FileX,
-	LucideProps,
-	Music,
-	Zap
-} from "lucide-react";
-import {useTranslation} from "react-i18next";
+import {ChevronDown, ChevronUp, FileVideo, LucideProps, Music} from "lucide-react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useRef, useState} from "react";
@@ -18,6 +7,8 @@ import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
 import {timeFromNow} from "@/lib/utils/date";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
+import {DownloadStatus} from "@/components/download-status";
+import {useTranslation} from "react-i18next";
 
 interface DownloadListProps {
 	items: DownloadItem[];
@@ -49,44 +40,6 @@ export function DownloadList({
 
 	const getSizeString = (size: string) =>
 		size.includes("NaN") || size.includes("undefined") ? "0 B" : size;
-
-	const renderStatusBadge = (download: DownloadItem) => {
-		const isDownloadErrored = (download.status === "downloading" || download.status === "pending")
-			&& !currentDownloadId;
-
-		if (download.status === "completed" || download.progress === 100) {
-			return (
-				<div
-					className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded text-[10px] font-medium border border-emerald-500/20">
-					<CheckCircle2 className="size-3"/> {t("history.completed")}
-				</div>
-			);
-		} else if (download.status === "failed") {
-			return (
-				<div
-					className="flex items-center gap-1.5 bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-500/20">
-					<AlertCircle className="size-3"/> {t("history.failed")}
-				</div>
-			);
-		} else if (isDownloadErrored) {
-			return (<div
-				className="flex items-center gap-1.5 bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded text-[10px] font-medium border border-rose-500/20">
-				<FileX className="size-3"/> {t("common.broken")}
-			</div>);
-		} else if (download.status === "downloading") {
-			return (<div
-				className={"flex items-center gap-1.5 bg-blue-500/10 text-blue-500 px-2 py-0.5 rounded text-[10px] font-medium border border-blue-500/20"}>
-				<Zap className="size-3"/> {download.progress}%
-			</div>);
-		} else {
-			return (
-				<div
-					className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded text-[10px] font-medium border border-amber-500/20">
-					<Zap className="size-3"/> {t("history.pending")}
-				</div>
-			);
-		}
-	};
 
 	const ThumbnailIcon = ({item}: { item: DownloadItem }) => {
 		const [dataUrl, setDataUrl] = useState<string>('');
@@ -127,6 +80,7 @@ export function DownloadList({
 	const renderDownloadRow = (download: DownloadItem, idx: number, isPlaylistChild = false) => {
 		const size = getSizeString(formatBytes(download.size));
 		const disabled = !!(maxItems) && !!(idx) && maxItems === idx;
+		const timeWithTranslation = timeFromNow(download.date);
 
 		return (
 			<DownloadContextMenu
@@ -154,7 +108,7 @@ export function DownloadList({
 							<div className="flex gap-2 text-xs text-muted-foreground">
 								<span>{download.channel}</span>
 								<span>•</span>
-								<span>{timeFromNow(download.date)}</span>
+								<span>{t(timeWithTranslation[1].toString(), {time: timeWithTranslation[0]})} {t("timeAgo.ago")}</span>
 								<span>•</span>
 								<span className="capitalize">{download.type}</span>
 								<span>•</span>
@@ -164,7 +118,7 @@ export function DownloadList({
 					</div>
 					<div className="flex items-center gap-2">
 						<QualityBadge quality={download.quality}/>
-						{renderStatusBadge(download)}
+						<DownloadStatus data={download} currentDownloadId={currentDownloadId} />
 					</div>
 				</div>
 			</DownloadContextMenu>
@@ -205,7 +159,7 @@ export function DownloadList({
                   <span className="text-xs text-muted-foreground hidden sm:block">
                     {item.quality}
                   </span>
-							{renderStatusBadge(item)}
+							<DownloadStatus data={item} currentDownloadId={currentDownloadId} />
 							{expandedPlaylist === item.id ? (
 								<ChevronUp className="size-4 text-muted-foreground"/>
 							) : (

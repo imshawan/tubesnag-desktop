@@ -13,7 +13,12 @@ import * as child_process from "node:child_process";
 import {ipcContext} from "@/ipc/context";
 import {downloadFile} from "@/lib/utils/downloader";
 import {isYtdlpError, parseYtDlpError, sanitizeFilename, sizeToBytes} from "@/lib/ytdlp/download";
-import {readYtVideoInfoJsonFile, resolveDownloadedFilePath, resolveQualityByResolution} from "@/lib/ytdlp/utils";
+import {
+	readYtVideoInfoJsonFile,
+	resolveDownloadedFilePath,
+	resolveIfAudioOnlyDownload,
+	resolveQualityByResolution
+} from "@/lib/ytdlp/utils";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 
@@ -171,7 +176,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 		downloadId,
 		saveToPlaylistFolder,
 		playlistName,
-		audioBitrate = "192"
+		audioBitrate = "192",
+		type
 	} = options;
 	const userDataPath = app.getPath('userData');
 	const tempDir = path.join(userDataPath, 'Temp');
@@ -238,6 +244,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 		let lastProgress = 0;
 		const videoInfoData: YtDlpMeta = {
 			audio_bitrate: 0, audio_codec: "", audio_ext: null, audio_sample_rate: 0,
+			video_codec: "",
 			quality: "",
 			filesize: 0,
 			title: '',
@@ -258,6 +265,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 		};
 		let thumbnail = path.join(thumbnailPath, downloadId + ".webp");
 		let title = "";
+		let status: DownloadStatus = "pending";
 
 		child.stdout.on('data', (data: Buffer) => {
 			const text = data.toString();
@@ -299,6 +307,27 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 
 			lines.forEach((line: string) => {
 				console.log('[yt-dlp]', line);
+
+				// Check if video and currently downloading the audio track
+				if (line.startsWith("[download] Destination") && resolveIfAudioOnlyDownload(line) && type === "video") {
+					status = "downloading_audio_track"
+					mainWindow?.webContents.send('ytdlp:progress', {
+						type: 'metadata',
+						data: {
+							status
+						}
+					});
+				}
+
+				if (line.startsWith("[Merger] Merging formats into")) {
+					status = "merging_formats";
+					mainWindow?.webContents.send('ytdlp:progress', {
+						type: 'metadata',
+						data: {
+							status
+						}
+					});
+				}
 
 				// Used for audio converting, because initially yt-dlp downloads webm and the  converts it to specified format.
 				const finalMatch = line.startsWith("[ExtractAudio] Destination:")
@@ -384,6 +413,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				const progressMatch = line.match(/\[\s*download\s*\]\s+(\d+(?:\.\d+)?)%/);
 				const speedMatch = new RegExp(/at\s+([\d.]+[KMG]iB\/s)/).exec(line);
 				if (progressMatch) {
+					if (status === "pending") {
+						status = "downloading";
+					}
 					const progress = Math.min(100, Math.max(0, Number.parseFloat(progressMatch[1])));
 					if (Math.abs(progress - lastProgress) >= 1) {
 						lastProgress = progress;
@@ -391,7 +423,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 							type: 'progress',
 							progress: Math.round(progress),
 							speed: speedMatch?.length ? speedMatch[1] : undefined,
-							downloadId
+							downloadId,
+							status
 						});
 					}
 				}
@@ -419,8 +452,9 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 					fsSync.unlinkSync(jsonInfoFile);
 				}
 				if (code === 0 || code === 1) {
+					status = "completed";
 					const data: Record<string, any> = {
-						status: 'completed',
+						status,
 						progress: 100,
 						thumbnail,
 						downloadId,
