@@ -223,16 +223,6 @@ export function DownloadList({
 		)
 	}
 
-	const DefaultIcon = ({item}: { item: DownloadItem }) => {
-		const Icon = item.type === "audio" ? Music : FileVideo;
-		return (
-			<div
-				className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-				{<Icon className="size-5 text-muted-foreground"/>}
-			</div>
-		)
-	}
-
 	return (
 		<ScrollArea className={maxHeight}>
 			<div className="divide-y divide-border/40">
@@ -266,4 +256,14 @@ function QualityBadge({quality}: Readonly<{ quality: string }>) {
 		</div>
 	);
 
+}
+
+function DefaultIcon ({item}: Readonly<{ item: DownloadItem }>)   {
+	const Icon = item.type === "audio" ? Music : FileVideo;
+	return (
+		<div
+			className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
+			{<Icon className="size-5 text-muted-foreground"/>}
+		</div>
+	)
 }
