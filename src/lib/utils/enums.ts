@@ -52,3 +52,10 @@ export enum ProgressTypes {
 	Metadata = "metadata",
 	Duplicate = "duplicate",
 }
+
+export enum DownloadType {
+	Audio = "audio",
+	Video = "video",
+	Playlist = "playlist",
+	Unknown = "unknown",
+}

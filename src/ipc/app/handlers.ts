@@ -188,6 +188,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 	const mainWindow = ipcContext.mainWindow;
 	const jsonInfoFile = path.join(tempDir, `${downloadId}.json`);
 
+	console.info("Options ->", options);
+
 	const isAudioFormat = format != null && audioFormats.includes(format);
 
 	// Build format string with both quality and format

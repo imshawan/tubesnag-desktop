@@ -46,7 +46,7 @@ const activeDownloadsSlice = createSlice({
 				const idx = item.videos.findIndex(v => v.id === action.payload.downloadId);
 				if (idx !== -1) {
 					let isCompleted = item.videos.filter(isDownloadCompleteState).length;
-					if (action.payload.updates.status === DownloadStatus.Completed) isCompleted++;
+					if ((action.payload.updates?.status || item.videos[idx]["status"]) === DownloadStatus.Completed) isCompleted++;
 					if (isCompleted == item.videos.length) {
 						item.status = DownloadStatus.Completed;
 						item.progress = 100;

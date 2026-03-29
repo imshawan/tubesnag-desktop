@@ -212,7 +212,7 @@ function QualityBadge({quality}: Readonly<{ quality: string }>) {
 
 }
 
-function DefaultIcon ({item}: Readonly<{ item: DownloadItem }>)   {
+function DefaultIcon({item}: Readonly<{ item: DownloadItem }>) {
 	const Icon = item.type === "audio" ? Music : FileVideo;
 	return (
 		<div

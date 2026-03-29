@@ -13,7 +13,7 @@ import {
 	updateActivePlaylistVideoDownload
 } from "@/store/slices/active-downloads-slice";
 import {createPlaylistDownloadItemFromUrls} from "@/lib/ytdlp/download";
-import {isDownloadingState, isFailedState, isPendingState} from "@/lib/utils/common";
+import {isDownloadInErroredState, isDownloadingState, isPendingState} from "@/lib/utils/common";
 import {AudioPartDownloadStatus} from "@/lib/utils/enums";
 
 export function useActiveDownloads() {
@@ -28,8 +28,8 @@ export function useActiveDownloads() {
 	);
 
 	const failedDownloads = useMemo(
-		() => activeDownloads.filter(isFailedState),
-		[activeDownloads]
+		() => activeDownloads.filter(e => isDownloadInErroredState(e, currentDownloadId)),
+		[activeDownloads, currentDownloadId]
 	);
 
 	const addPlaylistDownload = (

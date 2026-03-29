@@ -167,7 +167,7 @@ function HomePage() {
 			return;
 		}
 
-		const playlistId = child.id;
+		const playlistId = download.parentId;
 
 		setCurrentDownloadId(child.id);
 		try {
@@ -179,7 +179,7 @@ function HomePage() {
 				format: child.format,
 				audioBitrate: "192",
 				saveToPlaylistFolder: saveVideosToPlaylistFolders,
-				playlistName: child.title,
+				playlistName: child.parentTitle,
 				type: child.type,
 				onProgress: (data, speed) => {
 					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {

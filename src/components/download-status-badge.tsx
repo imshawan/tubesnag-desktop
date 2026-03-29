@@ -4,7 +4,7 @@ import {useTranslation} from "react-i18next";
 import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useState} from "react";
 import {isDownloadingState, isPendingState} from "@/lib/utils/common";
-import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
+import {AudioPartDownloadStatus, DownloadStatus, DownloadType} from "@/lib/utils/enums";
 
 interface DownloadStatusBadgeProps {
 	data: DownloadItem;
@@ -14,6 +14,7 @@ interface DownloadStatusBadgeProps {
 export function DownloadStatusBadge({data, currentDownloadId}: Readonly<DownloadStatusBadgeProps>) {
 	const {t} = useTranslation();
 	const [download, setDownload] = useState<DownloadItem>();
+	const isPlaylist = download?.type === DownloadType.Playlist;
 
 	useEffect(() => {
 		if (data && Object.keys(data).length) {
@@ -23,7 +24,7 @@ export function DownloadStatusBadge({data, currentDownloadId}: Readonly<Download
 
 	const isDownloadErrored =
 		(isDownloadingState(data) || isPendingState(data)) &&
-		!currentDownloadId;
+		(!currentDownloadId || currentDownloadId !== data.id);
 
 	if (download?.status === DownloadStatus.DownloadingAudioTrack) {
 		return (
@@ -66,7 +67,7 @@ export function DownloadStatusBadge({data, currentDownloadId}: Readonly<Download
 		);
 	}
 
-	if (isDownloadErrored) {
+	if (isDownloadErrored && !isPlaylist) {
 		return (
 			<Badge
 				className="bg-rose-500/10 text-rose-500 border-rose-500/20"

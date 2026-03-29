@@ -51,3 +51,7 @@ export const isFailedState = (item: DownloadItem) =>
 
 export const isDownloadCompleteState = (item: DownloadItem) =>
 	(item.status === DownloadStatus.Completed && item.audioStatus === AudioPartDownloadStatus.Completed);
+
+export const isDownloadInErroredState = (item: DownloadItem, currentDownloadId: string | null | undefined) =>
+	(isFailedState(item) || ((isDownloadingState(item) || isPendingState(item)) &&
+		!currentDownloadId))

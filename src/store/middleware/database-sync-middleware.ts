@@ -81,15 +81,17 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
 			const playlist = state.activeDownloads.items.find((item: any) => item.id === playlistId);
 
 			if (playlist?.status === DownloadStatus.Completed) {
+
 				console.log('Moving playlist to completed downloads');
 
 				await db.moveActiveToCompleted(playlistId);
-
 				store.dispatch(addDownload(playlist));
 				store.dispatch(removeActiveDownload({parent: playlistId}));
 			} else {
-				console.log('Updating playlist video download:', {playlistId, updates});
-				await db.updateActiveDownload(playlistId, downloadId, pickDbFields(updates));
+				await Promise.all([
+					db.updateActiveDownload(playlistId, downloadId, pickDbFields(updates)),
+					db.updateActiveDownload(playlistId, null, {progress: playlist.progress})
+				]);
 			}
 		} catch (error) {
 			console.error('Failed to update playlist in DB:', error);
