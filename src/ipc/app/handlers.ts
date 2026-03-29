@@ -19,8 +19,9 @@ import {
 	resolveIfAudioOnlyDownload,
 	resolveQualityByResolution
 } from "@/lib/ytdlp/utils";
-import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
+import {DownloadStatus} from "@/lib/utils/enums";
+import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 
 export const getYtDlpConfig = () => {
 	const platform = process.platform;
@@ -262,7 +263,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 		};
 		let thumbnail = path.join(thumbnailPath, downloadId + ".webp");
 		let title = "";
-		let status: DownloadStatus = "pending";
+		let status: DownloadStatus = DownloadStatus.Pending;
 
 		child.stdout.on('data', (data: Buffer) => {
 			const text = data.toString();
@@ -307,7 +308,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 
 				// Check if video and currently downloading the audio track
 				if (line.startsWith("[download] Destination") && resolveIfAudioOnlyDownload(line) && type === "video") {
-					status = "downloading_audio_track"
+					status = DownloadStatus.DownloadingAudioTrack
 					mainWindow?.webContents.send('ytdlp:progress', {
 						type: 'metadata',
 						data: {
@@ -317,7 +318,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				}
 
 				if (line.startsWith("[Merger] Merging formats into")) {
-					status = "merging_formats";
+					status = DownloadStatus.MergingFormats;
 					mainWindow?.webContents.send('ytdlp:progress', {
 						type: 'metadata',
 						data: {
@@ -410,8 +411,8 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				const progressMatch = line.match(/\[\s*download\s*\]\s+(\d+(?:\.\d+)?)%/);
 				const speedMatch = new RegExp(/at\s+([\d.]+[KMG]iB\/s)/).exec(line);
 				if (progressMatch) {
-					if (status === "pending") {
-						status = "downloading";
+					if (status === DownloadStatus.Pending) {
+						status = DownloadStatus.Downloading;
 					}
 					const progress = Math.min(100, Math.max(0, Number.parseFloat(progressMatch[1])));
 					if (Math.abs(progress - lastProgress) >= 1) {
@@ -449,7 +450,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 					fsSync.unlinkSync(jsonInfoFile);
 				}
 				if (code === 0 || code === 1) {
-					status = "completed";
+					status = DownloadStatus.Completed;
 					const data: Record<string, any> = {
 						status,
 						progress: 100,

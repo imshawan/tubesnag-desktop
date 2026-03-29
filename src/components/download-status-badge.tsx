@@ -4,13 +4,14 @@ import {useTranslation} from "react-i18next";
 import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useState} from "react";
 import {isDownloadingState, isPendingState} from "@/lib/utils/common";
+import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
 
-interface DownloadStatusProps {
+interface DownloadStatusBadgeProps {
 	data: DownloadItem;
 	currentDownloadId?: string | null;
 };
 
-export function DownloadStatus({data, currentDownloadId}: Readonly<DownloadStatusProps>) {
+export function DownloadStatusBadge({data, currentDownloadId}: Readonly<DownloadStatusBadgeProps>) {
 	const {t} = useTranslation();
 	const [download, setDownload] = useState<DownloadItem>();
 
@@ -24,7 +25,7 @@ export function DownloadStatus({data, currentDownloadId}: Readonly<DownloadStatu
 		(isDownloadingState(data) || isPendingState(data)) &&
 		!currentDownloadId;
 
-	if (download?.status === "downloading_audio_track") {
+	if (download?.status === DownloadStatus.DownloadingAudioTrack) {
 		return (
 			<Badge
 				className="bg-purple-500/10 text-purple-500 border-purple-500/20"
@@ -34,7 +35,7 @@ export function DownloadStatus({data, currentDownloadId}: Readonly<DownloadStatu
 		);
 	}
 
-	if (download?.status === "merging_formats") {
+	if (download?.status === DownloadStatus.MergingFormats) {
 		return (
 			<Badge
 				className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
@@ -45,7 +46,7 @@ export function DownloadStatus({data, currentDownloadId}: Readonly<DownloadStatu
 		);
 	}
 
-	if ((download?.status === "completed" || data.progress === 100) && data.audioStatus === "completed") {
+	if ((download?.status === DownloadStatus.Completed || data.progress === 100) && data.audioStatus === AudioPartDownloadStatus.Completed) {
 		return (
 			<Badge
 				className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
@@ -55,7 +56,7 @@ export function DownloadStatus({data, currentDownloadId}: Readonly<DownloadStatu
 		);
 	}
 
-	if (download?.status === "failed") {
+	if (download?.status === DownloadStatus.Failed) {
 		return (
 			<Badge
 				className="bg-rose-500/10 text-rose-500 border-rose-500/20"
@@ -76,7 +77,7 @@ export function DownloadStatus({data, currentDownloadId}: Readonly<DownloadStatu
 	}
 
 
-	if (download?.status === "downloading") {
+	if (download?.status === DownloadStatus.Downloading) {
 		return (
 			<Badge
 				className="bg-blue-500/10 text-blue-500 border-blue-500/20"

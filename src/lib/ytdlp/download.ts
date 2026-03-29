@@ -4,6 +4,7 @@
  */
 import {generateUUID, resolveDownloadItemType} from "@/lib/utils/common";
 import {ytDlpErrorMap} from "@/lib/ytdlp/constants";
+import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
 
 export function isValidYouTubeUrl(url: string): boolean {
 	const youtubeUrlPattern = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/
@@ -24,8 +25,8 @@ export function createDownloadItemFromUrls(urls: string[], quality: QualityType,
 			url,
 			title: "Fetching video info...",
 			channel: "Please wait",
-			status: "pending" as const,
-			audioStatus: type === "video" ? "pending" : "completed" as const,
+			status: DownloadStatus.Pending as const,
+			audioStatus: type === "video" ? AudioPartDownloadStatus.Pending : AudioPartDownloadStatus.Completed as const,
 			progress: 0,
 			size: 0,
 			quality: quality,
@@ -48,7 +49,7 @@ export function createPlaylistDownloadItemFromUrls(urls: string[], quality: Qual
 			title: "Fetching video info...",
 			channel: "Please wait",
 			status: "pending" as const,
-			audioStatus: type === "audio" ? "completed" : "pending", // If audio, we do not need to download a separate audio track
+			audioStatus: type === "audio" ? AudioPartDownloadStatus.Completed : AudioPartDownloadStatus.Pending, // If audio, we do not need to download a separate audio track
 			progress: 0,
 			size: 0,
 			quality: quality,

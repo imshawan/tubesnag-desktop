@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 import {useEffect, useRef, useState} from "react"
 import {useDownloads} from "@/hooks/useDownloads"
-import {formatBytes} from "@/lib/utils/common"
+import {formatBytes, isDownloadCompleteState, isDownloadingState, isPendingState} from "@/lib/utils/common"
 import {DetailItem} from "@/components/dialogs/item-properties/detail-item";
 import {CopyField} from "@/components/dialogs/item-properties/copy-field";
 import {MediaTypeBadge} from "@/components/dialogs/item-properties/media-type-badge";
@@ -30,6 +30,7 @@ import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {useTranslation} from "react-i18next";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
+import {DownloadStatus} from "@/lib/utils/enums";
 
 interface ItemPropertiesDialogProps {
 	onOpenFolder: (download: DownloadItem) => void;
@@ -85,11 +86,11 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 
 	const getStatusVariant = (status: string) => {
 		switch (status) {
-			case "completed":
+			case DownloadStatus.Completed:
 				return "default"
-			case "failed":
+			case DownloadStatus.Failed:
 				return "destructive"
-			case "downloading":
+			case DownloadStatus.Downloading:
 				return "secondary"
 			default:
 				return "outline"
@@ -100,7 +101,7 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 
 	const isPlaylist = displayItem.type === "playlist";
 	const hasChildren = isPlaylist && displayItem.videos && displayItem.videos.length > 0;
-	const isDownloadErrored = (displayItem && (displayItem.status === "downloading" || displayItem.status === "pending"))
+	const isDownloadErrored = (displayItem && (isDownloadingState(displayItem) || isPendingState(displayItem)))
 		&& currentDownloadId !== displayItem.id;
 
 	return (
@@ -312,7 +313,7 @@ export function ItemPropertiesDialog({onOpenFolder}: Readonly<ItemPropertiesDial
 					<Button className="text-sm p-4" variant="outline" onClick={() => onOpenChange(false)}>
 						{t("common.cancel")}
 					</Button>
-					{displayItem.status === "completed" && (
+					{isDownloadCompleteState(displayItem) && (
 						<Button className="gap-2 text-sm p-4 shadow-sm" onClick={() => onOpenFolder(displayItem)}>
 							<ExternalLink className="size-4"/>
 							{t("itemProperties.openDirectory")}

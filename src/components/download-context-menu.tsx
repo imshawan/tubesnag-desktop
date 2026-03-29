@@ -12,6 +12,7 @@ import {useDownloads} from "@/hooks/useDownloads";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {openExternalLink} from "@/actions/shell";
 import {isValidYouTubeUrl} from "@/lib/ytdlp/download";
+import {isDownloadCompleteState, isDownloadingState, isFailedState, isPendingState} from "@/lib/utils/common";
 
 interface DownloadContextMenuProps {
 	download: DownloadItem
@@ -41,9 +42,9 @@ export function DownloadContextMenu({
 	const {setDownloadItemPropertyOpen} = useDownloads();
 	const {currentDownloadId} = useActiveDownloads();
 
-	const isDownloadFailed = download.status === "failed" || ((download.status === "downloading" || download.status === "pending")
+	const isDownloadFailed = isFailedState(download) || ((isDownloadingState(download) || isPendingState(download))
 		&& currentDownloadId !== download.id);
-	const itemIsDownloading = (download.status === "downloading" || download.status === "pending")
+	const itemIsDownloading = (isDownloadingState(download) || isPendingState(download))
 		&& currentDownloadId === download.id;
 
 	const copyToClipboard = (content: string) => {
@@ -72,7 +73,7 @@ export function DownloadContextMenu({
 			</ContextMenuTrigger>
 			{!disabled && <ContextMenuContent className="w-56 z-10">
 				{/* Open file - only for completed downloads */}
-				{download.status === "completed" && (
+				{isDownloadCompleteState(download) && (
 					<>
 						{download.type !== "playlist" && <ContextMenuItem onClick={() => onOpen(download)}>
                             <PlayIcon className="mr-2 h-4 w-4"/>

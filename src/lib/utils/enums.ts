@@ -1,4 +1,3 @@
-
 export enum AppSettingsKeys {
 	DOWNLOAD_QUALITY = "downloadQuality",
 	DOWNLOAD_PATH = "downloadPath",
@@ -44,4 +43,12 @@ export enum QualityType {
 	P144 = "144p",
 	Audio = "audio",
 	Unknown = "unknown",
+}
+
+export enum ProgressTypes {
+	Progress = "progress",
+	Complete = "complete",
+	Error = "error",
+	Metadata = "metadata",
+	Duplicate = "duplicate",
 }

@@ -5,6 +5,7 @@ import {cn} from "@/lib/utils/tailwind";
 import {Film, FolderIcon, FolderOpen, Music, Play, Search} from "lucide-react";
 import {formatBytes} from "@/lib/utils/common";
 import {useDownloads} from "@/hooks/useDownloads";
+import {DownloadStatus} from "@/lib/utils/enums";
 
 interface GlobalSearchProps {
     isOpen: boolean;
@@ -109,7 +110,7 @@ export function GlobalSearch({isOpen, onClose, onSelect}: GlobalSearchProps) {
                                                 <span>•</span>
                                                 <span
                                                     className={cn(
-                                                        item.status === "completed"
+                                                        item.status === DownloadStatus.Completed
                                                             ? "text-emerald-500"
                                                             : item.status === "failed"
                                                                 ? "text-rose-500"

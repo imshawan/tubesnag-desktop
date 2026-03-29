@@ -7,7 +7,7 @@ import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
 import {timeFromNow} from "@/lib/utils/date";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
-import {DownloadStatus} from "@/components/download-status";
+import {DownloadStatusBadge} from "@/components/download-status-badge";
 import {useTranslation} from "react-i18next";
 
 interface DownloadListProps {
@@ -108,7 +108,7 @@ export function DownloadList({
 							<div className="flex gap-2 text-xs text-muted-foreground">
 								<span>{download.channel}</span>
 								<span>•</span>
-								<span>{t(timeWithTranslation[1].toString(), {time: timeWithTranslation[0]})} {t("timeAgo.ago")}</span>
+								<span>{t(timeWithTranslation[1].toString(), {time: timeWithTranslation[0]})}{Number(timeWithTranslation[0]) > 0 ? ` ${t("timeAgo.ago")}` : null}</span>
 								<span>•</span>
 								<span className="capitalize">{download.type}</span>
 								<span>•</span>
@@ -118,7 +118,7 @@ export function DownloadList({
 					</div>
 					<div className="flex items-center gap-2">
 						<QualityBadge quality={download.quality}/>
-						<DownloadStatus data={download} currentDownloadId={currentDownloadId} />
+						<DownloadStatusBadge data={download} currentDownloadId={currentDownloadId} />
 					</div>
 				</div>
 			</DownloadContextMenu>
@@ -159,7 +159,7 @@ export function DownloadList({
                   <span className="text-xs text-muted-foreground hidden sm:block">
                     {item.quality}
                   </span>
-							<DownloadStatus data={item} currentDownloadId={currentDownloadId} />
+							<DownloadStatusBadge data={item} currentDownloadId={currentDownloadId} />
 							{expandedPlaylist === item.id ? (
 								<ChevronUp className="size-4 text-muted-foreground"/>
 							) : (

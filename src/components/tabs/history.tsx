@@ -10,6 +10,7 @@ import {useApp} from "@/hooks/useApp";
 import {useConfirmation} from "@/context/confirmation-context";
 import {ActionProgress} from "@/components/action-progress";
 import {deleteFileFromSystem} from "@/lib/ytdlp/ytdlp";
+import {DownloadStatus} from "@/lib/utils/enums";
 
 interface HistoryProps {
 	onOpenFile: (download: DownloadItem) => void;
@@ -132,9 +133,9 @@ export function History({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="all">{t("history.allStatus")}</SelectItem>
-								<SelectItem value="completed">{t("history.completed")}</SelectItem>
-								<SelectItem value="downloading">{t("history.downloading")}</SelectItem>
-								<SelectItem value="failed">{t("history.failed")}</SelectItem>
+								<SelectItem value={DownloadStatus.Completed}>{t("history.completed")}</SelectItem>
+								<SelectItem value={DownloadStatus.Downloading}>{t("history.downloading")}</SelectItem>
+								<SelectItem value={DownloadStatus.Failed}>{t("history.failed")}</SelectItem>
 							</SelectContent>
 						</Select>
 						<Select value={historyTypeFilter} onValueChange={(v) => setHistoryTypeFilter(v)}>

@@ -30,7 +30,7 @@ import {
 } from "@/lib/ytdlp/ytdlp";
 import {useToast} from "@/context/toast-context";
 import {Statistics} from "@/components/statistics";
-import {generateUUID} from "@/lib/utils/common";
+import {generateUUID, isDownloadCompleteState} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
 import {getActiveDownloadById, getActiveDownloads, getCompletedDownloads} from "@/lib/database";
@@ -41,6 +41,7 @@ import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-pr
 import {BotVerificationError} from "@/lib/errors/bot-verification-error";
 import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
 import {getDefaultDownloadLocation} from "@/lib/utils/app";
+import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
 
 function HomePage() {
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -145,7 +146,7 @@ function HomePage() {
 		addToast(message, "success", 5000);
 
 		if (download.id) {
-			updateActiveDownloadItem(download.id, {audioStatus: "completed"});
+			updateActiveDownloadItem(download.id, {audioStatus: AudioPartDownloadStatus.Completed});
 		}
 	}
 
@@ -193,7 +194,7 @@ function HomePage() {
 					updateActivePlaylistVideoDownloadItem(playlistId, child.id, data);
 				},
 				onComplete: (data) => {
-					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {audioStatus: "completed"});
+					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {audioStatus: AudioPartDownloadStatus.Completed});
 				},
 				onDuplicate: (filename, metadata) => {
 					addToast(t("common.duplicate", {title: filename}), "warning");
@@ -421,7 +422,7 @@ function HomePage() {
 							updateActivePlaylistVideoDownloadItem(playlistId, download.id, data);
 						},
 						onComplete: (data) => {
-							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {audioStatus: "completed"});
+							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {audioStatus: AudioPartDownloadStatus.Completed});
 						},
 						onDuplicate: (filename, metadata) => {
 							addToast(t("common.duplicate", {title: filename}), "warning");
@@ -451,7 +452,7 @@ function HomePage() {
 	};
 
 	const handleOpenFile = async (download: DownloadItem) => {
-		if (download.status === "completed") {
+		if (isDownloadCompleteState(download)) {
 			try {
 				const {error} = await openFile(download);
 				if (error) {
@@ -508,7 +509,7 @@ function HomePage() {
 		if (confirmed) {
 			if (downloadListType === "active") {
 				removeActiveDownloadItem(parent, child);
-			} else if (downloadListType === "completed") {
+			} else if (downloadListType === DownloadStatus.Completed) {
 				removeDownload(parent, child);
 			}
 

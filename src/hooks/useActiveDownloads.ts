@@ -14,6 +14,7 @@ import {
 } from "@/store/slices/active-downloads-slice";
 import {createPlaylistDownloadItemFromUrls} from "@/lib/ytdlp/download";
 import {isDownloadingState, isFailedState, isPendingState} from "@/lib/utils/common";
+import {AudioPartDownloadStatus} from "@/lib/utils/enums";
 
 export function useActiveDownloads() {
 	const dispatch = useAppDispatch();
@@ -45,7 +46,7 @@ export function useActiveDownloads() {
 			url: playlistUrl,
 			title: playlistData.title,
 			status: "downloading",
-			audioStatus: "completed", // as this is a playlist item
+			audioStatus: AudioPartDownloadStatus.Completed, // as this is a playlist item
 			progress: 0,
 			size: 0,
 			quality: quality,

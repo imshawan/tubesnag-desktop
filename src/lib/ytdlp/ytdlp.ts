@@ -1,5 +1,6 @@
 import {getElectron} from "@/lib/utils/common";
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
+import {ProgressTypes} from "@/lib/utils/enums";
 
 export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<void> => {
 	const {
@@ -34,21 +35,21 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 
 			console.info('[ytdlp utility] received:', data);
 
-			if (data.type === "progress") {
+			if (data.type === ProgressTypes.Progress) {
 				onProgress?.(data, data.speed);
-			} else if (data.type === "metadata") {
+			} else if (data.type === ProgressTypes.Metadata) {
 				onData?.(data.data);
-			} else if (data.type === "duplicate" && !isDuplicated) {
+			} else if (data.type === ProgressTypes.Duplicate && !isDuplicated) {
 				onDuplicate?.(data.data.filename, data.data);
-				onData?.({status: "duplicate", progress: 100, ...data.data});
+				onData?.({status: ProgressTypes.Duplicate, progress: 100, ...data.data});
 				isDuplicated = true;
-			} else if (data.type === "complete" && !isCompleted) {
+			} else if (data.type === ProgressTypes.Complete && !isCompleted) {
 				onData?.(data.data);
 				onComplete?.({...data.data, id: data.data.downloadId});
 				electron.off("ytdlp:progress", handleProgress);
 				isCompleted = true;
 				resolve();
-			} else if (data.type === "error") {
+			} else if (data.type === ProgressTypes.Error) {
 				electron.off("ytdlp:progress", handleProgress);
 				onError?.({...data.data, downloadId});
 				isCompleted = true;

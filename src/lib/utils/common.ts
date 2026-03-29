@@ -1,8 +1,11 @@
 import i18n from "i18next";
 import {DOWNLOAD_FORMAT_TYPES} from "@/lib/ytdlp/constants";
 import {isValidPlaylistUrl} from "@/lib/ytdlp/download";
+import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
 
-export const downloadingStatuses: DownloadStatus[] = ["downloading", "downloading_audio_track", "merging_formats"];
+export const downloadingStatuses: DownloadStatus[] = [
+	DownloadStatus.Downloading, DownloadStatus.DownloadingAudioTrack, DownloadStatus.MergingFormats
+];
 
 export function formatBytes(bytes: number) {
 	if (bytes === 0) return '0 B';
@@ -31,16 +34,20 @@ export const resolveDownloadItemType = (url: string, format: FormatType) => {
 	if (isValidPlaylistUrl(url)) {
 		return "playlist";
 	} else if (format) {
-		return  DOWNLOAD_FORMAT_TYPES[format] as DownloadItemType;
+		return DOWNLOAD_FORMAT_TYPES[format] as DownloadItemType;
 	} else {
-		return  "unknown";
+		return "unknown";
 	}
 }
 
-export const isDownloadingState = (item: DownloadItem) => downloadingStatuses.includes(item.status);
+export const isDownloadingState = (item: DownloadItem) =>
+	downloadingStatuses.includes(item.status as DownloadStatus);
 
-export const isPendingState = (item: DownloadItem) => item.status === 'pending';
+export const isPendingState = (item: DownloadItem) =>
+	item.status === DownloadStatus.Pending;
 
-export const isFailedState = (item: DownloadItem) => item.status === 'failed';
+export const isFailedState = (item: DownloadItem) =>
+	item.status === DownloadStatus.Failed;
 
-export const isDownloadCompleteState = (item: DownloadItem) => (item.status === 'completed' && item.audioStatus === 'completed');
+export const isDownloadCompleteState = (item: DownloadItem) =>
+	(item.status === DownloadStatus.Completed && item.audioStatus === AudioPartDownloadStatus.Completed);

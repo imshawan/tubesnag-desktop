@@ -7,6 +7,7 @@ import {useApp} from "@/hooks/useApp";
 import {useSettings} from "@/hooks/useSettings";
 import {useMemo} from "react";
 import {cn} from "@/lib/utils/tailwind";
+import {AudioPartDownloadStatus} from "@/lib/utils/enums";
 
 interface RecentActivityProps {
 	onOpenFile: (download: DownloadItem) => void;
@@ -49,7 +50,7 @@ export function RecentActivity({onOpenFile, onOpenFolder, onRetry, onDelete, onS
 							onOpenFolder={onOpenFolder}
 							onOpenFile={onOpenFile}
 							maxHeight="h-full"
-							downloadListType="completed"
+							downloadListType={AudioPartDownloadStatus.Completed}
 							maxItems={recentItemsPerPage}
 						/>
 
