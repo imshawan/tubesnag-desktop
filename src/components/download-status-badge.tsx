@@ -3,28 +3,21 @@ import {AlertCircle, ArrowDownToLine, CheckCircle2, FileX, GitMerge, Loader2, Za
 import {useTranslation} from "react-i18next";
 import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useState} from "react";
-import {isDownloadingState, isPendingState} from "@/lib/utils/common";
 import {AudioPartDownloadStatus, DownloadStatus, DownloadType} from "@/lib/utils/enums";
 
 interface DownloadStatusBadgeProps {
 	data: DownloadItem;
-	currentDownloadId?: string | null;
 };
 
-export function DownloadStatusBadge({data, currentDownloadId}: Readonly<DownloadStatusBadgeProps>) {
+export function DownloadStatusBadge({data}: Readonly<DownloadStatusBadgeProps>) {
 	const {t} = useTranslation();
 	const [download, setDownload] = useState<DownloadItem>();
-	const isPlaylist = download?.type === DownloadType.Playlist;
 
 	useEffect(() => {
 		if (data && Object.keys(data).length) {
 			setDownload(data);
 		}
 	}, [data]);
-
-	const isDownloadErrored =
-		(isDownloadingState(data) || isPendingState(data)) &&
-		(!currentDownloadId || currentDownloadId !== data.id);
 
 	if (download?.status === DownloadStatus.DownloadingAudioTrack) {
 		return (
@@ -66,17 +59,6 @@ export function DownloadStatusBadge({data, currentDownloadId}: Readonly<Download
 			/>
 		);
 	}
-
-	if (isDownloadErrored && !isPlaylist) {
-		return (
-			<Badge
-				className="bg-rose-500/10 text-rose-500 border-rose-500/20"
-				icon={<FileX className="size-3"/>}
-				label={t("common.broken")}
-			/>
-		);
-	}
-
 
 	if (download?.status === DownloadStatus.Downloading) {
 		return (

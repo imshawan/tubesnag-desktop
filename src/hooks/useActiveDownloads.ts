@@ -13,7 +13,7 @@ import {
 	updateActivePlaylistVideoDownload
 } from "@/store/slices/active-downloads-slice";
 import {createPlaylistDownloadItemFromUrls} from "@/lib/ytdlp/download";
-import {isDownloadInErroredState, isDownloadingState, isPendingState} from "@/lib/utils/common";
+import {isDownloadInErroredState, isDownloadingState, isFailedState, isPendingState} from "@/lib/utils/common";
 import {AudioPartDownloadStatus} from "@/lib/utils/enums";
 
 export function useActiveDownloads() {
@@ -22,8 +22,10 @@ export function useActiveDownloads() {
 	const currentDownloadId = useAppSelector(selectIsDownloading);
 	const downloadSpeed = useAppSelector(selectDownloadSpeed);
 
+	const downloading = useMemo(() => activeDownloads.filter(isDownloadingState), [activeDownloads]);
+
 	const currentDownloads = useMemo(
-		() => activeDownloads.filter((d) => isDownloadingState(d) || isPendingState(d)),
+		() => activeDownloads.filter((d) => isDownloadingState(d) || isPendingState(d) || isFailedState(d)),
 		[activeDownloads]
 	);
 
@@ -85,7 +87,7 @@ export function useActiveDownloads() {
 		currentDownloads,
 		currentDownloadId,
 		downloadSpeed,
-		downloadCount: currentDownloads.length,
+		downloadCount: downloading.length,
 		setDownloads,
 		setCurrentDownloadId,
 		setItemDownloadSpeed,

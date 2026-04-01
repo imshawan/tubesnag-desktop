@@ -1,117 +1,146 @@
-import { type ReactNode, useEffect, useState } from "react";
-import { getPlatform } from "@/actions/app";
-import { closeWindow, maximizeWindow, minimizeWindow } from "@/actions/window";
+import {type ReactNode, useEffect, useState} from "react";
+import {getPlatform} from "@/actions/app";
+import {closeWindow, maximizeWindow, minimizeWindow} from "@/actions/window";
+import {useActiveDownloads} from "@/hooks/useActiveDownloads";
+import {markDownloadItemAsFailed} from "@/lib/database";
+import {useApp} from "@/hooks/useApp";
+import {cn} from "@/lib/utils/tailwind";
 
 interface DragWindowRegionProps {
-  title?: ReactNode;
+	title?: ReactNode;
 }
 
-export default function DragWindowRegion({ title }: DragWindowRegionProps) {
-  const [platform, setPlatform] = useState<string | null>(null);
+export default function DragWindowRegion({title}: Readonly<DragWindowRegionProps>) {
+	const [platform, setPlatform] = useState<string | null>(null);
 
-  useEffect(() => {
-    let active = true;
+	useEffect(() => {
+		let active = true;
 
-    getPlatform()
-      .then((value) => {
-        if (!active) {
-          return;
-        }
+		getPlatform()
+			.then((value) => {
+				if (!active) {
+					return;
+				}
 
-        setPlatform(value);
-      })
-      .catch((error) => {
-        console.error("Failed to detect platform", error);
-      });
+				setPlatform(value);
+			})
+			.catch((error) => {
+				console.error("Failed to detect platform", error);
+			});
 
-    return () => {
-      active = false;
-    };
-  }, []);
+		return () => {
+			active = false;
+		};
+	}, []);
 
-  const isMacOS = platform === "darwin";
+	const isMacOS = platform === "darwin";
 
-  return (
-    <div className="flex w-full items-stretch justify-between">
-      <div className="draglayer w-full">
-        {title && !isMacOS && (
-          <div className="flex flex-1 select-none whitespace-nowrap p-2 text-gray-400 text-xs">
-            {title}
-          </div>
-        )}
-        {isMacOS && (
-          <div className="flex flex-1 p-2">
-            {/* Maintain the same height but do not display content */}
-          </div>
-        )}
-      </div>
-      {!isMacOS && <WindowButtons />}
-    </div>
-  );
+	return (
+		<div className="flex w-full items-stretch justify-between">
+			<div className="draglayer w-full">
+				{title && !isMacOS && (
+					<div className="flex flex-1 select-none whitespace-nowrap p-2 text-gray-400 text-xs">
+						{title}
+					</div>
+				)}
+				{isMacOS && (
+					<div className="flex flex-1 p-2">
+						{/* Maintain the same height but do not display content */}
+					</div>
+				)}
+			</div>
+			{!isMacOS && <WindowButtons/>}
+		</div>
+	);
 }
 
 function WindowButtons() {
-  return (
-    <div className="flex">
-      <button
-        className="p-2 hover:bg-slate-300"
-        onClick={minimizeWindow}
-        title="Minimize"
-        type="button"
-      >
-        <svg
-          aria-hidden="true"
-          height="12"
-          role="img"
-          viewBox="0 0 12 12"
-          width="12"
-        >
-          <rect fill="currentColor" height="1" width="10" x="1" y="6" />
-        </svg>
-      </button>
-      <button
-        className="p-2 hover:bg-slate-300"
-        onClick={maximizeWindow}
-        title="Maximize"
-        type="button"
-      >
-        <svg
-          aria-hidden="true"
-          height="12"
-          role="img"
-          viewBox="0 0 12 12"
-          width="12"
-        >
-          <rect
-            fill="none"
-            height="9"
-            stroke="currentColor"
-            width="9"
-            x="1.5"
-            y="1.5"
-          />
-        </svg>
-      </button>
-      <button
-        className="p-2 hover:bg-red-300"
-        onClick={closeWindow}
-        title="Close"
-        type="button"
-      >
-        <svg
-          aria-hidden="true"
-          height="12"
-          role="img"
-          viewBox="0 0 12 12"
-          width="12"
-        >
-          <polygon
-            fill="currentColor"
-            fillRule="evenodd"
-            points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"
-          />
-        </svg>
-      </button>
-    </div>
-  );
+	const {currentDownloads} = useActiveDownloads();
+	const {setIsAppStateSaving, setAppStateSavingProgress, isAppStateSaving} = useApp();
+
+	const beforeClose = async () => {
+		setIsAppStateSaving(true);
+
+		let count = 0;
+		for (const download of currentDownloads) {
+			await markDownloadItemAsFailed(download);
+			count++;
+
+			setAppStateSavingProgress(Math.round((count / currentDownloads.length) * 100));
+		}
+	}
+
+	const closeApp = () => {
+		beforeClose().then(async () => {
+			await closeWindow();
+		}).catch(async (error) => {
+			console.error("Error during beforeClose operations", error);
+			await closeWindow(); // Proceed to close the window even if beforeClose fails
+		});
+	}
+
+	return (
+		<div className="flex">
+			<button
+				className="p-2 hover:bg-slate-300"
+				onClick={minimizeWindow}
+				title="Minimize"
+				type="button"
+			>
+				<svg
+					aria-hidden="true"
+					height="12"
+					role="img"
+					viewBox="0 0 12 12"
+					width="12"
+				>
+					<rect fill="currentColor" height="1" width="10" x="1" y="6"/>
+				</svg>
+			</button>
+			<button
+				className="p-2 hover:bg-slate-300"
+				onClick={maximizeWindow}
+				title="Maximize"
+				type="button"
+			>
+				<svg
+					aria-hidden="true"
+					height="12"
+					role="img"
+					viewBox="0 0 12 12"
+					width="12"
+				>
+					<rect
+						fill="none"
+						height="9"
+						stroke="currentColor"
+						width="9"
+						x="1.5"
+						y="1.5"
+					/>
+				</svg>
+			</button>
+			<button
+				className={cn("p-2", isAppStateSaving ? "cursor-not-allowed" : "hover:bg-red-500")}
+				onClick={closeApp}
+				title="Close"
+				type="button"
+				disabled={isAppStateSaving}
+			>
+				<svg
+					aria-hidden="true"
+					height="12"
+					role="img"
+					viewBox="0 0 12 12"
+					width="12"
+				>
+					<polygon
+						fill="currentColor"
+						fillRule="evenodd"
+						points="11 1.576 6.583 6 11 10.424 10.424 11 6 6.583 1.576 11 1 10.424 5.417 6 1 1.576 1.576 1 6 5.417 10.424 1"
+					/>
+				</svg>
+			</button>
+		</div>
+	);
 }

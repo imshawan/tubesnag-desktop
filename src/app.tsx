@@ -9,15 +9,24 @@ import "./localization/i18n";
 import { store } from "@/store";
 import { Provider } from "react-redux";
 import { checkSetupRequired } from "@/lib/utils/setup";
+import {useApp} from "@/hooks/useApp";
 
 function AppContent() {
   const { i18n } = useTranslation();
   const [setupRequired, setSetupRequired] = useState<boolean | null>(null);
+  const {isAppStateSaving} = useApp();
 
   useEffect(() => {
     syncWithLocalTheme();
     updateAppLanguage(i18n);
   }, [i18n]);
+
+  useEffect(() => {
+    if (isAppStateSaving) {
+      router.navigate({ to: "/closing" });
+    }
+
+  }, [isAppStateSaving]);
 
   useEffect(() => {
     checkSetupRequired().then(setupRequired => {

@@ -134,6 +134,7 @@ function setupIpcHandlers() {
 	ipcMain.handle('db:delete-completed-downloads-video-from-playlist', dbHandlers.deleteCompletedDownloadsVideoFromPlaylist);
 
 	ipcMain.handle('db:move-active-to-completed', dbHandlers.moveActiveToCompleted);
+	ipcMain.handle('db:mark-download-as-failed', dbHandlers.markDownloadAsFailed);
 
 }
 

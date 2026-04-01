@@ -34,7 +34,6 @@ export function DownloadList({
 	                             maxItems = 0
                              }: Readonly<DownloadListProps>) {
 	const {t} = useTranslation();
-	const {currentDownloadId} = useActiveDownloads();
 	const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
 	const imageCache = useRef<Record<string, string>>({});
 
@@ -118,7 +117,7 @@ export function DownloadList({
 					</div>
 					<div className="flex items-center gap-2">
 						<QualityBadge quality={download.quality}/>
-						<DownloadStatusBadge data={download} currentDownloadId={currentDownloadId} />
+						<DownloadStatusBadge data={download} />
 					</div>
 				</div>
 			</DownloadContextMenu>
@@ -159,7 +158,7 @@ export function DownloadList({
                   <span className="text-xs text-muted-foreground hidden sm:block">
                     {item.quality}
                   </span>
-							<DownloadStatusBadge data={item} currentDownloadId={currentDownloadId} />
+							<DownloadStatusBadge data={item} />
 							{expandedPlaylist === item.id ? (
 								<ChevronUp className="size-4 text-muted-foreground"/>
 							) : (

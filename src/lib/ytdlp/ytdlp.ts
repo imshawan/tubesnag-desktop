@@ -33,7 +33,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 				return resolve();
 			}
 
-			console.info('[ytdlp utility] received:', data);
+			// console.info('[ytdlp utility] received:', data);
 
 			if (data.type === ProgressTypes.Progress) {
 				onProgress?.(data, data.speed);

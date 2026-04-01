@@ -21,7 +21,7 @@ import {Sidebar} from "@/components/sidebar";
 import {RecentActivity} from "@/components/recent-activity";
 import {getDiskUsageStats} from "@/lib/utils/setup";
 import {
-	deleteFileFromSystem, deletePlaylistFolder,
+	deleteResourceFromSystem,
 	downloadWithYtdlp,
 	getPlaylistVideos,
 	openFile,
@@ -153,6 +153,9 @@ function HomePage() {
 			addToast(t("common.unableRetry"), "error");
 			return;
 		}
+
+		updateActivePlaylistVideoDownloadItem(download.parentId, download.id, {status: DownloadStatus.Pending});
+
 		const parentDownload = await getActiveDownloadById(download.parentId);
 		if (!parentDownload) {
 			addToast(t("common.unableRetry"), "error");
@@ -225,6 +228,10 @@ function HomePage() {
 		let download: DownloadItem;
 
 		if (existingId) {
+			updateActiveDownloadItem(existingId, {
+				status: DownloadStatus.Pending,
+			});
+
 			const existingDownload = await getActiveDownloadById(existingId);
 			console.log("Found existing download:", existingDownload);
 			if (!existingDownload) {
@@ -251,8 +258,10 @@ function HomePage() {
 				type: download.type,
 				onProgress: (data, speed) => {
 					// console.log(progress)
-					updateActiveDownloadItem(download.id, {progress: data.progress,
-						status: data.status});
+					updateActiveDownloadItem(download.id, {
+						progress: data.progress,
+						status: data.status
+					});
 					if (speed) {
 						setItemDownloadSpeed(speed);
 					}
@@ -324,8 +333,10 @@ function HomePage() {
 					audioBitrate,
 					type: download.type,
 					onProgress: (data, speed) => {
-						updateActiveDownloadItem(download.id, {progress: data.progress,
-							status: data.status});
+						updateActiveDownloadItem(download.id, {
+							progress: data.progress,
+							status: data.status
+						});
 						if (speed) {
 							setItemDownloadSpeed(speed);
 						}
@@ -511,11 +522,7 @@ function HomePage() {
 				removeDownload(parent, child);
 			}
 
-			if (download.type === "playlist") {
-				deletePlaylistFolder(download).then(() => console.info("Deleted entire playlist"));
-			} else {
-				deleteFileFromSystem(download).then(() => console.info("Deleted the file"));
-			}
+			deleteResourceFromSystem(download).then(() => console.info("Deleted resource(s)"));
 			addToast(t("dashboard.downloadDeleted"), "success");
 		}
 	};

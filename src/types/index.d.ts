@@ -57,6 +57,7 @@ declare global {
 				}>;
 
 				moveActiveToCompleted: (id: string) => Promise<{ success: boolean }>;
+				markDownloadAsFailed: (downloadItem: DownloadItem) => Promise<{ success: boolean, error: Error | null }>;
 			};
 		};
 	}

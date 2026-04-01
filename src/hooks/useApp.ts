@@ -2,17 +2,24 @@ import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
 	selectActiveDialog,
 	selectActiveTab,
-	selectAppVersion, selectHistoryFilter, selectHistorySearch, selectHistoryTypeFilter,
+	selectAppVersion,
+	selectHistoryFilter,
+	selectHistorySearch,
+	selectHistoryTypeFilter,
 	selectSearchOpen,
+	selectStateSaving, selectStateSavingProgress,
 	selectStorage,
 	setActiveDialog,
 	setActiveTab,
-	setAppVersion, setHistoryFilter, setHistorySearch, setHistoryTypeFilter,
+	setAppVersion,
+	setHistoryFilter,
+	setHistorySearch,
+	setHistoryTypeFilter,
 	setSearchOpen,
+	setStateSaving, setStateSavingProgress,
 	setStorage,
 	toggleSearchOpen,
 } from "@/store/slices/app-slice";
-import {setDownloadPath} from "@/store/slices/settings-slice";
 
 export function useApp() {
 	const dispatch = useAppDispatch();
@@ -25,6 +32,8 @@ export function useApp() {
 	const appVersion = useAppSelector(selectAppVersion);
 	const storage = useAppSelector(selectStorage);
 	const historyTypeFilter = useAppSelector(selectHistoryTypeFilter);
+	const isAppStateSaving = useAppSelector(selectStateSaving);
+	const appStateSavingProgress = useAppSelector(selectStateSavingProgress);
 
 	return {
 		activeTab,
@@ -35,6 +44,8 @@ export function useApp() {
 		historySearch,
 		historyFilter,
 		historyTypeFilter,
+		isAppStateSaving,
+		appStateSavingProgress,
 		setAppVersion: (version: string) => dispatch(setAppVersion(version)),
 		setActiveTab: (tab: string) => dispatch(setActiveTab(tab)),
 		setActiveDialog: (dialog: DownloadType) => dispatch(setActiveDialog(dialog)),
@@ -44,5 +55,7 @@ export function useApp() {
 		setHistorySearch: (search: string) => dispatch(setHistorySearch(search)),
 		setHistoryFilter: (filter: string) => dispatch(setHistoryFilter(filter)),
 		setHistoryTypeFilter: (filter: string) => dispatch(setHistoryTypeFilter(filter)),
+		setIsAppStateSaving: (value: boolean) => dispatch(setStateSaving(value)),
+		setAppStateSavingProgress: (value: number) => dispatch(setStateSavingProgress(value)),
 	};
 }

@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as ClosingRouteImport } from './routes/closing'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClosingRoute = ClosingRouteImport.update({
+  id: '/closing',
+  path: '/closing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/closing': typeof ClosingRoute
   '/setup': typeof SetupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/closing': typeof ClosingRoute
   '/setup': typeof SetupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/closing': typeof ClosingRoute
   '/setup': typeof SetupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/setup'
+  fullPaths: '/' | '/closing' | '/setup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/setup'
-  id: '__root__' | '/' | '/setup'
+  to: '/' | '/closing' | '/setup'
+  id: '__root__' | '/' | '/closing' | '/setup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ClosingRoute: typeof ClosingRoute
   SetupRoute: typeof SetupRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/closing': {
+      id: '/closing'
+      path: '/closing'
+      fullPath: '/closing'
+      preLoaderRoute: typeof ClosingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ClosingRoute: ClosingRoute,
   SetupRoute: SetupRoute,
 }
 export const routeTree = rootRouteImport
