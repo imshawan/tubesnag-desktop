@@ -13,7 +13,7 @@ interface GlobalSearchProps {
     onSelect: (item: any) => void;
 }
 
-export function GlobalSearch({isOpen, onClose, onSelect}: GlobalSearchProps) {
+export function GlobalSearch({isOpen, onClose, onSelect}: Readonly<GlobalSearchProps>) {
     const {t} = useTranslation();
     const [query, setQuery] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);

@@ -1,13 +1,12 @@
-import {AlertCircle, ArrowDownToLine, CheckCircle2, FileX, GitMerge, Loader2, Zap} from "lucide-react";
-
+import {AlertCircle, ArrowDownToLine, CheckCircle2, GitMerge, Loader2, Zap} from "lucide-react";
 import {useTranslation} from "react-i18next";
 import {cn} from "@/lib/utils/tailwind";
 import {useEffect, useState} from "react";
-import {AudioPartDownloadStatus, DownloadStatus, DownloadType} from "@/lib/utils/enums";
+import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
 
 interface DownloadStatusBadgeProps {
 	data: DownloadItem;
-};
+}
 
 export function DownloadStatusBadge({data}: Readonly<DownloadStatusBadgeProps>) {
 	const {t} = useTranslation();
@@ -91,7 +90,8 @@ function Badge({
 	rightIcon?: React.ReactNode;
 }>) {
 	return (
-		<div className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium border", className)}>
+		<div
+			className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-medium border", className)}>
 			{icon}
 			<span className={"whitespace-nowrap"}>{label}</span>
 			{rightIcon}

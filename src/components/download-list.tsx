@@ -6,7 +6,6 @@ import {formatBytes} from "@/lib/utils/common";
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
 import {timeFromNow} from "@/lib/utils/date";
-import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {DownloadStatusBadge} from "@/components/download-status-badge";
 import {useTranslation} from "react-i18next";
 
@@ -117,7 +116,7 @@ export function DownloadList({
 					</div>
 					<div className="flex items-center gap-2">
 						<QualityBadge quality={download.quality}/>
-						<DownloadStatusBadge data={download} />
+						<DownloadStatusBadge data={download}/>
 					</div>
 				</div>
 			</DownloadContextMenu>
@@ -158,7 +157,7 @@ export function DownloadList({
                   <span className="text-xs text-muted-foreground hidden sm:block">
                     {item.quality}
                   </span>
-							<DownloadStatusBadge data={item} />
+							<DownloadStatusBadge data={item}/>
 							{expandedPlaylist === item.id ? (
 								<ChevronUp className="size-4 text-muted-foreground"/>
 							) : (
