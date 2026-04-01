@@ -1,6 +1,6 @@
 import {getElectron} from "@/lib/utils/common";
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
-import {ProgressTypes} from "@/lib/utils/enums";
+import {DownloadType, ProgressTypes} from "@/lib/utils/enums";
 
 export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<void> => {
 	const {
@@ -98,12 +98,12 @@ export const openFolder = async (item: DownloadItem): Promise<{
 	return await getElectron().openFolder(item);
 }
 
-export const deleteFileFromSystem = async (item: DownloadItem): Promise<void> => {
-	return await getElectron().deleteFileFromSystem(item);
-}
-
-export const deletePlaylistFolder = async (item: DownloadItem): Promise<void> => {
-	return await getElectron().deleteDownloadedPlaylistResources(item);
+export const deleteResourceFromSystem =async (item: DownloadItem): Promise<void> => {
+	if (item.type === DownloadType.Playlist) {
+		return await deletePlaylistFolder(item);
+	} else {
+		return await deleteFileFromSystem(item);
+	}
 }
 
 export const getPlaylistVideos = async (
@@ -111,3 +111,11 @@ export const getPlaylistVideos = async (
 ): Promise<PlaylistInfo> => {
 	return await getElectron().getPlaylistVideos(url, reverse, playlistId);
 };
+
+async function deleteFileFromSystem  (item: DownloadItem): Promise<void> {
+	return await getElectron().deleteFileFromSystem(item);
+}
+
+async function deletePlaylistFolder (item: DownloadItem): Promise<void>  {
+	return await getElectron().deleteDownloadedPlaylistResources(item);
+}

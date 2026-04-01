@@ -4,7 +4,7 @@ import {
     addDownload,
     clearAll,
     clearCompleted,
-    removeDownload, selectDownloadItemPropertyOpen, setDownloadItemPropertyOpen,
+    removeDownload, selectCompletedDownloads, selectDownloadItemPropertyOpen, setDownloadItemPropertyOpen,
     setDownloads,
     updateDownload
 } from "@/store/slices/downloads-slice";
@@ -12,16 +12,13 @@ import {isDownloadCompleteState, isDownloadingState} from "@/lib/utils/common";
 
 export function useDownloads() {
     const dispatch = useAppDispatch();
+
     const downloads = useAppSelector((state) => state.downloads.downloads);
     const downloadItemPropertyOpen = useAppSelector(selectDownloadItemPropertyOpen);
+    const completedDownloads = useAppSelector(selectCompletedDownloads);
 
     const isDownloading = useMemo(
         () => downloads.some(isDownloadingState),
-        [downloads]
-    );
-
-    const completedDownloads = useMemo(
-        () => downloads.filter(isDownloadCompleteState),
         [downloads]
     );
 

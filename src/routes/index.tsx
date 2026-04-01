@@ -61,8 +61,6 @@ function HomePage() {
 
 	const {
 		setDownloads: setCompletedDownloads,
-		completedDownloads,
-		clearCompleted,
 		removeDownload
 	} = useDownloads();
 
@@ -668,8 +666,6 @@ function HomePage() {
 								onRetry={handleRetry}
 								onDelete={handleDelete}
 								onShare={handleShare}
-								onClearCompleted={clearCompleted}
-								completedCount={completedDownloads.length}
 							/>
 						)}
 

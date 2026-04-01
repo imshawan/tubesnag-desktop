@@ -1,4 +1,4 @@
-import {createContext, useContext, useState, useCallback} from "react";
+import React, {createContext, useContext, useState, useCallback, useMemo} from "react";
 import {
     Dialog,
     DialogContent,
@@ -13,7 +13,7 @@ import {cn} from "@/lib/utils/tailwind";
 
 type ConfirmationType = "danger" | "warning" | "info" | "success";
 
-interface ConfirmationOptions {
+interface ConfirmationOptions<T = any> {
     title: string;
     description?: string;
     confirmText?: string;
@@ -23,6 +23,8 @@ interface ConfirmationOptions {
     onCancel?: () => void;
     confirmClassname?: string
     hideCancel?: boolean;
+    children?: React.ReactNode;
+    getResult?: () => T;
 }
 
 interface ConfirmationContextType {
@@ -53,38 +55,46 @@ const typeConfig = {
 export function ConfirmationProvider({children}: Readonly<{ children: React.ReactNode }>) {
     const [open, setOpen] = useState(false);
     const [options, setOptions] = useState<ConfirmationOptions | null>(null);
-    const [resolvePromise, setResolvePromise] = useState<((value: boolean) => void) | null>(null);
+    const [resolvePromise, setResolvePromise] = useState<((value: any) => void) | null>(null);
 
-    const confirm = useCallback((opts: ConfirmationOptions): Promise<boolean> => {
+    const confirm = useCallback(<T,>(opts: ConfirmationOptions<T>): Promise<T> => {
         setOptions(opts);
         setOpen(true);
 
-        return new Promise<boolean>((resolve) => {
+        return new Promise<T>((resolve) => {
             setResolvePromise(() => resolve);
         });
     }, []);
 
-    const handleConfirm = () => {
-        options?.onConfirm?.();
-        resolvePromise?.(true);
+    const contextValue = useMemo(() => ({ confirm }), [confirm]);
+
+    const cleanup = () => {
         setOpen(false);
         setOptions(null);
         setResolvePromise(null);
     };
 
+    const handleConfirm = () => {
+        options?.onConfirm?.();
+
+        const result = options?.getResult?.() ?? true;
+
+        resolvePromise?.(result);
+        cleanup();
+    };
+
     const handleCancel = () => {
         options?.onCancel?.();
-        resolvePromise?.(false);
-        setOpen(false);
-        setOptions(null);
-        setResolvePromise(null);
+
+        resolvePromise?.(false as any); // keeps typing simple
+        cleanup();
     };
 
     const type = options?.type || "warning";
     const {icon: Icon, iconClass} = typeConfig[type];
 
     return (
-        <ConfirmationContext.Provider value={{confirm}}>
+        <ConfirmationContext.Provider value={contextValue}>
             {children}
             {options && (
                 <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleCancel()}>
@@ -102,6 +112,11 @@ export function ConfirmationProvider({children}: Readonly<{ children: React.Reac
                                         </DialogDescription>
                                     )}
                                 </DialogHeader>
+                                {options.children && (
+                                    <div className="pt-2">
+                                        {options.children}
+                                    </div>
+                                )}
                             </div>
                         </div>
 

@@ -9,8 +9,9 @@ import {useEffect, useMemo, useState} from "react";
 import {useApp} from "@/hooks/useApp";
 import {useConfirmation} from "@/context/confirmation-context";
 import {ActionProgress} from "@/components/action-progress";
-import {deleteFileFromSystem} from "@/lib/ytdlp/ytdlp";
+import {deleteResourceFromSystem} from "@/lib/ytdlp/ytdlp";
 import {DownloadStatus} from "@/lib/utils/enums";
+import {DeleteWithFilesOption} from "@/components/delete-with-files-option";
 
 interface HistoryProps {
 	onOpenFile: (download: DownloadItem) => void;
@@ -18,21 +19,17 @@ interface HistoryProps {
 	onRetry: (download: DownloadItem) => void;
 	onDelete: (download: DownloadItem, downloadListType: DownloadListType) => void;
 	onShare: (download: DownloadItem) => void;
-	onClearCompleted: () => void;
-	completedCount: number;
 }
 
 export function History({
 	                        onOpenFile,
-	                        onClearCompleted,
-	                        completedCount,
 	                        onOpenFolder,
 	                        onRetry,
 	                        onDelete,
 	                        onShare
                         }: Readonly<HistoryProps>) {
 	const {t} = useTranslation();
-	const {downloads, removeDownload} = useDownloads();
+	const {downloads, removeDownload, completedDownloads} = useDownloads();
 	const [deleting, setDeleting] = useState(0);
 	const [totalCount, setTotalCount] = useState(0);
 
@@ -52,34 +49,69 @@ export function History({
 		}
 	}, []);
 
-	const sleep = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
+	const sleep = (ms: any) =>
+		new Promise(resolve => setTimeout(resolve, ms));
+
+	const clearDownloads = async (downloadsToClear: DownloadItem[], deleteFiles: boolean) => {
+		const sleepDuration = downloadsToClear.length > 100 ? 100 : 250;
+		let idx = 0;
+		for (const download of downloadsToClear) {
+			setDeleting(idx + 1);
+			removeDownload(download.id);
+
+			if (deleteFiles) {
+				try {
+					await deleteResourceFromSystem(download);
+				} catch (err) {
+					console.log("Error deleting downloadId", download.id, err);
+				}
+			}
+
+			await sleep(sleepDuration) // to allow UI to update and show progress, especially for large batches
+			idx++
+		}
+
+		setDeleting(0);
+	}
+
+	const clearCompletedDownloads = async () => {
+		let deleteFilesValue = false;
+
+		const yes = await confirm({
+			title: t("history.deleteCompleted"),
+			description: t("history.deleteCompletedDesc"),
+			children: (
+				<DeleteWithFilesOption
+					initialValue={false}
+					onValueChange={(val) => (deleteFilesValue = val)}
+				/>
+			),
+			getResult: () => ({deleteFiles: deleteFilesValue}),
+		});
+
+		if (yes && completedDownloads.length) {
+			await clearDownloads(completedDownloads, deleteFilesValue);
+		}
+	}
 
 	const clearAllDownloads = () => {
+		let deleteFilesValue = false;
 		confirm({
 			title: t("history.clearAllTitle"),
 			description: t("history.clearAllDesc"),
 			type: "warning",
 			confirmText: t("contextMenu.delete"),
 			cancelText: t("common.cancel"),
+			children: (
+				<DeleteWithFilesOption
+					initialValue={false}
+					onValueChange={(val) => (deleteFilesValue = val)}
+				/>
+			),
+			getResult: () => ({deleteFiles: deleteFilesValue}),
 		}).then(async (yes) => {
 			if (yes && downloads.length > 0) {
-				const sleepDuration = downloads.length > 100 ? 100 : 250;
-				let idx = 0;
-				for (const download of downloads) {
-					setDeleting(idx + 1);
-					removeDownload(download.id);
-
-					try {
-						await deleteFileFromSystem(download);
-					} catch (err) {
-						console.log("Error deleting downloadId", download.id, err);
-					}
-
-					await sleep(sleepDuration) // to allow UI to update and show progress, especially for large batches
-					idx++
-				}
-
-				setDeleting(0);
+				await clearDownloads(downloads, deleteFilesValue);
 			}
 		});
 	}
@@ -98,8 +130,8 @@ export function History({
 					<p className="text-sm text-muted-foreground">{t("history.subtitle")}</p>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" className="p-4" size="sm" onClick={onClearCompleted}
-					        disabled={completedCount === 0}>
+					<Button variant="outline" className="p-4" size="sm" onClick={clearCompletedDownloads}
+					        disabled={completedDownloads.length === 0}>
 						{t("history.clearCompleted")}
 					</Button>
 					<Button variant="destructive" className="p-4" size="sm" onClick={clearAllDownloads}

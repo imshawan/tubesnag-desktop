@@ -46,3 +46,5 @@ export const {setDownloads, addDownload, updateDownload, removeDownload, clearCo
 export default downloadsSlice.reducer;
 
 export const selectDownloadItemPropertyOpen = (state: {downloads: DownloadsState}) => state.downloads.downloadItemPropertyOpen;
+export const selectCompletedDownloads = (state: {downloads: DownloadsState}) => state.downloads.downloads
+    .filter((d) => isDownloadCompleteState(d) && !isFailedState(d));

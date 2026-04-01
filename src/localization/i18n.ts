@@ -52,7 +52,9 @@ i18n.use(initReactI18next).init({
 					noResults: "No results found",
 					tryAdjusting: "Try adjusting your filters or search query.",
 					clearAllTitle: "Clear All Download History?",
-					clearAllDesc: "Are you sure you want to clear your entire download history? This will also permanently delete all associated files from your device. This action cannot be undone."
+					clearAllDesc: "Are you sure you want to clear your entire download history? This action cannot be undone.",
+					deleteCompleted: "Clear all completed downloads?",
+					deleteCompletedDesc: "Are you sure you want to clear all completed downloads?",
 				},
 				settings: {
 					title: "Settings",
@@ -208,7 +210,8 @@ i18n.use(initReactI18next).init({
 					botVerificationComplete: "Bot Verification Complete, please proceed to retry download",
 					ok: "OK",
 					downloadingAudio: "Audio - {{progress}}%",
-					merging: "Merging"
+					merging: "Merging",
+					deleteWithFiles: "Also delete downloaded local files?"
 				},
 				downloads: {
 					quality: "Quality",
