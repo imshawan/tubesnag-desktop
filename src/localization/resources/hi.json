@@ -247,7 +247,10 @@
       "subtitle": "सक्रिय डाउनलोड और उनकी प्रगति को ट्रैक करें।",
       "noActive": "कोई सक्रिय डाउनलोड नहीं",
       "startNewDownload": "प्रगति देखने के लिए नया डाउनलोड शुरू करें।",
-      "completedDownloading": "\"{{title}}\" डाउनलोड पूरा हुआ"
+      "completedDownloading": "\"{{title}}\" डाउनलोड पूरा हुआ",
+      "downloadingItems": "डाउनलोड हो रहा है...",
+      "downloading": "{{count}} आइटम डाउनलोड हो रहा है",
+      "downloadingPlural": "{{count}} आइटम्स डाउनलोड हो रहे हैं"
     },
     "bulkDownload": {
       "title": "Bulk Download",
@@ -329,6 +332,7 @@
       "retry": "डाउनलोड फिर से प्रयास करें",
       "delete": "हटाएँ",
       "properties": "{{type}} की विशेषताएं",
+      "retryFailedItems": "सभी विफल आइटम पुनः प्रयास करें",
       "messages": {
         "fileOpened": "फ़ाइल सफलतापूर्वक खुल गई",
         "failedOpenFile": "फ़ाइल खोलने में विफल",

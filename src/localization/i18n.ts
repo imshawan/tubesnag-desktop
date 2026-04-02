@@ -222,6 +222,9 @@ i18n.use(initReactI18next).init({
 					noActive: "No active downloads",
 					startNewDownload: "Start a new download to see progress here.",
 					completedDownloading: "Completed downloading \"{{title}}\"",
+					downloadingItems: "Downloading item(s)",
+					downloading: "Downloading {{count}} item",
+					downloadingPlural: "Downloading {{count}} items"
 				},
 				bulkDownload: {
 					title: "Bulk Download",
@@ -303,6 +306,7 @@ i18n.use(initReactI18next).init({
 					retry: "Retry Download",
 					delete: "Delete",
 					properties: "{{type}} properties",
+					retryFailedItems: "Retry Failed Items",
 					messages: {
 						fileOpened: "File opened successfully",
 						failedOpenFile: "Failed to open file",

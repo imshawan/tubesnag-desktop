@@ -178,7 +178,7 @@ declare global {
 		audioBitrate: AudioBitrate,
 		existingId?: string,
 		runBotVerificationFirst?: boolean
-	) => void;
+	) => Promise<void>;
 
 	interface VideoQuality {
 		id: QualityType

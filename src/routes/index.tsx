@@ -30,7 +30,7 @@ import {
 } from "@/lib/ytdlp/ytdlp";
 import {useToast} from "@/context/toast-context";
 import {Statistics} from "@/components/statistics";
-import {generateUUID, isDownloadCompleteState} from "@/lib/utils/common";
+import {generateUUID, isDownloadCompleteState, isFailedState} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useSettings} from "@/hooks/useSettings";
 import {getActiveDownloadById, getActiveDownloads, getCompletedDownloads} from "@/lib/database";
@@ -41,7 +41,7 @@ import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-pr
 import {BotVerificationError} from "@/lib/errors/bot-verification-error";
 import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
 import {getDefaultDownloadLocation} from "@/lib/utils/app";
-import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
+import {AudioPartDownloadStatus, DownloadStatus, DownloadType} from "@/lib/utils/enums";
 
 function HomePage() {
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -70,7 +70,8 @@ function HomePage() {
 		setDownloads: setActiveDownloads,
 		addPlaylistDownload, addActiveDownloadItem,
 		updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem,
-		removeActiveDownloadItem, setCurrentDownloadId, setItemDownloadSpeed
+		removeActiveDownloadItem, setCurrentDownloadId, setItemDownloadSpeed, setCurrentDownloadCount,
+		clearCurrentDownloadCount
 	} = useActiveDownloads();
 
 	const updateDiskUsage = async () => {
@@ -148,19 +149,13 @@ function HomePage() {
 		}
 	}
 
-	const handleRetrySingleItemFromPlaylist = async (download: DownloadItem) => {
+	const handleRetrySingleItemFromPlaylist = async (download: DownloadItem, parentDownload: DownloadItem) => {
 		if (!download.parentId) {
 			addToast(t("common.unableRetry"), "error");
 			return;
 		}
 
 		updateActivePlaylistVideoDownloadItem(download.parentId, download.id, {status: DownloadStatus.Pending});
-
-		const parentDownload = await getActiveDownloadById(download.parentId);
-		if (!parentDownload) {
-			addToast(t("common.unableRetry"), "error");
-			return;
-		}
 
 		const child = parentDownload.videos?.find(v => v.id === download.id);
 		if (!child) {
@@ -233,7 +228,6 @@ function HomePage() {
 			});
 
 			const existingDownload = await getActiveDownloadById(existingId);
-			console.log("Found existing download:", existingDownload);
 			if (!existingDownload) {
 				addToast(t("common.unableRetry"), "error");
 				return;
@@ -487,13 +481,33 @@ function HomePage() {
 	const handleRetry = async (download: DownloadItem) => {
 		const parentId = download.parentId ? download.parentId : download.id;
 		const childId = download.parentId ? download.id : undefined;
+		const isPlaylistItem =
+			download.type === DownloadType.Playlist ||
+			(parentId != null && childId != null);
 
 		addToast(t("dashboard.retryingDownload", {title: download.title}), "info");
 
-		if (parentId && childId) {
-			await handleRetrySingleItemFromPlaylist(download);
+		if (isPlaylistItem) {
+			const playlist = await getActiveDownloadById(parentId);
+			if (!playlist) {
+				addToast(t("common.unableRetry"), "error");
+				return;
+			}
+			if (download.type === DownloadType.Playlist && download.videos?.length) {
+				const retries = download.videos.filter(isFailedState);
+				setCurrentDownloadCount(retries.length);
+				for (const item of retries) {
+					await handleRetrySingleItemFromPlaylist(item, playlist);
+				}
+
+				clearCurrentDownloadCount();
+			} else if (parentId && childId) {
+				await handleRetrySingleItemFromPlaylist(download, playlist);
+			}
+
+			addToast(t("downloads.completedDownloading", {title: download.title}), "success");
 		} else {
-			handleSingleDownload(
+			await handleSingleDownload(
 				[download.url],
 				download.quality,
 				download.format as FormatType,

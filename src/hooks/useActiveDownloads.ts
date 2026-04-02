@@ -3,10 +3,10 @@ import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
 	addActiveDownload,
 	removeActiveDownload,
-	selectActiveDownloads,
+	selectActiveDownloads, selectDownloadCount,
 	selectDownloadSpeed,
 	selectIsDownloading,
-	setActiveDownloads,
+	setActiveDownloads, setDownloadCount,
 	setDownloadSpeed,
 	setIsDownloading,
 	updateActiveDownload,
@@ -21,6 +21,7 @@ export function useActiveDownloads() {
 	const activeDownloads = useAppSelector(selectActiveDownloads);
 	const currentDownloadId = useAppSelector(selectIsDownloading);
 	const downloadSpeed = useAppSelector(selectDownloadSpeed);
+	const downloadCount = useAppSelector(selectDownloadCount);
 
 	const downloading = useMemo(() => activeDownloads.filter(isDownloadingState), [activeDownloads]);
 
@@ -83,6 +84,10 @@ export function useActiveDownloads() {
 
 	const setItemDownloadSpeed = (downloadId: string) => dispatch(setDownloadSpeed(downloadId));
 
+	const setCurrentDownloadCount = (downloadCount: number) => dispatch(setDownloadCount(downloadCount));
+
+	const clearCurrentDownloadCount = () => dispatch(setDownloadCount(0));
+
 	return {
 		currentDownloads,
 		currentDownloadId,
@@ -91,14 +96,17 @@ export function useActiveDownloads() {
 		setDownloads,
 		setCurrentDownloadId,
 		setItemDownloadSpeed,
+		setCurrentDownloadCount,
 		getActiveDownloadById,
 		addPlaylistDownload,
 		addActiveDownloadItem,
 		updateActiveDownloadItem,
 		updateActivePlaylistVideoDownloadItem,
 		removeActiveDownloadItem,
+		clearCurrentDownloadCount,
 		activeDownloads,
+		currentDownloadCount: Math.max(currentDownloads.length, downloadCount),
 		failedDownloads,
-		failedDownloadsCount: failedDownloads.length
+		failedDownloadsCount: failedDownloads.length,
 	};
 }

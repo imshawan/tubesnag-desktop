@@ -13,6 +13,7 @@ import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {openExternalLink} from "@/actions/shell";
 import {isValidYouTubeUrl} from "@/lib/ytdlp/download";
 import {isDownloadCompleteState, isDownloadingState, isFailedState, isPendingState} from "@/lib/utils/common";
+import {DownloadType} from "@/lib/utils/enums";
 
 interface DownloadContextMenuProps {
 	download: DownloadItem
@@ -46,6 +47,8 @@ export function DownloadContextMenu({
 		&& currentDownloadId !== download.id);
 	const itemIsDownloading = (isDownloadingState(download) || isPendingState(download))
 		&& currentDownloadId === download.id;
+
+	const isPlaylist = download.type === DownloadType.Playlist;
 
 	const copyToClipboard = (content: string) => {
 		navigator.clipboard.writeText(content)
@@ -120,7 +123,7 @@ export function DownloadContextMenu({
 					<>
 						<ContextMenuItem onClick={() => onRetry(download)}>
 							<RotateCcw className="mr-2 h-4 w-4"/>
-							<span>{t("contextMenu.retry")}</span>
+							<span>{t(isPlaylist? "contextMenu.retryFailedItems" : "contextMenu.retry")}</span>
 						</ContextMenuItem>
 						<ContextMenuSeparator/>
 					</>

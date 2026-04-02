@@ -167,22 +167,18 @@ export async function markDownloadAsFailed(event: IpcMainInvokeEvent, downloadIt
 		if (activeDownload.type === DownloadType.Playlist) {
 			const downloads = activeDownload.videos?.filter(isDownloadCompleteState) || [];
 			const incompleteDownloads = activeDownload.videos?.filter(dl =>
-                (isDownloadingState(dl) || isPendingState(dl) || isFailedState(dl))) || [];
+				(isDownloadingState(dl) || isPendingState(dl) || isFailedState(dl))) || [];
 
 			incompleteDownloads.forEach(download => {
 				download.status = DownloadStatus.Failed;
 			});
 
-			const allDownloads = downloads.concat(incompleteDownloads);
-
-			console.log("all downloads", allDownloads, allDownloads.length);
-			console.log("incomplete downloads", incompleteDownloads, incompleteDownloads.length);
-
 			db.prepare(`
                 UPDATE ${Databases.ACTIVE_DOWNLOADS}
-                SET videos = ?
+                SET videos = ?,
+                    status = ?
                 WHERE id = ?
-			`).run(JSON.stringify(downloads.concat(incompleteDownloads)), parentId);
+			`).run(JSON.stringify(downloads.concat(incompleteDownloads)), DownloadStatus.Failed, parentId);
 
 		} else {
 			db.prepare(`

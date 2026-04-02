@@ -1,17 +1,19 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {isDownloadCompleteState} from "@/lib/utils/common";
-import {AudioPartDownloadStatus, DownloadStatus} from "@/lib/utils/enums";
+import {DownloadStatus} from "@/lib/utils/enums";
 
 export interface ActiveDownloadsState {
 	items: DownloadItem[];
 	isDownloading: string;
 	downloadSpeed: string;
+	downloadCount: number;
 }
 
 const initialState: ActiveDownloadsState = {
 	items: [],
 	isDownloading: "",
 	downloadSpeed: "",
+	downloadCount: 0,
 };
 
 const activeDownloadsSlice = createSlice({
@@ -76,6 +78,9 @@ const activeDownloadsSlice = createSlice({
 		},
 		setDownloadSpeed: (state, action: PayloadAction<string>) => {
 			state.downloadSpeed = action.payload;
+		},
+		setDownloadCount: (state, action: PayloadAction<number>) => {
+			state.downloadCount = action.payload;
 		}
 	},
 });
@@ -89,6 +94,7 @@ export const {
 	updateActivePlaylistVideoDownload,
 	setIsDownloading,
 	setDownloadSpeed,
+	setDownloadCount
 } = activeDownloadsSlice.actions;
 export default activeDownloadsSlice.reducer;
 
@@ -99,3 +105,6 @@ export const selectIsDownloading = (state: {
 export const selectDownloadSpeed = (state: {
 	activeDownloads: ActiveDownloadsState
 }) => state.activeDownloads.downloadSpeed;
+export const selectDownloadCount = (state: {
+	activeDownloads: ActiveDownloadsState
+}) => state.activeDownloads.downloadCount;

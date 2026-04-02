@@ -14,7 +14,8 @@
     "check": "ultracite check",
     "fix": "ultracite fix",
     "bump-ui": "ts-node ./scripts/bump-ui.ts",
-    "build-icons": "electron-icon-builder --input=./assets/icon.png --output=./assets --flatten"
+    "build-icons": "electron-icon-builder --input=./assets/icon.png --output=./assets --flatten",
+    "typecheck": "tsc --noEmit --pretty"
   },
   "author": "Shawan Mandal <github@imshawan.dev>",
   "license": "Apache-2.0",

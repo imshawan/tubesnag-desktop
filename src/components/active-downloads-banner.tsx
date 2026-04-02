@@ -2,10 +2,23 @@ import {useActiveDownloads} from "@/hooks/useActiveDownloads";
 import {useApp} from "@/hooks/useApp";
 import {Loader2, Download, ChevronRight} from "lucide-react";
 import {cn} from "@/lib/utils/tailwind";
+import {useTranslation} from "react-i18next";
+import {useMemo} from "react";
 
 export function ActiveDownloadsBanner() {
-	const {currentDownloads, downloadCount, currentDownloadId, downloadSpeed} = useActiveDownloads();
+	const {currentDownloadCount, currentDownloadId, downloadSpeed} = useActiveDownloads();
 	const {setActiveTab, activeTab} = useApp();
+	const {t} = useTranslation();
+
+	const downloadingText = useMemo(() => {
+		if (!currentDownloadCount) {
+			return t("downloads.downloadingItems");
+		}
+		if (currentDownloadCount > 1) {
+			return t("downloads.downloadingPlural", { count: currentDownloadCount });
+		}
+		return t("downloads.downloading", { count: currentDownloadCount });
+	}, [currentDownloadCount, t]);
 
 	if (activeTab === "downloads") {
 		return null;
@@ -38,7 +51,7 @@ export function ActiveDownloadsBanner() {
 				{/* Status Text */}
 				<div className="flex flex-col min-w-[140px]">
                     <span className="text-sm font-semibold text-foreground leading-none mb-1.5 tracking-tight">
-                        Downloading {downloadCount} item{currentDownloads.length === 1 ? '' : 's'}...
+                        {downloadingText}
                     </span>
 
 					{/* Live Metrics */}
