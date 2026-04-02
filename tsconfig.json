@@ -15,7 +15,7 @@
     "sourceMap": true,
     "strict": true,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+//    "ignoreDeprecations": "false",
     "paths": {
       "@/*": ["./src/*"]
     },
