@@ -18,7 +18,7 @@ const config: ForgeConfig = {
     // Retrieved 2026-03-23, License - CC BY-SA 4.0
     ignore:[ /node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/, ],
 
-    icon: path.join(__dirname, "assets/icons"),
+    icon: path.join(__dirname, "assets/icons/icon"),
     darwinDarkModeSupport: true
   },
   rebuildConfig: {},
