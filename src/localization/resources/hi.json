@@ -237,7 +237,11 @@
       "ok": "ठीक है!",
       "downloadingAudio": "ऑडियो {{progress}}%",
       "merging": "जोड़ रहा",
-      "deleteWithFiles": "डाउनलोड की गई स्थानीय फ़ाइलें भी हटाएँ?"
+      "deleteWithFiles": "डाउनलोड की गई स्थानीय फ़ाइलें भी हटाएँ?",
+      "all": "सभी प्रकार",
+      "playlists": "प्लेलिस्ट",
+      "videos": "वीडियो",
+      "audios": "ऑडियो"
     },
     "downloads": {
       "quality": "गुणवत्ता",

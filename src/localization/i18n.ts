@@ -211,7 +211,11 @@ i18n.use(initReactI18next).init({
 					ok: "OK",
 					downloadingAudio: "Audio - {{progress}}%",
 					merging: "Merging",
-					deleteWithFiles: "Also delete downloaded local files?"
+					deleteWithFiles: "Also delete downloaded local files?",
+					all: "All Types",
+					playlists: "Playlists",
+					videos: "Videos",
+					audios: "Audio"
 				},
 				downloads: {
 					quality: "Quality",

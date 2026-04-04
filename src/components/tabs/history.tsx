@@ -178,10 +178,10 @@ export function History({
 								</div>
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="all">All Types</SelectItem>
-								<SelectItem value="playlist">Playlists</SelectItem>
-								<SelectItem value="video">Videos</SelectItem>
-								<SelectItem value="audio">Audio</SelectItem>
+								<SelectItem value="all">{t("common.all")}</SelectItem>
+								<SelectItem value="playlist">{t("common.playlists")}</SelectItem>
+								<SelectItem value="video">{t("common.videos")}</SelectItem>
+								<SelectItem value="audio">{t("common.audios")}</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
