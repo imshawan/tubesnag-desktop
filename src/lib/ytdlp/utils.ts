@@ -29,7 +29,15 @@ export function resolveDownloadedFilePath(item: DownloadItem): string | null {
 export function readYtVideoInfoJsonFile<T>(path: string): T | null {
 	try {
 		const data = fsSync.readFileSync(path, 'utf8');
-		return JSON.parse(data
+		if (!data.trim().length) {
+			return null;
+		}
+		const fixedJson = data.replace(/(".*?")\s*:\s*"(.*?)"(?=\s*[,}])/g, (match, key, value) => {
+			// Replace all internal quotes in the "value" part with \"
+			const fixedValue = value.replace(/"/g, '\\"');
+			return `${key}:"${fixedValue}"`;
+		});
+		return JSON.parse(fixedJson
 			.replaceAll(/\bNA\b/g, "null")   // Replaces all unquoted NA
 			.replaceAll('"NA"', "null")      // Replaces all quoted "NA"
 		) as T;
