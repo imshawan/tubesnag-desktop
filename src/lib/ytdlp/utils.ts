@@ -32,15 +32,22 @@ export function readYtVideoInfoJsonFile<T>(path: string): T | null {
 		if (!data.trim().length) {
 			return null;
 		}
-		const fixedJson = data.replace(/(".*?")\s*:\s*"(.*?)"(?=\s*[,}])/g, (match, key, value) => {
-			// Replace all internal quotes in the "value" part with \"
-			const fixedValue = value.replace(/"/g, '\\"');
-			return `${key}:"${fixedValue}"`;
-		});
-		return JSON.parse(fixedJson
+		let fixedJson = data;
+
+		try {
+			fixedJson = data.replace(/(".*?")\s*:\s*"(.*?)"(?=\s*[,}])/g, (match, key, value) => {
+				const fixedValue = value
+				.replace(/\\/g, '\\\\')  // escape backslashes FIRST if exists
+				.replace(/"/g, '\\"'); 	 // Replace all internal quotes in the "value" part with \"
+				return `${key}:"${fixedValue}"`;
+			})
 			.replaceAll(/\bNA\b/g, "null")   // Replaces all unquoted NA
-			.replaceAll('"NA"', "null")      // Replaces all quoted "NA"
-		) as T;
+			.replaceAll('"NA"', "null");     // Replaces all quoted "NA"
+		} catch (error) {
+			console.warn("Error fixing JSON: ", error);
+		}
+
+		return JSON.parse(fixedJson) as T;
 	} catch (error) {
 		console.error('Error reading JSON file:', error);
 		return null;
