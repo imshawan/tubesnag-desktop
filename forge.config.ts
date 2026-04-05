@@ -19,7 +19,13 @@ const config: ForgeConfig = {
     ignore:[ /node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/, ],
 
     icon: path.join(__dirname, "assets/icons/icon"),
-    darwinDarkModeSupport: true
+    darwinDarkModeSupport: true,
+    name: "tubesnag",
+    executableName: "TubeSnag",
+    win32metadata: {
+      CompanyName: "Shawan Mandal",
+      ProductName: "TubeSnag",
+    }
   },
   rebuildConfig: {},
   makers: [
@@ -32,12 +38,12 @@ const config: ForgeConfig = {
       options: {
         icon: path.join(__dirname, "assets/icons/icon.png"),
       },
-    }),
+    }, ["linux"]),
     new MakerDeb({
       options: {
         icon: path.join(__dirname, "assets/icons/icon.png"),
       },
-    }),
+    }, ["linux"]),
   ],
   publishers: [
     {
