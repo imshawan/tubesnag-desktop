@@ -118,7 +118,7 @@ export function History({
 
 	const filteredDownloads = useMemo(() => {
 		return downloads.filter((item) => {
-			return historyTypeFilter === "all" ? true : item.type === historyTypeFilter;
+			return (historyTypeFilter === "all" ? true : item.type === historyTypeFilter) ;
 		});
 	}, [downloads, historyTypeFilter]);
 
@@ -130,10 +130,10 @@ export function History({
 					<p className="text-sm text-muted-foreground">{t("history.subtitle")}</p>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" className="p-4" size="sm" onClick={clearCompletedDownloads}
+					{/* <Button variant="outline" className="p-4" size="sm" onClick={clearCompletedDownloads}
 					        disabled={completedDownloads.length === 0}>
 						{t("history.clearCompleted")}
-					</Button>
+					</Button> */}
 					<Button variant="destructive" className="p-4" size="sm" onClick={clearAllDownloads}
 					        disabled={downloads.length === 0}>
 						{t("history.clearAll")}
@@ -156,7 +156,7 @@ export function History({
 								className="pl-8 h-8 text-xs bg-background"
 							/>
 						</div>
-						<Select value={historyFilter} onValueChange={(v) => setHistoryFilter(v)}>
+						{/* <Select value={historyFilter} onValueChange={(v) => setHistoryFilter(v as DownloadStatusFilter)}>
 							<SelectTrigger className="h-8 w-32.5 text-xs bg-background">
 								<div className="flex items-center gap-2">
 									<Filter className="size-3 text-muted-foreground"/>
@@ -169,8 +169,8 @@ export function History({
 								<SelectItem value={DownloadStatus.Downloading}>{t("history.downloading")}</SelectItem>
 								<SelectItem value={DownloadStatus.Failed}>{t("history.failed")}</SelectItem>
 							</SelectContent>
-						</Select>
-						<Select value={historyTypeFilter} onValueChange={(v) => setHistoryTypeFilter(v)}>
+						</Select> */}
+						<Select value={historyTypeFilter} onValueChange={(v) => setHistoryTypeFilter(v as DownloadItemTypeFilter)}>
 							<SelectTrigger className="h-8 w-32.5 text-xs bg-background">
 								<div className="flex items-center gap-2">
 									<Filter className="size-3 text-muted-foreground"/>

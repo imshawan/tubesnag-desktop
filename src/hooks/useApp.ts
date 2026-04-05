@@ -53,8 +53,8 @@ export function useApp() {
 		toggleSearchOpen: () => dispatch(toggleSearchOpen()),
 		setStorage: (data: any) => dispatch(setStorage(data)),
 		setHistorySearch: (search: string) => dispatch(setHistorySearch(search)),
-		setHistoryFilter: (filter: string) => dispatch(setHistoryFilter(filter)),
-		setHistoryTypeFilter: (filter: string) => dispatch(setHistoryTypeFilter(filter)),
+		setHistoryFilter: (filter: DownloadStatusFilter) => dispatch(setHistoryFilter(filter)),
+		setHistoryTypeFilter: (filter: DownloadItemTypeFilter) => dispatch(setHistoryTypeFilter(filter)),
 		setIsAppStateSaving: (value: boolean) => dispatch(setStateSaving(value)),
 		setAppStateSavingProgress: (value: number) => dispatch(setStateSavingProgress(value)),
 	};

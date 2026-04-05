@@ -7,8 +7,8 @@ export interface AppState {
 	activeDialog: DownloadType;
 	searchOpen: boolean;
 	historySearch: string;
-	historyFilter: string;
-	historyTypeFilter: string;
+	historyFilter: DownloadStatusFilter;
+	historyTypeFilter: DownloadItemTypeFilter;
 	setupComplete: boolean;
 	stateSaving: boolean;
 	stateSavingProgress: number;
@@ -59,10 +59,10 @@ const appSlice = createSlice({
 		setHistorySearch: (state, action: PayloadAction<string>) => {
 			state.historySearch = action.payload;
 		},
-		setHistoryFilter: (state, action: PayloadAction<string>) => {
+		setHistoryFilter: (state, action: PayloadAction<DownloadStatusFilter>) => {
 			state.historyFilter = action.payload;
 		},
-		setHistoryTypeFilter: (state, action: PayloadAction<string>) => {
+		setHistoryTypeFilter: (state, action: PayloadAction<DownloadItemTypeFilter>) => {
 			state.historyTypeFilter = action.payload;
 		},
 		setStorage: (state, action: PayloadAction<{ used: string; total: string; percentage: number }>) => {

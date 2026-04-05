@@ -70,6 +70,7 @@ declare global {
 
 	type AudioBitrate = "128" | "192" | "256" | "320";
 	type DownloadItemType = "video" | "audio" | "playlist" | "unknown";
+	type DownloadItemTypeFilter = DownloadItemType | "all";
 	type QualityType =
 		"best"
 		| "8k"
@@ -91,6 +92,7 @@ declare global {
 		| "duplicate"
 		| "downloading_audio_track"
 		| "merging_formats"
+	type DownloadStatusFilter = DownloadStatus | "all";
 	type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
 	type AudioPartDownloadStatus = "pending" | "downloading" | "completed" | "failed" | "unknown";
 
