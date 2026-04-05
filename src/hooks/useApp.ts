@@ -3,6 +3,7 @@ import {
 	selectActiveDialog,
 	selectActiveTab,
 	selectAppVersion,
+	selectEnableSelection,
 	selectHistoryFilter,
 	selectHistorySearch,
 	selectHistoryTypeFilter,
@@ -12,6 +13,7 @@ import {
 	setActiveDialog,
 	setActiveTab,
 	setAppVersion,
+	setEnableSelection,
 	setHistoryFilter,
 	setHistorySearch,
 	setHistoryTypeFilter,
@@ -20,6 +22,7 @@ import {
 	setStorage,
 	toggleSearchOpen,
 } from "@/store/slices/app-slice";
+import { removeAllFromSelectedDownloads } from "@/store/slices/downloads-slice";
 
 export function useApp() {
 	const dispatch = useAppDispatch();
@@ -34,6 +37,7 @@ export function useApp() {
 	const historyTypeFilter = useAppSelector(selectHistoryTypeFilter);
 	const isAppStateSaving = useAppSelector(selectStateSaving);
 	const appStateSavingProgress = useAppSelector(selectStateSavingProgress);
+	const isSelectionEnabled = useAppSelector(selectEnableSelection);
 
 	return {
 		activeTab,
@@ -45,6 +49,7 @@ export function useApp() {
 		historyFilter,
 		historyTypeFilter,
 		isAppStateSaving,
+		isSelectionEnabled,
 		appStateSavingProgress,
 		setAppVersion: (version: string) => dispatch(setAppVersion(version)),
 		setActiveTab: (tab: string) => dispatch(setActiveTab(tab)),
@@ -57,5 +62,9 @@ export function useApp() {
 		setHistoryTypeFilter: (filter: DownloadItemTypeFilter) => dispatch(setHistoryTypeFilter(filter)),
 		setIsAppStateSaving: (value: boolean) => dispatch(setStateSaving(value)),
 		setAppStateSavingProgress: (value: number) => dispatch(setStateSavingProgress(value)),
+		setSelectionEnabled: (value: boolean) => {
+			dispatch(removeAllFromSelectedDownloads())
+			dispatch(setEnableSelection(value));
+		},
 	};
 }

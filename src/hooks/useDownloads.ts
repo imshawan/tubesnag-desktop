@@ -2,9 +2,11 @@ import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
     addDownload,
+    addToSelectedDownloads,
     clearAll,
     clearCompleted,
-    removeDownload, selectCompletedDownloads, selectDownloadItemPropertyOpen, setDownloadItemPropertyOpen,
+    removeAllFromSelectedDownloads,
+    removeDownload, removeFromSelctedDownloads, selectAllSelectedDownloads, selectCompletedDownloads, selectDownloadItemPropertyOpen, setAllAsSelectedDownloads, setDownloadItemPropertyOpen,
     setDownloads,
     updateDownload
 } from "@/store/slices/downloads-slice";
@@ -16,6 +18,7 @@ export function useDownloads() {
     const downloads = useAppSelector((state) => state.downloads.downloads);
     const downloadItemPropertyOpen = useAppSelector(selectDownloadItemPropertyOpen);
     const completedDownloads = useAppSelector(selectCompletedDownloads);
+    const selectedDownloads = useAppSelector(selectAllSelectedDownloads);
 
     const isDownloading = useMemo(
         () => downloads.some(isDownloadingState),
@@ -49,6 +52,7 @@ export function useDownloads() {
         totalProgress,
         totalSize,
         downloadItemPropertyOpen,
+        selectedDownloads,
         addDownload: (download: DownloadItem) => dispatch(addDownload(download)),
         setDownloads: (downloads: DownloadItem[]) => dispatch(setDownloads(downloads)),
         updateDownload: (id: string, updates: Partial<DownloadItem>) =>
@@ -59,5 +63,9 @@ export function useDownloads() {
         clearCompleted: () => dispatch(clearCompleted()),
         clearAll: () => dispatch(clearAll()),
         setDownloadItemPropertyOpen: (property: DownloadItem | null) => dispatch(setDownloadItemPropertyOpen(property)),
+        addToSelectedDownloads: (item: DownloadItem) => dispatch(addToSelectedDownloads(item)),
+        setAllAsSelectedDownloads: () => dispatch(setAllAsSelectedDownloads()),
+        removeFromSelctedDownloads: (items: DownloadItem[]) => dispatch(removeFromSelctedDownloads(items)),
+        clearAllSelection: () => dispatch(removeAllFromSelectedDownloads())
     };
 }

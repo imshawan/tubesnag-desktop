@@ -12,6 +12,7 @@ import {ActionProgress} from "@/components/action-progress";
 import {deleteResourceFromSystem} from "@/lib/ytdlp/ytdlp";
 import {DownloadStatus} from "@/lib/utils/enums";
 import {DeleteWithFilesOption} from "@/components/delete-with-files-option";
+import { removeFromSelctedDownloads } from "@/store/slices/downloads-slice";
 
 interface HistoryProps {
 	onOpenFile: (download: DownloadItem) => void;
@@ -29,30 +30,28 @@ export function History({
 	                        onShare
                         }: Readonly<HistoryProps>) {
 	const {t} = useTranslation();
-	const {downloads, removeDownload, completedDownloads} = useDownloads();
 	const [deleting, setDeleting] = useState(0);
 	const [totalCount, setTotalCount] = useState(0);
+	const {downloads, removeDownload, completedDownloads, setAllAsSelectedDownloads, selectedDownloads, clearAllSelection } = useDownloads();
 
 	const {confirm} = useConfirmation();
 	const {
 		historySearch,
 		historyFilter,
 		historyTypeFilter,
+		isSelectionEnabled,
 		setHistorySearch,
 		setHistoryTypeFilter,
-		setHistoryFilter
+		setHistoryFilter,
+		setSelectionEnabled
 	} = useApp();
-
-	useEffect(() => {
-		if (downloads.length) {
-			setTotalCount(downloads.length);
-		}
-	}, []);
 
 	const sleep = (ms: any) =>
 		new Promise(resolve => setTimeout(resolve, ms));
 
 	const clearDownloads = async (downloadsToClear: DownloadItem[], deleteFiles: boolean) => {
+		setTotalCount(downloadsToClear.length);
+
 		const sleepDuration = downloadsToClear.length > 100 ? 100 : 250;
 		let idx = 0;
 		for (const download of downloadsToClear) {
@@ -72,6 +71,30 @@ export function History({
 		}
 
 		setDeleting(0);
+	}
+
+	const clearSelectedDownloads = async () => {
+		setTotalCount(selectedDownloads.size);
+
+		let deleteFilesValue = false;
+
+		const yes = await confirm({
+			title: t("history.deleteSelectedDownloads", {count: selectedDownloads.size}),
+			description: t("history.deleteSelectedDownloadsDesc"),
+			children: (
+				<DeleteWithFilesOption
+					initialValue={false}
+					onValueChange={(val) => (deleteFilesValue = val)}
+				/>
+			),
+			getResult: () => ({deleteFiles: deleteFilesValue}),
+		});	
+
+		if (yes && selectedDownloads.size) {
+			const selected = [...selectedDownloads.values()]
+			await clearDownloads(selected, deleteFilesValue);
+			setSelectionEnabled(false);
+		}
 	}
 
 	const clearCompletedDownloads = async () => {
@@ -116,11 +139,32 @@ export function History({
 		});
 	}
 
+	const handleSelectAllActions = () => {
+		if (!isSelectionEnabled) {
+			setSelectionEnabled(true);
+		} else if (isSelectionEnabled && selectedDownloads.size) {
+			clearAllSelection()
+		} else if (isSelectionEnabled) {
+			setAllAsSelectedDownloads();
+		}
+	}
+
 	const filteredDownloads = useMemo(() => {
 		return downloads.filter((item) => {
 			return (historyTypeFilter === "all" ? true : item.type === historyTypeFilter) ;
 		});
 	}, [downloads, historyTypeFilter]);
+
+	const getHandleSelectAllText = () => {
+		if (isSelectionEnabled && selectedDownloads.size) {
+			return t("history.deselectAll");
+		}
+		if (isSelectionEnabled) {
+			return t("history.selectAll");
+		}
+
+		return t("history.selectMultiple");
+	}
 
 	return (
 		<div className="flex flex-col gap-6 animate-in fade-in duration-500">
@@ -130,14 +174,45 @@ export function History({
 					<p className="text-sm text-muted-foreground">{t("history.subtitle")}</p>
 				</div>
 				<div className="flex gap-2">
-					{/* <Button variant="outline" className="p-4" size="sm" onClick={clearCompletedDownloads}
-					        disabled={completedDownloads.length === 0}>
-						{t("history.clearCompleted")}
-					</Button> */}
-					<Button variant="destructive" className="p-4" size="sm" onClick={clearAllDownloads}
-					        disabled={downloads.length === 0}>
-						{t("history.clearAll")}
+					<Button 
+						variant="outline" 
+						className="p-4 hover:!bg-zinc-800 hover:!text-white transition-colors" 
+						size="sm" 
+						onClick={handleSelectAllActions}
+						disabled={downloads.length === 0}
+					>
+						{getHandleSelectAllText()}
 					</Button>
+
+					{isSelectionEnabled ? <Button 
+						variant="outline" 
+						className="p-4 hover:!bg-zinc-800 hover:!text-white transition-colors" 
+						size="sm" 
+						onClick={() => setSelectionEnabled(false)}
+					>
+						{t("common.cancel")}
+					</Button> : null}
+
+					{isSelectionEnabled && selectedDownloads.size > 0 ? (
+						<Button 
+							variant="destructive" 
+							className="p-4" 
+							size="sm" 
+							onClick={clearSelectedDownloads}
+						>
+							{t("history.deleteSelected")} ({selectedDownloads.size})
+						</Button>
+					) : (
+						<Button 
+							variant="destructive" 
+							className="p-4" 
+							size="sm" 
+							onClick={clearAllDownloads}
+							disabled={downloads.length === 0}
+						>
+							{t("history.clearAll")}
+						</Button>
+					)}
 				</div>
 			</div>
 
@@ -185,9 +260,24 @@ export function History({
 							</SelectContent>
 						</Select>
 					</div>
-					<span className="text-xs text-muted-foreground whitespace-nowrap">
-            {t("history.showing")} {filteredDownloads.length} {t("history.items")}
-          </span>
+					<div className="flex items-center gap-3">
+						{/* SELECTION INDICATOR */}
+						{isSelectionEnabled && (
+							<div className="flex items-center gap-2 border-r border-border/50 pr-3">
+								<span className="flex size-5 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+									{selectedDownloads.size}
+								</span>
+								<span className="text-xs font-medium text-foreground whitespace-nowrap">
+									{t("history.selected")}
+								</span>
+							</div>
+						)}
+						
+						{/* ORIGINAL SHOWING COUNT */}
+						<span className="text-xs text-muted-foreground whitespace-nowrap">
+							{t("history.showing")} {filteredDownloads.length} {t("history.items")}
+						</span>
+					</div>
 				</div>
 
 				{filteredDownloads.length > 0 ? (

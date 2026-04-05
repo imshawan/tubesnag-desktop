@@ -1,13 +1,17 @@
-import {ChevronDown, ChevronUp, FileVideo, LucideProps, Music} from "lucide-react";
+import {ChevronDown, ChevronUp, FileVideo, ListVideo, Music} from "lucide-react";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {cn} from "@/lib/utils/tailwind";
-import {useEffect, useRef, useState} from "react";
+import {RefObject, useEffect, useRef, useState} from "react";
 import {formatBytes} from "@/lib/utils/common";
 import {fileToDataUrl} from "@/lib/ytdlp/ytdlp";
 import {DownloadContextMenu} from "@/components/download-context-menu";
 import {timeFromNow} from "@/lib/utils/date";
 import {DownloadStatusBadge} from "@/components/download-status-badge";
 import {useTranslation} from "react-i18next";
+import { useApp } from "@/hooks/useApp";
+import { Checkbox } from "./ui/checkbox";
+import { DownloadType } from "@/lib/utils/enums";
+import { useDownloads } from "@/hooks/useDownloads";
 
 interface DownloadListProps {
 	items: DownloadItem[];
@@ -36,43 +40,20 @@ export function DownloadList({
 	const [expandedPlaylist, setExpandedPlaylist] = useState<string | null>(null);
 	const imageCache = useRef<Record<string, string>>({});
 
+	const {addToSelectedDownloads, removeFromSelctedDownloads, selectedDownloads} = useDownloads();
+	const {activeTab, isSelectionEnabled} = useApp();
+
 	const getSizeString = (size: string) =>
 		size.includes("NaN") || size.includes("undefined") ? "0 B" : size;
 
-	const ThumbnailIcon = ({item}: { item: DownloadItem }) => {
-		const [dataUrl, setDataUrl] = useState<string>('');
-
-		useEffect(() => {
-			if (!item.thumbnail || item.thumbnail.startsWith("http"))
-				return setDataUrl(item.thumbnail || "");
-			if (imageCache.current[item.thumbnail]) {
-				setDataUrl(imageCache.current[item.thumbnail]);
+	const handleSelect = (item: DownloadItem) => {
+		if (activeTab === "history" && isSelectionEnabled) {
+			if (selectedDownloads.has(item.id.toString())) {
+				removeFromSelctedDownloads([item])
 			} else {
-				fileToDataUrl(item.thumbnail)
-					.then(url => {
-						imageCache.current[item.thumbnail || ""] = url;
-						setDataUrl(url);
-					})
-					.catch(() => setDataUrl(''));
+				addToSelectedDownloads(item)
 			}
-		}, [item.thumbnail]);
-
-		if (item.thumbnail && dataUrl) {
-			return (
-				<img
-					src={dataUrl}
-					alt={item.title}
-					className="size-10 rounded-lg object-cover border border-border/50"/>
-			);
 		}
-		const Icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>
-			= item.type === "audio" ? Music : FileVideo;
-		return (
-			<div
-				className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
-				{<Icon className="size-5 text-muted-foreground"/>}
-			</div>
-		);
 	}
 
 	const renderDownloadRow = (download: DownloadItem, idx: number, isPlaylistChild = false) => {
@@ -98,9 +79,10 @@ export function DownloadList({
 						isPlaylistChild && "pl-12 bg-muted/5",
 						disabled ? "cursor-auto" : "cursor-pointer hover:bg-muted/30",
 					)}
+					onClick={() => handleSelect(download)}
 				>
 					<div className="flex items-center gap-4">
-						<ThumbnailIcon item={download}/>
+						<ThumbnailIcon item={download} imageCache={imageCache}/>
 						<div className="flex flex-col">
 							<span className="font-medium text-sm">{download.title}</span>
 							<div className="flex gap-2 text-xs text-muted-foreground">
@@ -138,15 +120,21 @@ export function DownloadList({
 				<div key={item.id}>
 					<div
 						className="flex items-center justify-between p-4 hover:bg-blue-500/5 cursor-pointer transition-colors border-l-4 border-blue-500"
-						onClick={() => setExpandedPlaylist(expandedPlaylist === item.id ? null : item.id)}
+						onClick={() => {
+							setExpandedPlaylist(expandedPlaylist === item.id ? null : item.id);
+							handleSelect(item);
+						}}
 					>
 						<div className="flex items-center gap-4 flex-1">
-							{item.thumbnail ? (
-								<img src={item.thumbnail} alt={item.title}
-								     className="size-10 rounded-lg object-cover border border-blue-500/30"/>
-							) : (
-								<DefaultIcon item={item}/>
-							)}
+							<div className="relative">
+								{item.thumbnail ? (
+									<img src={item.thumbnail} alt={item.title}
+										 className="size-10 rounded-lg object-cover border border-blue-500/30"/>
+								) : (
+									<DefaultIcon item={item}/>
+								)}
+								<CheckboxOverlay item={item} />
+							</div>
 							<div className="flex flex-col">
 								<span className="font-semibold text-sm text-blue-600">{item.title}</span>
 								<span
@@ -211,11 +199,108 @@ function QualityBadge({quality}: Readonly<{ quality: string }>) {
 }
 
 function DefaultIcon({item}: Readonly<{ item: DownloadItem }>) {
-	const Icon = item.type === "audio" ? Music : FileVideo;
+	const Icon = item.type === DownloadType.Audio ? Music : (item.type === DownloadType.Playlist ? ListVideo : FileVideo);
 	return (
 		<div
 			className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 border border-border/50">
 			{<Icon className="size-5 text-muted-foreground"/>}
 		</div>
+	)
+}
+
+function ThumbnailIcon ({item, imageCache, selectorVisibleOnHover = false}: { item: DownloadItem, imageCache: RefObject<Record<string, string>>, selectorVisibleOnHover?: boolean }) {
+	const [dataUrl, setDataUrl] = useState<string>('');
+
+    useEffect(() => {
+        if (!item.thumbnail || item.thumbnail.startsWith("http"))
+            return setDataUrl(item.thumbnail || "");
+        
+        if (imageCache.current[item.thumbnail]) {
+            setDataUrl(imageCache.current[item.thumbnail]);
+        } else {
+            fileToDataUrl(item.thumbnail)
+                .then(url => {
+                    imageCache.current[item.thumbnail || ""] = url;
+                    setDataUrl(url);
+                })
+                .catch(() => setDataUrl(''));
+        }
+    }, [item.thumbnail]);
+
+    // Helper to render the actual base visual
+    const renderBaseVisual = () => {
+        if (item.thumbnail && dataUrl) {
+            return (
+                <img
+                    src={dataUrl}
+                    alt={item.title}
+                    className="size-full rounded-lg object-cover border border-border/50"
+                />
+            );
+        }
+        const Icon = item.type === DownloadType.Audio ? Music : (item.type === DownloadType.Playlist ? ListVideo : FileVideo);
+        return (
+            <div className="flex size-full items-center justify-center rounded-lg bg-muted/50 border border-border/50">
+                <Icon className="size-5 text-muted-foreground" />
+            </div>
+        );
+    };
+
+    return (
+        <div className="group relative size-10 shrink-0">
+            {/* The underlying Image or Icon */}
+            {renderBaseVisual()}
+
+            {!item.parentId ? <CheckboxOverlay item={item} /> : null}
+        </div>
+    );
+}
+
+function CheckboxOverlay ({item, selectorVisibleOnHover = false}: { item: DownloadItem, selectorVisibleOnHover?: boolean }) {
+	const [isSelected, setIsSelected] = useState(false);
+
+	const {activeTab, isSelectionEnabled} = useApp();
+	const {addToSelectedDownloads, removeFromSelctedDownloads, selectedDownloads} = useDownloads();
+
+	useEffect(() => {
+		setIsSelected(selectedDownloads.has(item.id.toString()));
+	}, [selectedDownloads]);
+
+
+	const onSelection = (checked: boolean) => {
+		setIsSelected(checked);
+
+		if (checked) {
+			addToSelectedDownloads(item);
+		} else {
+			removeFromSelctedDownloads([item]);
+		}
+	}
+
+	const showCheckboxOverlay = (activeTab === "history" && isSelectionEnabled);
+
+	return (
+		<>
+		{/* The Checkbox Overlay */}
+            {(showCheckboxOverlay || selectorVisibleOnHover) ? (<div
+                className={cn(
+                    "absolute inset-0 flex items-center justify-center rounded-lg transition-all duration-200",
+                    showCheckboxOverlay 
+                        ? "bg-black/40 opacity-100" // Always visible with dark backdrop
+                        :  (selectorVisibleOnHover ? "bg-black/40 opacity-0 group-hover:opacity-100" : null)
+                )}
+            >
+                <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={(checked) => onSelection(checked as boolean)}
+                    className={cn(
+                        "size-4 border-white/70 shadow-sm",
+                        isSelected && "border-primary bg-blue-400"
+                    )}
+                    // Prevent the click from bubbling up if the row itself is also clickable
+                    onClick={(e: any) => e.stopPropagation()} 
+                />
+            </div>) : null}
+		</>
 	)
 }

@@ -55,6 +55,13 @@ i18n.use(initReactI18next).init({
 					clearAllDesc: "Are you sure you want to clear your entire download history? This action cannot be undone.",
 					deleteCompleted: "Clear all completed downloads?",
 					deleteCompletedDesc: "Are you sure you want to clear all completed downloads?",
+					selectMultiple: "Select items",
+					selectAll: "Select all",
+					selected: "Selected",
+					deleteSelected: "Delete selected",
+					deleteSelectedDownloads: "Delete {{count}} download(s)?",
+					deleteSelectedDownloadsDesc: "Are you sure you want to delete the selected downloads? This will remove them from your history and delete any associated files.",
+					deselectAll: "Deselect all"
 				},
 				settings: {
 					title: "Settings",

@@ -4,11 +4,13 @@ import {isDownloadCompleteState, isFailedState} from "@/lib/utils/common";
 export interface DownloadsState {
     downloads: DownloadItem[];
     downloadItemPropertyOpen: DownloadItem | null;
+    selectedDownloads: Map<string, DownloadItem>
 }
 
 const initialState: DownloadsState = {
     downloads: [],
-    downloadItemPropertyOpen: null
+    downloadItemPropertyOpen: null,
+    selectedDownloads: new Map()
 };
 
 const downloadsSlice = createSlice({
@@ -38,13 +40,29 @@ const downloadsSlice = createSlice({
         },
         setDownloadItemPropertyOpen: (state, action: PayloadAction<DownloadItem | null>) => {
             state.downloadItemPropertyOpen = action.payload;
+        },
+        setAllAsSelectedDownloads: (state) => {
+            state.downloads.forEach(dl => state.selectedDownloads.set(dl.id, dl));
+        },
+        addToSelectedDownloads: (state, action: PayloadAction<DownloadItem>) => {
+            state.selectedDownloads.set(action.payload.id,  action.payload);
+        },
+        removeFromSelctedDownloads: (state, action: PayloadAction<DownloadItem[]>) => {
+            action.payload.forEach(dl => state.selectedDownloads.delete(dl.id));
+        },
+        removeAllFromSelectedDownloads: (state) => {
+            state.selectedDownloads = new Map();
         }
     },
 });
 
-export const {setDownloads, addDownload, updateDownload, removeDownload, clearCompleted, clearAll, setDownloadItemPropertyOpen} = downloadsSlice.actions;
+export const {setDownloads, addDownload, updateDownload, removeDownload, clearCompleted, clearAll, 
+    setDownloadItemPropertyOpen, setAllAsSelectedDownloads, addToSelectedDownloads, removeFromSelctedDownloads,
+    removeAllFromSelectedDownloads
+} = downloadsSlice.actions;
 export default downloadsSlice.reducer;
 
 export const selectDownloadItemPropertyOpen = (state: {downloads: DownloadsState}) => state.downloads.downloadItemPropertyOpen;
 export const selectCompletedDownloads = (state: {downloads: DownloadsState}) => state.downloads.downloads
     .filter((d) => isDownloadCompleteState(d) && !isFailedState(d));
+export const selectAllSelectedDownloads = (state: {downloads: DownloadsState}) => state.downloads.selectedDownloads;
