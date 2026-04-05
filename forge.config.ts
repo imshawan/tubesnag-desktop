@@ -7,6 +7,7 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import path from "node:path";
+import pkg from "./package.json";
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -22,6 +23,8 @@ const config: ForgeConfig = {
     darwinDarkModeSupport: true,
     name: "tubesnag",
     executableName: "TubeSnag",
+    appVersion: pkg.version,
+    buildVersion: pkg.version,
     win32metadata: {
       CompanyName: "Shawan Mandal",
       ProductName: "TubeSnag",
