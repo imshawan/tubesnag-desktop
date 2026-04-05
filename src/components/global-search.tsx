@@ -67,11 +67,10 @@ export function GlobalSearch({isOpen, onClose, onSelect}: Readonly<GlobalSearchP
                             className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
                             {t("globalSearch.esc")}
                         </kbd>
-                        <span>{t("globalSearch.toClose")}</span>
                     </div>
                 </div>
 
-                <ScrollArea className="h-[350px] w-full">
+                <ScrollArea className="h-87.5 w-full">
                     <div className="p-2">
                         {filtered.length === 0 ? (
                             <div className="py-14 text-center text-sm text-muted-foreground">

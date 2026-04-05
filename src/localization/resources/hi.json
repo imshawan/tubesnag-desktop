@@ -4,7 +4,8 @@
     "titleHomePage": "होम पेज",
     "titleSecondPage": "दूसरा पेज",
     "documentation": "डॉक्यूमेंटेशन",
-    "madeBy": "imshawan द्वारा बनाया गया",
+    "madeWith": "ये बनाया गया है",
+    "madeBy": "के साथ, imshawan द्वारा।",
     "help": {
       "title": "सहायता और डॉक्यूमेंटेशन",
       "subtitle": "TubeSnag का उपयोग कैसे करें और सामान्य प्रश्नों के उत्तर जानें।",

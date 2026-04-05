@@ -1,4 +1,4 @@
-import {CheckCircle2, Folder, Languages, LayoutList, Monitor} from "lucide-react";
+import {CheckCircle2, Folder, Heart, Languages, LayoutList, Monitor} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
@@ -9,6 +9,7 @@ import LangToggle from "@/components/lang-toggle";
 import {VIDEO_QUALITIES} from "@/lib/ytdlp/constants";
 import {cn} from "@/lib/utils/tailwind";
 import {Separator} from "@/components/ui/separator";
+import {openExternalLink} from "@/actions/shell";
 
 interface SettingsProps {
 	onBrowseFolder: () => void;
@@ -212,9 +213,23 @@ export function Settings({onBrowseFolder}: Readonly<SettingsProps>) {
 					</div>
 				</section>
 
-				<section className="rounded-xl border border-border/50 bg-card p-6">
-
-				</section>
+				<div className="flex flex-col items-center justify-center pt-8 pb-4 text-center opacity-80 transition-opacity hover:opacity-100">
+					<div
+						className="flex cursor-pointer items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+						onClick={() => openExternalLink('https://github.com/imshawan')}
+					>
+                     <span className="text-sm font-medium tracking-tight">
+                         {t("madeWith")}
+                     </span>
+						<Heart className="size-4 text-red-500 fill-red-500/20" />
+						<span className="text-sm font-medium tracking-tight">
+                         {t("madeBy")}
+                     </span>
+					</div>
+					<p className="mt-1.5 text-[10px] font-mono text-muted-foreground/50 uppercase tracking-widest">
+						TubeSnag Desktop
+					</p>
+				</div>
 
 			</div>
 		</div>

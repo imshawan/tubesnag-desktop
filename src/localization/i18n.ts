@@ -11,7 +11,8 @@ i18n.use(initReactI18next).init({
 				titleHomePage: "Home Page",
 				titleSecondPage: "Second Page",
 				documentation: "Documentation",
-				madeBy: "Made by imshawan",
+				madeWith: "Made with",
+				madeBy: "by imshawan",
 				help: {
 					title: "Help & Documentation",
 					subtitle: "Learn how to use TubeSnag and get answers to common questions.",
