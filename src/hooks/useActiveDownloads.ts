@@ -2,6 +2,7 @@ import {useMemo} from "react";
 import {useAppDispatch, useAppSelector} from "@/store/hooks";
 import {
 	addActiveDownload,
+	addActiveDownloads,
 	removeActiveDownload,
 	selectActiveDownloads, selectDownloadCount,
 	selectDownloadSpeed,
@@ -68,6 +69,8 @@ export function useActiveDownloads() {
 
 	const addActiveDownloadItem = (download: DownloadItem) =>
 		dispatch(addActiveDownload(download));
+	const addActiveDownloadItems = (downloads: DownloadItem[]) =>
+		dispatch(addActiveDownloads(downloads));
 	const updateActiveDownloadItem = (id: string, updates: Partial<DownloadItem>) =>
 		dispatch(updateActiveDownload({id, updates}));
 
@@ -100,6 +103,7 @@ export function useActiveDownloads() {
 		getActiveDownloadById,
 		addPlaylistDownload,
 		addActiveDownloadItem,
+		addActiveDownloadItems,
 		updateActiveDownloadItem,
 		updateActivePlaylistVideoDownloadItem,
 		removeActiveDownloadItem,

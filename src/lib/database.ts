@@ -4,6 +4,10 @@ export const createActiveDownload = async (downloadItem: DownloadItem): Promise<
 	return await getElectron().db.createActiveDownload(downloadItem);
 };
 
+export const createActiveDownloads = async (downloadItems: DownloadItem[]): Promise<{ success: boolean }> => {
+	return await getElectron().db.createActiveDownloads(downloadItems);
+};
+
 export const getActiveDownloads = async (): Promise<DownloadItem[]> => {
 	return await getElectron().db.getActiveDownloads();
 };

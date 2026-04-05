@@ -2,6 +2,7 @@ import {Middleware} from '@reduxjs/toolkit';
 import * as db from '@/lib/database';
 import {
 	addActiveDownload,
+	addActiveDownloads,
 	clearActiveDownloads,
 	removeActiveDownload,
 	updateActiveDownload,
@@ -45,6 +46,15 @@ export const databaseSyncMiddleware: Middleware = (store) => (next) => async (ac
 			await db.createActiveDownload(pickDbFields(action.payload));
 		} catch (error) {
 			console.error('Failed to save active download to DB:', error);
+		}
+	}
+
+	if (addActiveDownloads.match(action)) {
+		try {
+			const downloads = action.payload.map(pickDbFields);
+			await db.createActiveDownloads(downloads);
+		} catch (error) {
+			console.error('Failed to save active downloads to DB:', error);
 		}
 	}
 

@@ -23,6 +23,9 @@ const activeDownloadsSlice = createSlice({
 		setActiveDownloads: (state, action: PayloadAction<DownloadItem[]>) => {
 			state.items = action.payload;
 		},
+		addActiveDownloads: (state, action: PayloadAction<DownloadItem[]>) => {
+			state.items.unshift(...action.payload);
+		},
 		addActiveDownload: (state, action: PayloadAction<DownloadItem>) => {
 			state.items.unshift(action.payload);
 		},
@@ -88,6 +91,7 @@ const activeDownloadsSlice = createSlice({
 export const {
 	setActiveDownloads,
 	addActiveDownload,
+	addActiveDownloads,
 	updateActiveDownload,
 	removeActiveDownload,
 	clearActiveDownloads,

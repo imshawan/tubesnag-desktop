@@ -357,7 +357,8 @@ i18n.use(initReactI18next).init({
 					geoBlocked: "Access denied. Video may be geo-blocked.",
 					notFound: "Video not found.",
 					networkFailed: "Network connection failed.",
-					playlistEmpty: "The playlist contains no videos."
+					playlistEmpty: "The playlist contains no videos.",
+					timeoutError: "Connection to video server timed out while downloading. Retrying ({{current}}/{{total}})"
 				},
 				errors: {
 					fileNotFound: "The requested file/folder was not found or has been removed.",

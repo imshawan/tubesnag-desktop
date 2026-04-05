@@ -20,7 +20,7 @@ import {
 	resolveQualityByResolution
 } from "@/lib/ytdlp/utils";
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
-import {DownloadStatus} from "@/lib/utils/enums";
+import {DownloadStatus, ProgressTypes, WaitingTypes} from "@/lib/utils/enums";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 
 export const getYtDlpConfig = () => {
@@ -283,7 +283,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 					}
 
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'metadata',
+						type: ProgressTypes.Metadata,
 						data: {
 							title: videoInfo.title,
 							channel: videoInfo.channel || 'Unknown',
@@ -312,7 +312,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				if (line.startsWith("[download] Destination") && resolveIfAudioOnlyDownload(line) && type === "video") {
 					status = DownloadStatus.DownloadingAudioTrack
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'metadata',
+						type: ProgressTypes.Metadata,
 						data: {
 							status
 						}
@@ -322,10 +322,31 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				if (line.startsWith("[Merger] Merging formats into")) {
 					status = DownloadStatus.MergingFormats;
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'metadata',
+						type: ProgressTypes.Metadata,
 						data: {
 							status
 						}
+					});
+				}
+
+				if (line.startsWith("[download] Got error:") && line.includes("Read timed out")) {
+					const retryingMatch = line.match(/Retrying \((\d+)\/(\d+)\)/);
+					let retrying: number[] = [];
+					if (retryingMatch) {
+						const current = Number(retryingMatch[1]);
+						const total = Number(retryingMatch[2]);
+
+						retrying = [current, total];
+					}
+
+					mainWindow?.webContents.send('ytdlp:progress', {
+						type: ProgressTypes.Waiting,
+						data: {
+							message: "ytDlpErrors.timeoutError",
+							type: WaitingTypes.Retrying,
+							payload: retrying
+						},
+						downloadId
 					});
 				}
 
@@ -339,7 +360,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 						videoInfoData.title = videoInfoData.title.replace(oldExt, newExt);
 
 						mainWindow?.webContents.send('ytdlp:progress', {
-							type: 'metadata',
+							type: ProgressTypes.Metadata,
 							data: {
 								title: videoInfoData.title,
 								outputPath: path.join(outputPath, videoInfoData.title),
@@ -355,7 +376,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				if (sizeMatch && !dataSentState.size) {
 					const sizeBytes = sizeToBytes(sizeMatch[1]);
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'metadata',
+						type: ProgressTypes.Metadata,
 						data: {
 							size: sizeBytes,
 							downloadId
@@ -402,7 +423,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 					};
 
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'duplicate',
+						type: ProgressTypes.Duplicate,
 						data: metadata,
 						downloadId
 					});
@@ -420,7 +441,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 					if (Math.abs(progress - lastProgress) >= 1) {
 						lastProgress = progress;
 						mainWindow?.webContents.send('ytdlp:progress', {
-							type: 'progress',
+							type: ProgressTypes.Progress,
 							progress: Math.round(progress),
 							speed: speedMatch?.length ? speedMatch[1] : undefined,
 							downloadId,
@@ -437,7 +458,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 				if (isYtdlpError(line)) {
 					const ytdlpError = parseYtDlpError(line);
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'error',
+						type: ProgressTypes.Error,
 						data: ytdlpError,
 						downloadId
 					});
@@ -462,7 +483,7 @@ export const downloadWithYtdlp = async (event: IpcMainInvokeEvent, options: YtDl
 					};
 
 					mainWindow?.webContents.send('ytdlp:progress', {
-						type: 'complete',
+						type: ProgressTypes.Complete,
 						data
 					});
 					dataSentState.complete = true;

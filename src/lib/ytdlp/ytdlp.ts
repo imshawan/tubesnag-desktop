@@ -13,6 +13,7 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 		onComplete,
 		onDuplicate,
 		onError,
+		onWaiting,
 		downloadId,
 		saveToPlaylistFolder,
 		playlistName,
@@ -54,6 +55,8 @@ export const downloadWithYtdlp = async (options: YtDlpDownloadOptions): Promise<
 				onError?.({...data.data, downloadId});
 				isCompleted = true;
 				resolve();
+			} else if (data.type === ProgressTypes.Waiting) {
+				onWaiting?.(data.data);
 			}
 		};
 

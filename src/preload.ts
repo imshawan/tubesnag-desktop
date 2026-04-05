@@ -39,8 +39,10 @@ contextBridge.exposeInMainWorld('electron', {
 	deleteDownloadedPlaylistResources: (item: DownloadItem): Promise<void> =>
 		ipcRenderer.invoke('file:delete-playlist', item),
 	db: {
-		createActiveDownload: (downloadItem: any) =>
+		createActiveDownload: (downloadItem: DownloadItem) =>
 			ipcRenderer.invoke('db:create-active-download', downloadItem),
+		createActiveDownloads: (downloadItems: DownloadItem[]) =>
+			ipcRenderer.invoke('db:create-active-downloads', downloadItems),
 		getActiveDownloads: () =>
 			ipcRenderer.invoke('db:get-active-downloads'),
 		getActiveDownloadById: (id: string) =>

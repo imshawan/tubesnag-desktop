@@ -51,6 +51,7 @@ export enum ProgressTypes {
 	Error = "error",
 	Metadata = "metadata",
 	Duplicate = "duplicate",
+	Waiting = "waiting"
 }
 
 export enum DownloadType {
@@ -58,4 +59,8 @@ export enum DownloadType {
 	Video = "video",
 	Playlist = "playlist",
 	Unknown = "unknown",
+}
+
+export enum WaitingTypes {
+	Retrying = "retrying"
 }

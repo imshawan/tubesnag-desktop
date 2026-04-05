@@ -28,7 +28,7 @@ import {
 	openFolder,
 	selectFolder
 } from "@/lib/ytdlp/ytdlp";
-import {useToast} from "@/context/toast-context";
+import {ToastTypes, useToast} from "@/context/toast-context";
 import {Statistics} from "@/components/statistics";
 import {generateUUID, isDownloadCompleteState, isFailedState} from "@/lib/utils/common";
 import {useActiveDownloads} from "@/hooks/useActiveDownloads";
@@ -41,7 +41,7 @@ import {ItemPropertiesDialog} from "@/components/dialogs/item-properties/item-pr
 import {BotVerificationError} from "@/lib/errors/bot-verification-error";
 import {ActiveDownloadsBanner} from "@/components/active-downloads-banner";
 import {getDefaultDownloadLocation} from "@/lib/utils/app";
-import {AudioPartDownloadStatus, DownloadStatus, DownloadType} from "@/lib/utils/enums";
+import {AudioPartDownloadStatus, DownloadStatus, DownloadType, WaitingTypes} from "@/lib/utils/enums";
 
 function HomePage() {
 	const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -68,7 +68,7 @@ function HomePage() {
 
 	const {
 		setDownloads: setActiveDownloads,
-		addPlaylistDownload, addActiveDownloadItem,
+		addPlaylistDownload, addActiveDownloadItem, addActiveDownloadItems,
 		updateActiveDownloadItem, updateActivePlaylistVideoDownloadItem,
 		removeActiveDownloadItem, setCurrentDownloadId, setItemDownloadSpeed, setCurrentDownloadCount,
 		clearCurrentDownloadCount
@@ -123,14 +123,14 @@ function HomePage() {
 			.then(setActiveDownloads)
 			.catch(err => {
 				console.error("Failed to load active downloads:", err);
-				addToast(t("dashboard.failedLoadActiveDownloads"), "error");
+				addToast(t("dashboard.failedLoadActiveDownloads"), ToastTypes.Error);
 			});
 
 		getCompletedDownloads()
 			.then(setCompletedDownloads)
 			.catch(err => {
 				console.error("Failed to load completed downloads:", err);
-				addToast(t("dashboard.failedLoadHistory"), "error");
+				addToast(t("dashboard.failedLoadHistory"), ToastTypes.Error);
 			});
 
 		if (downloadPath.trim().length === 0) {
@@ -142,16 +142,22 @@ function HomePage() {
 	// Do not do write to DB here or something because this does not have complete/updated video list info
 	const onDownloadComplete = (download: Partial<DownloadItem>) => {
 		const message = t("downloads.completedDownloading", {title: download.title});
-		addToast(message, "success", 5000);
+		addToast(message, ToastTypes.Success, 5000);
 
 		if (download.id) {
 			updateActiveDownloadItem(download.id, {audioStatus: AudioPartDownloadStatus.Completed});
 		}
 	}
 
+	const onDownloadWaiting = (warning: {message: string, type: WaitingTypes, payload: any}) => {
+		if (warning.type === WaitingTypes.Retrying) {
+			addToast(t(warning.message, {current: warning.payload[0], total: warning.payload[1]}), ToastTypes.Warning);
+		}
+	}
+
 	const handleRetrySingleItemFromPlaylist = async (download: DownloadItem, parentDownload: DownloadItem) => {
 		if (!download.parentId) {
-			addToast(t("common.unableRetry"), "error");
+			addToast(t("common.unableRetry"), ToastTypes.Error);
 			return;
 		}
 
@@ -159,7 +165,7 @@ function HomePage() {
 
 		const child = parentDownload.videos?.find(v => v.id === download.id);
 		if (!child) {
-			addToast(t("common.unableRetry"), "error");
+			addToast(t("common.unableRetry"), ToastTypes.Error);
 			return;
 		}
 
@@ -193,17 +199,18 @@ function HomePage() {
 					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {audioStatus: AudioPartDownloadStatus.Completed});
 				},
 				onDuplicate: (filename, metadata) => {
-					addToast(t("common.duplicate", {title: filename}), "warning");
-					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {status: "duplicate", ...metadata});
+					addToast(t("common.duplicate", {title: filename}), ToastTypes.Warning);
+					updateActivePlaylistVideoDownloadItem(playlistId, child.id, {status: DownloadStatus.Duplicate, ...metadata});
 				},
 				onError: (e) => {
-					addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, "error", 5000);
-					updateActiveDownloadItem(child.id, {status: "failed"});
-				}
+					addToast(`${t("dashboard.downloadFailed")} - ${e.error}`, ToastTypes.Error, 5000);
+					updateActiveDownloadItem(child.id, {status: DownloadStatus.Failed});
+				},
+				onWaiting: onDownloadWaiting
 			});
 		} catch (error) {
 			console.error("Download failed:", error);
-			updateActivePlaylistVideoDownloadItem(playlistId, child.id, {status: "failed"});
+			updateActivePlaylistVideoDownloadItem(playlistId, child.id, {status: DownloadStatus.Failed});
 		} finally {
 			setCurrentDownloadId("");
 			setItemDownloadSpeed("");
@@ -229,14 +236,14 @@ function HomePage() {
 
 			const existingDownload = await getActiveDownloadById(existingId);
 			if (!existingDownload) {
-				addToast(t("common.unableRetry"), "error");
+				addToast(t("common.unableRetry"), ToastTypes.Error);
 				return;
 			}
 			download = existingDownload;
 		} else {
 			download = createDownloadItemFromUrls(url, selectedQuality, format, downloadPath)[0];
 			addActiveDownloadItem(download);
-			addToast(t("singleDownload.addedToQueue"), "success");
+			addToast(t("singleDownload.addedToQueue"), ToastTypes.Success);
 		}
 		setActiveDialog(null);
 		setCurrentDownloadId(download.id);
@@ -264,20 +271,21 @@ function HomePage() {
 					updateActiveDownloadItem(download.id, data);
 				},
 				onDuplicate: (filename, metadata) => {
-					addToast(t("common.duplicate", {title: filename}), "warning");
-					updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
+					addToast(t("common.duplicate", {title: filename}), ToastTypes.Warning);
+					updateActiveDownloadItem(download.id, {status: DownloadStatus.Duplicate, ...metadata});
 				},
 				onComplete: onDownloadComplete,
 				onError: (e) => {
 					console.error("Download error:", e);
-					addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, "error", 5000);
+					addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, ToastTypes.Error, 5000);
 
 					if (e.error.startsWith("ytDlpErrors.botVerification")) {
 						throw new BotVerificationError(t(e.error));
 					}
 
-					updateActiveDownloadItem(download.id, {status: "failed"});
-				}
+					updateActiveDownloadItem(download.id, {status: DownloadStatus.Failed});
+				},
+				onWaiting: onDownloadWaiting
 			});
 		} catch (error) {
 			console.log("Error here -- >", error)
@@ -292,7 +300,7 @@ function HomePage() {
 			}
 
 			console.error("Download failed:", error);
-			updateActiveDownloadItem(download.id, {status: "failed"});
+			updateActiveDownloadItem(download.id, {status: DownloadStatus.Failed});
 		} finally {
 			setCurrentDownloadId("");
 			setItemDownloadSpeed("");
@@ -307,12 +315,13 @@ function HomePage() {
 		audioBitrate,
 	) => {
 		const newDownloads = createDownloadItemFromUrls(urls, selectedQuality, format, downloadPath);
+		console.log("newdownloads", newDownloads);
 		setActiveDialog(null);
 		setCurrentDownloadId("");
 
-		addToast(t("bulkDownload.addedToQueue"), "success");
+		addToast(t("bulkDownload.addedToQueue"), ToastTypes.Success);
 
-		newDownloads.forEach(addActiveDownloadItem);
+		addActiveDownloadItems(newDownloads);
 
 		for (const download of newDownloads) {
 			setCurrentDownloadId(download.id);
@@ -339,19 +348,20 @@ function HomePage() {
 						updateActiveDownloadItem(download.id, data);
 					},
 					onDuplicate: (filename, metadata) => {
-						addToast(t("common.duplicate", {title: filename}), "warning");
-						updateActiveDownloadItem(download.id, {status: "duplicate", ...metadata});
+						addToast(t("common.duplicate", {title: filename}), ToastTypes.Warning);
+						updateActiveDownloadItem(download.id, {status: DownloadStatus.Duplicate, ...metadata});
 					},
 					onComplete: onDownloadComplete,
 					onError: (e) => {
-						addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, "error", 5000);
+						addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, ToastTypes.Error, 5000);
 
 						if (e.error.startsWith("ytDlpErrors.botVerification")) {
 							throw new BotVerificationError(t(e.error));
 						}
 
-						updateActiveDownloadItem(download.id, {status: "failed"});
-					}
+						updateActiveDownloadItem(download.id, {status: DownloadStatus.Failed});
+					},
+					onWaiting: onDownloadWaiting
 				});
 			} catch (error) {
 				console.error("Download failed:", error);
@@ -366,7 +376,7 @@ function HomePage() {
 					});
 				}
 
-				updateActiveDownloadItem(download.id, {status: "failed"});
+				updateActiveDownloadItem(download.id, {status: DownloadStatus.Failed});
 			}
 		}
 
@@ -385,7 +395,7 @@ function HomePage() {
 		setActiveDialog(null);
 
 		try {
-			addToast(t("playlistDownload.addedToQueue"), "info");
+			addToast(t("playlistDownload.addedToQueue"), ToastTypes.Info);
 
 			const playlistId = generateUUID();
 
@@ -393,7 +403,7 @@ function HomePage() {
 
 			const {videoUrls} = result;
 			if (!videoUrls || videoUrls.length === 0) {
-				addToast(t("playlistDownload.noVideosFound"), "error");
+				addToast(t("playlistDownload.noVideosFound"), ToastTypes.Error);
 				return;
 
 			}
@@ -428,17 +438,18 @@ function HomePage() {
 							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {audioStatus: AudioPartDownloadStatus.Completed});
 						},
 						onDuplicate: (filename, metadata) => {
-							addToast(t("common.duplicate", {title: filename}), "warning");
-							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "duplicate", ...metadata});
+							addToast(t("common.duplicate", {title: filename}), ToastTypes.Warning);
+							updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: DownloadStatus.Duplicate, ...metadata});
 						},
 						onError: (e) => {
-							addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, "error", 5000);
-							updateActiveDownloadItem(download.id, {status: "failed"});
-						}
+							addToast(`${t("dashboard.downloadFailed")} - ${t(e.error)}`, ToastTypes.Error, 5000);
+							updateActiveDownloadItem(download.id, {status: DownloadStatus.Failed});
+						},
+						onWaiting: onDownloadWaiting
 					});
 				} catch (error) {
 					console.error("Download failed:", error);
-					updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: "failed"});
+					updateActivePlaylistVideoDownloadItem(playlistId, download.id, {status: DownloadStatus.Failed});
 				}
 			}
 			onDownloadComplete(playlistItem);
@@ -459,22 +470,22 @@ function HomePage() {
 			try {
 				const {error} = await openFile(download);
 				if (error) {
-					return addToast(t(error.message), "error");
+					return addToast(t(error.message), ToastTypes.Error);
 				}
-				addToast(t("dashboard.fileOpened"), "success");
+				addToast(t("dashboard.fileOpened"), ToastTypes.Success);
 			} catch (error) {
 				console.error("Failed to open file:", error);
-				addToast(t("dashboard.failedToOpenFile"), "error");
+				addToast(t("dashboard.failedToOpenFile"), ToastTypes.Error);
 			}
 		} else if (download.status === "failed") {
-			addToast(t("dashboard.downloadFailed"), "error");
+			addToast(t("dashboard.downloadFailed"), ToastTypes.Error);
 		}
 	};
 
 	const handleOpenFolder = async (download: DownloadItem) => {
 		const {error} = await openFolder(download);
 		if (error) {
-			addToast(t(error.message), "error");
+			addToast(t(error.message), ToastTypes.Error);
 		}
 	};
 
@@ -485,12 +496,12 @@ function HomePage() {
 			download.type === DownloadType.Playlist ||
 			(parentId != null && childId != null);
 
-		addToast(t("dashboard.retryingDownload", {title: download.title}), "info");
+		addToast(t("dashboard.retryingDownload", {title: download.title}), ToastTypes.Info);
 
 		if (isPlaylistItem) {
 			const playlist = await getActiveDownloadById(parentId);
 			if (!playlist) {
-				addToast(t("common.unableRetry"), "error");
+				addToast(t("common.unableRetry"), ToastTypes.Error);
 				return;
 			}
 			if (download.type === DownloadType.Playlist && download.videos?.length) {
@@ -505,7 +516,7 @@ function HomePage() {
 				await handleRetrySingleItemFromPlaylist(download, playlist);
 			}
 
-			addToast(t("downloads.completedDownloading", {title: download.title}), "success");
+			addToast(t("downloads.completedDownloading", {title: download.title}), ToastTypes.Success);
 		} else {
 			await handleSingleDownload(
 				[download.url],
@@ -537,7 +548,7 @@ function HomePage() {
 			}
 
 			deleteResourceFromSystem(download).then(() => console.info("Deleted resource(s)"));
-			addToast(t("dashboard.downloadDeleted"), "success");
+			addToast(t("dashboard.downloadDeleted"), ToastTypes.Success);
 		}
 	};
 
@@ -549,12 +560,12 @@ function HomePage() {
 				text: shareText,
 				url: download.url,
 			}).catch(() => {
-				navigator.clipboard.writeText(download.url).then(() => addToast(t("dashboard.urlCopied"), "success"))
-					.catch(() => addToast(t("dashboard.failedCopyUrl"), "error"))
+				navigator.clipboard.writeText(download.url).then(() => addToast(t("dashboard.urlCopied"), ToastTypes.Success))
+					.catch(() => addToast(t("dashboard.failedCopyUrl"), ToastTypes.Error))
 			});
 		} else {
-			navigator.clipboard.writeText(download.url).then(() => addToast(t("dashboard.urlCopied"), "success"))
-				.catch(() => addToast(t("dashboard.failedCopyUrl"), "error"));
+			navigator.clipboard.writeText(download.url).then(() => addToast(t("dashboard.urlCopied"), ToastTypes.Success))
+				.catch(() => addToast(t("dashboard.failedCopyUrl"), ToastTypes.Error));
 		}
 	};
 
@@ -567,7 +578,7 @@ function HomePage() {
 			}
 		} catch (error: any) {
 			console.error(t("dashboard.failedSelectFolder"), error);
-			addToast(t("dashboard.failedSelectFolder", {reason: error.message}), "error");
+			addToast(t("dashboard.failedSelectFolder", {reason: error.message}), ToastTypes.Error);
 		}
 	};
 
