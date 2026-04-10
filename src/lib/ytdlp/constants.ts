@@ -190,6 +190,9 @@ export const ytDlpErrorMap: Record<string, string> = {
 	"HTTP Error 404": "ytDlpErrors.notFound",
 	"Connection refused": "ytDlpErrors.networkFailed",
 	"Playlist is empty": "ytDlpErrors.playlistEmpty",
+	"unreachable network": "ytDlpErrors.networkError",
+	"getaddrinfo failed). Retrying": "ytDlpErrors.getAddrInfoFailed",
+	"getaddrinfo failed)\")). Giving up after 3 retries": "ytDlpErrors.failedRetries"
 };
 
 export const downloadItemJsonInfoStructure = `{

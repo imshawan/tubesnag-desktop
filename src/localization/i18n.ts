@@ -8,10 +8,8 @@ i18n.use(initReactI18next).init({
 		en: {
 			translation: {
 				appName: "TubeSnag",
-				titleHomePage: "Home Page",
-				titleSecondPage: "Second Page",
 				documentation: "Documentation",
-				madeBy: "Made by imshawan",
+				madeBy: "Made by Shawan Mandal",
 				help: {
 					title: "Help & Documentation",
 					subtitle: "Learn how to use TubeSnag and get answers to common questions.",
@@ -353,7 +351,10 @@ i18n.use(initReactI18next).init({
 					geoBlocked: "Access denied. Video may be geo-blocked.",
 					notFound: "Video not found.",
 					networkFailed: "Network connection failed.",
-					playlistEmpty: "The playlist contains no videos."
+					playlistEmpty: "The playlist contains no videos.",
+					networkError: "We couldn’t reach YouTube. This may be due to a network issue or no internet connection. Retrying...",
+					getAddrInfoFailed: "We’re having trouble locating YouTube. Please check your connection or DNS settings. Retrying...",
+					failedRetries: "Failed to connect to YouTube after 3 attempts. This may be due to a network or DNS issue. Please verify your connection and try again.",
 				},
 				errors: {
 					fileNotFound: "The requested file/folder was not found or has been removed.",
