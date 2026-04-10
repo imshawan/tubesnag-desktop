@@ -7,6 +7,7 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import path from "node:path";
+import pkg from "./package.json";
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -18,8 +19,16 @@ const config: ForgeConfig = {
     // Retrieved 2026-03-23, License - CC BY-SA 4.0
     ignore:[ /node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/, ],
 
-    icon: path.join(__dirname, "assets/icons"),
-    darwinDarkModeSupport: true
+    icon: path.join(__dirname, "assets/icons/icon"),
+    darwinDarkModeSupport: true,
+    name: "tubesnag",
+    executableName: "TubeSnag",
+    appVersion: pkg.version,
+    buildVersion: pkg.version,
+    win32metadata: {
+      CompanyName: "Shawan Mandal",
+      ProductName: "TubeSnag",
+    }
   },
   rebuildConfig: {},
   makers: [
@@ -32,12 +41,12 @@ const config: ForgeConfig = {
       options: {
         icon: path.join(__dirname, "assets/icons/icon.png"),
       },
-    }),
+    }, ["linux"]),
     new MakerDeb({
       options: {
         icon: path.join(__dirname, "assets/icons/icon.png"),
       },
-    }),
+    }, ["linux"]),
   ],
   publishers: [
     {

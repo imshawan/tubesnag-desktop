@@ -8,8 +8,11 @@ i18n.use(initReactI18next).init({
 		en: {
 			translation: {
 				appName: "TubeSnag",
+				titleHomePage: "Home Page",
+				titleSecondPage: "Second Page",
 				documentation: "Documentation",
-				madeBy: "Made by Shawan Mandal",
+				madeWith: "Made with",
+				madeBy: "by imshawan",
 				help: {
 					title: "Help & Documentation",
 					subtitle: "Learn how to use TubeSnag and get answers to common questions.",
@@ -53,6 +56,13 @@ i18n.use(initReactI18next).init({
 					clearAllDesc: "Are you sure you want to clear your entire download history? This action cannot be undone.",
 					deleteCompleted: "Clear all completed downloads?",
 					deleteCompletedDesc: "Are you sure you want to clear all completed downloads?",
+					selectMultiple: "Select items",
+					selectAll: "Select all",
+					selected: "Selected",
+					deleteSelected: "Delete selected",
+					deleteSelectedDownloads: "Delete {{count}} download(s)?",
+					deleteSelectedDownloadsDesc: "Are you sure you want to delete the selected downloads? This will remove them from your history and delete any associated files.",
+					deselectAll: "Deselect all"
 				},
 				settings: {
 					title: "Settings",
@@ -209,7 +219,11 @@ i18n.use(initReactI18next).init({
 					ok: "OK",
 					downloadingAudio: "Audio - {{progress}}%",
 					merging: "Merging",
-					deleteWithFiles: "Also delete downloaded local files?"
+					deleteWithFiles: "Also delete downloaded local files?",
+					all: "All Types",
+					playlists: "Playlists",
+					videos: "Videos",
+					audios: "Audio"
 				},
 				downloads: {
 					quality: "Quality",
@@ -355,6 +369,7 @@ i18n.use(initReactI18next).init({
 					networkError: "We couldn’t reach YouTube. This may be due to a network issue or no internet connection. Retrying...",
 					getAddrInfoFailed: "We’re having trouble locating YouTube. Please check your connection or DNS settings. Retrying...",
 					failedRetries: "Failed to connect to YouTube after 3 attempts. This may be due to a network or DNS issue. Please verify your connection and try again.",
+					timeoutError: "Connection to video server timed out while downloading. Retrying ({{current}}/{{total}})"
 				},
 				errors: {
 					fileNotFound: "The requested file/folder was not found or has been removed.",

@@ -29,10 +29,25 @@ export function resolveDownloadedFilePath(item: DownloadItem): string | null {
 export function readYtVideoInfoJsonFile<T>(path: string): T | null {
 	try {
 		const data = fsSync.readFileSync(path, 'utf8');
-		return JSON.parse(data
+		if (!data.trim().length) {
+			return null;
+		}
+		let fixedJson = data;
+
+		try {
+			fixedJson = data.replace(/(".*?")\s*:\s*"(.*?)"(?=\s*[,}])/g, (match, key, value) => {
+				const fixedValue = value
+				.replace(/\\/g, '\\\\')  // escape backslashes FIRST if exists
+				.replace(/"/g, '\\"'); 	 // Replace all internal quotes in the "value" part with \"
+				return `${key}:"${fixedValue}"`;
+			})
 			.replaceAll(/\bNA\b/g, "null")   // Replaces all unquoted NA
-			.replaceAll('"NA"', "null")      // Replaces all quoted "NA"
-		) as T;
+			.replaceAll('"NA"', "null");     // Replaces all quoted "NA"
+		} catch (error) {
+			console.warn("Error fixing JSON: ", error);
+		}
+
+		return JSON.parse(fixedJson) as T;
 	} catch (error) {
 		console.error('Error reading JSON file:', error);
 		return null;

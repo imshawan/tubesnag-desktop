@@ -119,6 +119,7 @@ function setupIpcHandlers() {
 	ipcMain.handle('file:open-folder', openFolder);
 
 	ipcMain.handle('db:create-active-download', dbHandlers.createActiveDownload);
+	ipcMain.handle('db:create-active-downloads', dbHandlers.createActiveDownloads);
 	ipcMain.handle('db:get-active-downloads', dbHandlers.getActiveDownloads);
 	ipcMain.handle('db:get-active-download-by-id', dbHandlers.getActiveDownloadById);
 	ipcMain.handle('db:update-active-download', dbHandlers.updateActiveDownload);

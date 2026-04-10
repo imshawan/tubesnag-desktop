@@ -1,10 +1,13 @@
 import {configureStore} from "@reduxjs/toolkit";
+import { enableMapSet } from "immer";
 import appReducer from "./slices/app-slice";
 import settingsReducer from "./slices/settings-slice";
 import downloadsReducer from "./slices/downloads-slice";
 import activeDownloadsReducer from "./slices/active-downloads-slice";
 import {databaseSyncMiddleware} from "@/store/middleware/database-sync-middleware";
 import {settingsSyncMiddleware} from "@/store/middleware/settings-sync-middleware";
+
+enableMapSet();
 
 export const store = configureStore({
 	reducer: {

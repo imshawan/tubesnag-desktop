@@ -1,5 +1,6 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import pkg from "../../../package.json";
+import { set } from "zod";
 
 export interface AppState {
 	appVersion: string;
@@ -7,11 +8,12 @@ export interface AppState {
 	activeDialog: DownloadType;
 	searchOpen: boolean;
 	historySearch: string;
-	historyFilter: string;
-	historyTypeFilter: string;
+	historyFilter: DownloadStatusFilter;
+	historyTypeFilter: DownloadItemTypeFilter;
 	setupComplete: boolean;
 	stateSaving: boolean;
 	stateSavingProgress: number;
+	enableSelection: boolean;
 	storage: {
 		used: string;
 		total: string;
@@ -30,6 +32,7 @@ const initialState: AppState = {
 	setupComplete: false,
 	stateSaving: false,
 	stateSavingProgress: 0,
+	enableSelection: false,
 	storage: {
 		used: "0",
 		total: "0",
@@ -59,10 +62,10 @@ const appSlice = createSlice({
 		setHistorySearch: (state, action: PayloadAction<string>) => {
 			state.historySearch = action.payload;
 		},
-		setHistoryFilter: (state, action: PayloadAction<string>) => {
+		setHistoryFilter: (state, action: PayloadAction<DownloadStatusFilter>) => {
 			state.historyFilter = action.payload;
 		},
-		setHistoryTypeFilter: (state, action: PayloadAction<string>) => {
+		setHistoryTypeFilter: (state, action: PayloadAction<DownloadItemTypeFilter>) => {
 			state.historyTypeFilter = action.payload;
 		},
 		setStorage: (state, action: PayloadAction<{ used: string; total: string; percentage: number }>) => {
@@ -78,7 +81,10 @@ const appSlice = createSlice({
 			if (action.payload > state.stateSavingProgress) {
 				state.stateSavingProgress = action.payload;
 			}
-		}
+		},
+		setEnableSelection: (state, action: PayloadAction<boolean>) => {
+			state.enableSelection = action.payload;
+		},
 	},
 });
 
@@ -87,6 +93,7 @@ export const {
 	setActiveTab,
 	setActiveDialog,
 	setSearchOpen,
+	setEnableSelection,
 	toggleSearchOpen,
 	setHistorySearch,
 	setHistoryFilter,
@@ -110,3 +117,4 @@ export const selectSetupComplete = (state: { app: AppState }) => state.app.setup
 export const selectAppVersion = (state: { app: AppState }) => state.app.appVersion;
 export const selectStateSaving = (state: { app: AppState }) => state.app.stateSaving;
 export const selectStateSavingProgress = (state: { app: AppState }) => state.app.stateSavingProgress;
+export const selectEnableSelection = (state: { app: AppState }) => state.app.enableSelection;

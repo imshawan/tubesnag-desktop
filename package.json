@@ -15,7 +15,8 @@
     "fix": "ultracite fix",
     "bump-ui": "ts-node ./scripts/bump-ui.ts",
     "build-icons": "electron-icon-builder --input=./assets/icon.png --output=./assets --flatten",
-    "typecheck": "tsc --noEmit --pretty --skipLibCheck"
+    "typecheck": "tsc --noEmit --pretty --skipLibCheck",
+    "make-exe": "ISCC.exe installer.iss"
   },
   "author": "Shawan Mandal <github@imshawan.dev>",
   "license": "Apache-2.0",

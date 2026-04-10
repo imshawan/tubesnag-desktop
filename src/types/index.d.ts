@@ -6,6 +6,7 @@ import {DOWNLOAD_FORMATS} from "@/lib/ytdlp/constants";
 import {ForwardRefExoticComponent, RefAttributes} from "react";
 import {LucideProps} from "lucide-react";
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
+import { WaitingTypes } from "@/lib/utils/enums";
 
 declare global {
 	interface Window {
@@ -36,6 +37,7 @@ declare global {
 			deleteDownloadedPlaylistResources: (item: DownloadItem) => Promise<void>;
 			db: {
 				createActiveDownload: (downloadItem: DownloadItem) => Promise<{ success: boolean }>;
+				createActiveDownloads: (downloadItems: DownloadItem[]) => Promise<{ success: boolean }>;
 				getActiveDownloads: () => Promise<DownloadItem[]>;
 				getActiveDownloadById: (id: string) => Promise<DownloadItem | null>;
 				updateActiveDownload: (parentId: string, childId: string | null, updates: any) => Promise<{
@@ -68,6 +70,7 @@ declare global {
 
 	type AudioBitrate = "128" | "192" | "256" | "320";
 	type DownloadItemType = "video" | "audio" | "playlist" | "unknown";
+	type DownloadItemTypeFilter = DownloadItemType | "all";
 	type QualityType =
 		"best"
 		| "8k"
@@ -89,6 +92,7 @@ declare global {
 		| "duplicate"
 		| "downloading_audio_track"
 		| "merging_formats"
+	type DownloadStatusFilter = DownloadStatus | "all";
 	type FormatType = typeof DOWNLOAD_FORMATS[number]["value"];
 	type AudioPartDownloadStatus = "pending" | "downloading" | "completed" | "failed" | "unknown";
 
@@ -157,6 +161,7 @@ declare global {
 		onComplete?: (data: Partial<DownloadItem>) => void;
 		onDuplicate?: (filename: string, metadata: any) => void;
 		onError?: (data: { error: string; key: string, downloadId: string }) => void;
+		onWaiting?: (data: { message: string; payload: any; type: WaitingTypes }) => void;
 		saveToPlaylistFolder?: boolean
 		playlistName?: string
 	}

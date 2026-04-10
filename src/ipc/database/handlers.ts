@@ -10,7 +10,13 @@ type DownloadItemRow = Omit<DownloadItem, 'videos'> & {
 export const createActiveDownload = async (event: IpcMainInvokeEvent, downloadItem: DownloadItem): Promise<{
 	success: boolean
 }> => {
-	return await createDownloadItem(Databases.ACTIVE_DOWNLOADS, downloadItem);
+	return await createDownloadItems(Databases.ACTIVE_DOWNLOADS, [downloadItem]);
+};
+
+export const createActiveDownloads = async (event: IpcMainInvokeEvent, downloadItems: DownloadItem[]): Promise<{
+	success: boolean
+}> => {
+	return await createDownloadItems(Databases.ACTIVE_DOWNLOADS, downloadItems);
 };
 
 export const getActiveDownloads = async (event: IpcMainInvokeEvent): Promise<DownloadItem[]> => {
@@ -100,7 +106,7 @@ export const moveActiveToCompleted = async (event: IpcMainInvokeEvent, id: strin
 	}
 
 	// In better-sqlite3, synchronous calls ensure sequential execution
-	await createDownloadItem(Databases.COMPLETED_DOWNLOADS, {...activeDownload, status: 'completed', progress: 100});
+	await createDownloadItems(Databases.COMPLETED_DOWNLOADS, [{...activeDownload, status: 'completed', progress: 100}]);
 	await deleteActiveDownload(event, id);
 
 	return {success: true};
@@ -108,7 +114,7 @@ export const moveActiveToCompleted = async (event: IpcMainInvokeEvent, id: strin
 
 // ============ Helper Methods ============
 
-export async function createDownloadItem(dbName: Databases, downloadItem: DownloadItem): Promise<{
+export async function createDownloadItems(dbName: Databases, downloadItems: DownloadItem[]): Promise<{
 	success: boolean, error: Error | null
 }> {
 	try {
@@ -122,26 +128,32 @@ export async function createDownloadItem(dbName: Databases, downloadItem: Downlo
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`);
 
-		stmt.run(
-			downloadItem.id,
-			downloadItem.url,
-			downloadItem.title,
-			downloadItem.status,
-			downloadItem.audioStatus,
-			downloadItem.progress,
-			downloadItem.error || null,
-			downloadItem.size,
-			downloadItem.quality,
-			downloadItem.type,
-			downloadItem.date,
-			downloadItem.channel,
-			downloadItem.format || null,
-			downloadItem.thumbnail || null,
-			downloadItem.videos ? JSON.stringify(downloadItem.videos) : null,
-			downloadItem.downloadPath,
-			downloadItem.parentId || null,
-			downloadItem.parentTitle || null
-		);
+		 const insertMany = db.transaction((items: DownloadItem[]) => {
+			for (const downloadItem of items) {
+				stmt.run(
+				downloadItem.id,
+				downloadItem.url,
+				downloadItem.title,
+				downloadItem.status,
+				downloadItem.audioStatus,
+				downloadItem.progress,
+				downloadItem.error || null,
+				downloadItem.size,
+				downloadItem.quality,
+				downloadItem.type,
+				downloadItem.date,
+				downloadItem.channel,
+				downloadItem.format || null,
+				downloadItem.thumbnail || null,
+				downloadItem.videos ? JSON.stringify(downloadItem.videos) : null,
+				downloadItem.downloadPath,
+				downloadItem.parentId || null,
+				downloadItem.parentTitle || null
+				);
+			}
+		});
+
+		insertMany(downloadItems);
 
 		return {success: true, error: null};
 	} catch (error: any) {

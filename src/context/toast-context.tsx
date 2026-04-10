@@ -3,6 +3,13 @@ import { X, CheckCircle, AlertCircle, Info } from "lucide-react"
 
 export type ToastType = "success" | "error" | "info" | "warning"
 
+export enum ToastTypes {
+  Success = "success",
+  Error = "error",
+  Info = "info",
+  Warning = "warning",
+}
+
 export interface Toast {
   id: string
   message: string
@@ -22,7 +29,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const addToast = useCallback(
-    (message: string, type: ToastType = "info", duration = 3000) => {
+    (message: string, type: ToastType = ToastTypes.Info, duration = 3000) => {
       const id = `${Date.now()}-${Math.random()}`
       const toast: Toast = { id, message, type, duration }
 
