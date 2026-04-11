@@ -12,7 +12,8 @@ import {
 	deleteDownloadedResources,
 	downloadWithYtdlp,
 	fileToDataUrl,
-	getAppVersion, getDefaultDownloadsPath,
+	getAppVersion,
+	getDefaultDownloadsPath,
 	getDiskUsage,
 	getPlatform,
 	getPlaylistVideos,
@@ -36,7 +37,7 @@ function createWindow() {
 		: path.join(__dirname, "../assets/icon.png");
 
 	const primaryDisplay = screen.getPrimaryDisplay();
-	const { width, height } = primaryDisplay.workAreaSize;
+	const {width, height} = primaryDisplay.workAreaSize;
 	const windowWidth = Math.floor(width * 0.7); // Occupy 70% of the screen as width
 	const windowHeight = Math.floor(height * 0.9); // 90% of screen = height
 
@@ -45,7 +46,7 @@ function createWindow() {
 		height: windowHeight,
 		icon: iconPath,
 		webPreferences: {
-			devTools: inDevelopment,
+			devTools: true,
 			contextIsolation: true,
 			nodeIntegration: true,
 			nodeIntegrationInSubFrames: false,
@@ -92,6 +93,8 @@ async function setupORPC() {
 
 		serverPort.start();
 		rpcHandler.upgrade(serverPort);
+
+		event.sender.send(IPC_CHANNELS.ORPC_BRIDGE_READY);
 	});
 }
 

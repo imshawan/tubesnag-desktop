@@ -13,12 +13,24 @@ import {useApp} from "@/hooks/useApp";
 
 function AppContent() {
   const { i18n } = useTranslation();
-  const {isAppStateSaving, setSetupComplete, setupComplete} = useApp();
+  const {isAppStateSaving, setupComplete} = useApp();
+  const [setupRequired, setSetupRequired] = useState<boolean | null>(null);
 
   useEffect(() => {
-    syncWithLocalTheme();
     updateAppLanguage(i18n);
   }, [i18n]);
+
+  useEffect(() => {
+    const initTheme = async () => {
+      try {
+        await syncWithLocalTheme();
+      } catch (err: any) {
+        console.error(err);
+      }
+    };
+
+    initTheme();
+  }, []);
 
   useEffect(() => {
     if (isAppStateSaving) {
@@ -29,19 +41,25 @@ function AppContent() {
 
   useEffect(() => {
     checkSetupRequired().then(setupRequired => {
-      setSetupComplete(!setupRequired);
+      setSetupRequired(setupRequired);
       if (setupRequired) {
         router.navigate({ to: "/setup" });
       }
     });
   }, []);
 
-  if (setupComplete === null) {
+  useEffect(() => {
+    if (setupComplete) {
+      setSetupRequired(false);
+      router.navigate({ to: "/" });
+    }
+  }, [setupComplete]);
+
+  if (setupRequired === null) {
     return null;
   }
 
-  if (!setupComplete) {
-    console.log("setupComplete", setupComplete);
+  if (setupRequired && !setupComplete) {
     router.navigate({ to: "/setup" });
   }
 

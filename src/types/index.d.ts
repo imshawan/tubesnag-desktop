@@ -11,6 +11,7 @@ import { WaitingTypes } from "@/lib/utils/enums";
 declare global {
 	interface Window {
 		electron?: {
+			onReadySignal: (callback: Function) => Electron.IpcRenderer;
 			getDiskUsage: (path: string) => Promise<{ used: string; total: string; percentage: number }>;
 			selectFolder: () => Promise<string | null>;
 			checkDependencies: () => Promise<DependencyStatus>;
@@ -63,6 +64,8 @@ declare global {
 			};
 		};
 	}
+
+	type ThemeMode = "dark" | "light" | "system";
 
 	type DownloadType = "single" | "bulk" | "playlist" | null;
 

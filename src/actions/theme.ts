@@ -1,6 +1,5 @@
 import { LOCAL_STORAGE_KEYS } from "@/constants";
 import { ipc } from "@/ipc/manager";
-import type { ThemeMode } from "@/types/theme-mode";
 
 export interface ThemePreferences {
   system: ThemeMode;
@@ -27,10 +26,23 @@ export async function setTheme(newTheme: ThemeMode) {
 }
 
 export async function toggleTheme() {
-  const isDarkMode = await ipc.client.theme.toggleThemeMode();
-  const newTheme = isDarkMode ? "dark" : "light";
+  console.log("Toggle theme invoked");
+  let [isDarkMode, currentTheme] = await Promise.all([
+    resolvePromiseWithTimeout<boolean>(ipc.client.theme.toggleThemeMode()),
+    resolvePromiseWithTimeout<ThemeMode>(ipc.client.theme.getCurrentThemeMode())
+  ]);
 
-  updateDocumentTheme(isDarkMode);
+  let newTheme = isDarkMode ? "dark" : "light"; // light
+
+  // Meaning IPC failed on first run, need to manually toggle
+  if (!isDarkMode && !currentTheme) {
+    newTheme = isDarkModeEnabled() ? "light"
+      : "dark";
+
+    isDarkMode = newTheme === "dark";
+  }
+
+  updateDocumentTheme(isDarkMode || (newTheme === "dark"));
   localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, newTheme);
 }
 
@@ -49,10 +61,29 @@ export async function syncWithLocalTheme() {
   await setTheme(local);
 }
 
+function isDarkModeEnabled(): boolean {
+  const localTheme = localStorage.getItem(LOCAL_STORAGE_KEYS.THEME) as
+      | ThemeMode
+      | null;
+
+
+  return localTheme === "dark" || document.documentElement.classList.contains("dark");
+}
+
 function updateDocumentTheme(isDarkMode: boolean) {
   if (isDarkMode) {
     document.documentElement.classList.add("dark");
   } else {
     document.documentElement.classList.remove("dark");
   }
+}
+
+async function resolvePromiseWithTimeout<T>(
+    promise: Promise<any>,
+    timeout: number = 100
+): Promise<T> {
+  const timer = new Promise<void>((resolve) => setTimeout(resolve, timeout));
+
+  // Race them: first one to finish wins
+  return Promise.race([promise, timer]);
 }

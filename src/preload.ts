@@ -10,6 +10,7 @@ window.addEventListener("message", (event) => {
 });
 
 contextBridge.exposeInMainWorld('electron', {
+	onReadySignal: (callback: Function) => ipcRenderer.once(IPC_CHANNELS.ORPC_BRIDGE_READY, () => callback()),
 	selectFolder: () => ipcRenderer.invoke('dialog:selectFolder'),
 	getDiskUsage: (path: any) => ipcRenderer.invoke('meta:get-disk-usage', path),
 	checkDependencies: () => ipcRenderer.invoke('setup:check-dependencies'),

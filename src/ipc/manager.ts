@@ -3,6 +3,7 @@ import { RPCLink } from "@orpc/client/message-port";
 import type { RouterClient } from "@orpc/server";
 import { IPC_CHANNELS } from "@/constants";
 import type { router } from "./router";
+import {getElectron} from "@/lib/utils/common";
 
 type RPCClient = RouterClient<typeof router>;
 
@@ -32,6 +33,10 @@ class IPCManager {
     if (this.initialized) {
       return;
     }
+
+    getElectron().onReadySignal(() => {
+      console.log("oRPC Bridge: Handshake confirmed by Main Process.");
+    });
 
     this.clientPort.start();
 

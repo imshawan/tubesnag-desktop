@@ -1,6 +1,5 @@
 import {createFileRoute, useNavigate} from "@tanstack/react-router";
 import {useEffect, useState} from "react";
-import {useTranslation} from "react-i18next";
 import {Loader2, Maximize2, Pause, Settings, Zap} from "lucide-react";
 import {installDependencies} from "@/lib/utils/setup";
 import {cn} from "@/lib/utils/tailwind";
@@ -9,7 +8,6 @@ import {useApp} from "@/hooks/useApp";
 type SetupStatus = "checking" | "installing" | "complete";
 
 function SetupPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [status, setStatus] = useState<SetupStatus>("checking");
   const [overallProgress, setOverallProgress] = useState(0);
@@ -50,11 +48,12 @@ function SetupPage() {
   const isComplete = status === "complete";
 
   useEffect(() => {
-    if (isComplete && navigateToApp) {
+    if (isComplete) {
       // Trigger navigation immediately
       navigateToApp();
     }
-  }, [isComplete, navigateToApp]);
+  }, [isComplete]);
+
   useEffect(() => {
     runSetup();
   }, [navigate]);
