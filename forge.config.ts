@@ -7,17 +7,18 @@ import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import path from "node:path";
+import ffmpegPath from "ffmpeg-static";
 import pkg from "./package.json";
 
 const config: ForgeConfig = {
   packagerConfig: {
     asar: {
-      unpack: "*.{node,dll}",
+      unpack: "*.{node,dll,**/node_modules/ffmpeg-static/ffmpeg*}",
     },
     // Source - https://stackoverflow.com/a/79553208
     // Posted by Fairy Jack, modified by community. See post 'Timeline' for change history
     // Retrieved 2026-03-23, License - CC BY-SA 4.0
-    ignore:[ /node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path)\/)/, ],
+    ignore:[ /node_modules\/(?!(better-sqlite3|bindings|file-uri-to-path|ffmpeg-static)\/)/, ],
 
     icon: path.join(__dirname, "assets/icons/icon"),
     darwinDarkModeSupport: true,
@@ -98,5 +99,11 @@ const config: ForgeConfig = {
     }),
   ],
 };
+
+if (ffmpegPath && config.packagerConfig) {
+  if (!config.packagerConfig?.extraResource) {
+    config.packagerConfig.extraResource = [ffmpegPath];
+  }
+}
 
 export default config;

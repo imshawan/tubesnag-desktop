@@ -24,6 +24,8 @@ import {DownloadStatus, ProgressTypes, WaitingTypes} from "@/lib/utils/enums";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
 import {initDatabase} from "@/ipc/database";
 
+const ffmpegBinary = require("ffmpeg-static"); // Using require because ffmpeg-static ESM import is causing issues in vite build
+
 let isDepsInstallationInProgress = false;
 
 export const getYtDlpConfig = () => {
@@ -113,14 +115,19 @@ export const installDependencies = async () => {
 	}
 
 	try {
-		sendProgress('ffmpeg', 0);
-		const ffmpegBinary = require('ffmpeg-static');
-		const ffmpegConfig = getFfmpegConfig();
-		fsSync.copyFileSync(ffmpegBinary, path.join(ffmpegPath, ffmpegConfig.filename));
-		if (process.platform !== 'win32') {
-			fsSync.chmodSync(path.join(ffmpegPath, ffmpegConfig.filename), '755');
+		const ffmpegBinaryPath = getFfmpegPath();
+		if (ffmpegBinaryPath) {
+			sendProgress('ffmpeg', 0);
+			const ffmpegConfig = getFfmpegConfig();
+			fsSync.copyFileSync(ffmpegBinaryPath, path.join(ffmpegPath, ffmpegConfig.filename));
+			if (process.platform !== 'win32') {
+				fsSync.chmodSync(path.join(ffmpegPath, ffmpegConfig.filename), '755');
+			}
+			sendProgress('ffmpeg', 100);
+		} else {
+			console.error('Failed to setup ffmpeg: ffmpeg-static did not provide a binary for this platform');
+			sendProgress('ffmpeg', -1);
 		}
-		sendProgress('ffmpeg', 100);
 	} catch (error) {
 		console.error('Failed to setup ffmpeg:', error);
 		sendProgress('ffmpeg', -1);
@@ -721,4 +728,15 @@ async function openVerificationWindow(url: string) {
 			resolve(cookiePath);
 		});
 	});
+}
+
+function getFfmpegPath(): string {
+	if (app.isPackaged) {
+		// In production, the binary is copied to the 'resources' folder
+		const binaryName = getFfmpegConfig().filename;
+		return path.join(process.resourcesPath, binaryName);
+	} else {
+		// In dev, use the node_modules path
+		return ffmpegBinary as string;
+	}
 }
