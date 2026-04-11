@@ -7,7 +7,7 @@ import {
 	selectHistoryFilter,
 	selectHistorySearch,
 	selectHistoryTypeFilter,
-	selectSearchOpen,
+	selectSearchOpen, selectSetupComplete,
 	selectStateSaving, selectStateSavingProgress,
 	selectStorage,
 	setActiveDialog,
@@ -17,7 +17,7 @@ import {
 	setHistoryFilter,
 	setHistorySearch,
 	setHistoryTypeFilter,
-	setSearchOpen,
+	setSearchOpen, setSetupComplete,
 	setStateSaving, setStateSavingProgress,
 	setStorage,
 	toggleSearchOpen,
@@ -38,6 +38,7 @@ export function useApp() {
 	const isAppStateSaving = useAppSelector(selectStateSaving);
 	const appStateSavingProgress = useAppSelector(selectStateSavingProgress);
 	const isSelectionEnabled = useAppSelector(selectEnableSelection);
+	const setupComplete = useAppSelector(selectSetupComplete);
 
 	return {
 		activeTab,
@@ -51,6 +52,7 @@ export function useApp() {
 		isAppStateSaving,
 		isSelectionEnabled,
 		appStateSavingProgress,
+		setupComplete,
 		setAppVersion: (version: string) => dispatch(setAppVersion(version)),
 		setActiveTab: (tab: string) => dispatch(setActiveTab(tab)),
 		setActiveDialog: (dialog: DownloadType) => dispatch(setActiveDialog(dialog)),
@@ -66,5 +68,6 @@ export function useApp() {
 			dispatch(removeAllFromSelectedDownloads())
 			dispatch(setEnableSelection(value));
 		},
+		setSetupComplete: (state: boolean) => dispatch(setSetupComplete(state)),
 	};
 }

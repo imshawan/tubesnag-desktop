@@ -4,6 +4,7 @@ import {useTranslation} from "react-i18next";
 import {Loader2, Maximize2, Pause, Settings, Zap} from "lucide-react";
 import {installDependencies} from "@/lib/utils/setup";
 import {cn} from "@/lib/utils/tailwind";
+import {useApp} from "@/hooks/useApp";
 
 type SetupStatus = "checking" | "installing" | "complete";
 
@@ -12,6 +13,7 @@ function SetupPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<SetupStatus>("checking");
   const [overallProgress, setOverallProgress] = useState(0);
+  const {setSetupComplete} = useApp();
 
   const navigateToApp = () => navigate({ to: "/" });
 
@@ -37,6 +39,7 @@ function SetupPage() {
       if (result?.ytdlp && result?.ffmpeg) {
         setOverallProgress(100);
         setStatus("complete");
+        setSetupComplete(true);
         setTimeout(navigateToApp, 1500);
       }
     } catch (error) {

@@ -22,6 +22,9 @@ import {
 import {FileNotFoundError} from "@/lib/errors/file-not-found-error";
 import {DownloadStatus, ProgressTypes, WaitingTypes} from "@/lib/utils/enums";
 import IpcMainInvokeEvent = Electron.IpcMainInvokeEvent;
+import {initDatabase} from "@/ipc/database";
+
+let isDepsInstallationInProgress = false;
 
 export const getYtDlpConfig = () => {
 	const platform = process.platform;
@@ -51,7 +54,7 @@ export const checkDependencies = async () => {
 			const stats = fsSync.statSync(filePath);
 			const isNotPartial = stats.size >= minSize;
 
-			if (!isNotPartial) {
+			if (!isNotPartial && !isDepsInstallationInProgress) {
 				console.warn(`File ${filePath} is downloaded partially with size: ${stats.size} bytes. Deleting it.`);
 				fsSync.unlinkSync(filePath);
 			}
@@ -81,8 +84,11 @@ export const installDependencies = async () => {
 		mainWindow?.webContents.send('install-progress', {dependency, progress});
 	};
 
+	isDepsInstallationInProgress = true;
+
 	if (!fsSync.existsSync(dbPath)) {
 		fsSync.mkdirSync(dbPath, {recursive: true});
+		await initDatabase();
 	}
 	sendProgress('db', 100);
 
@@ -122,6 +128,9 @@ export const installDependencies = async () => {
 
 	const ytDlpConfig = getYtDlpConfig();
 	const ffmpegConfig = getFfmpegConfig();
+
+	isDepsInstallationInProgress = false;
+
 	return {
 		db: fsSync.existsSync(dbPath),
 		ytdlp: fsSync.existsSync(path.join(ytdlpPath, ytDlpConfig.filename)),

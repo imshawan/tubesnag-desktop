@@ -13,8 +13,7 @@ import {useApp} from "@/hooks/useApp";
 
 function AppContent() {
   const { i18n } = useTranslation();
-  const [setupRequired, setSetupRequired] = useState<boolean | null>(null);
-  const {isAppStateSaving} = useApp();
+  const {isAppStateSaving, setSetupComplete, setupComplete} = useApp();
 
   useEffect(() => {
     syncWithLocalTheme();
@@ -30,18 +29,19 @@ function AppContent() {
 
   useEffect(() => {
     checkSetupRequired().then(setupRequired => {
-      setSetupRequired(setupRequired);
+      setSetupComplete(!setupRequired);
       if (setupRequired) {
         router.navigate({ to: "/setup" });
       }
     });
   }, []);
 
-  if (setupRequired === null) {
+  if (setupComplete === null) {
     return null;
   }
 
-  if (setupRequired) {
+  if (!setupComplete) {
+    console.log("setupComplete", setupComplete);
     router.navigate({ to: "/setup" });
   }
 
