@@ -1,16 +1,5 @@
 import i18n from "i18next";
 
-export const LOCAL_STORAGE_KEYS = {
-    LANGUAGE: "lang",
-    THEME: "theme",
-};
-
-export const IPC_CHANNELS = {
-    START_ORPC_SERVER: "start-orpc-server",
-    ORPC_BRIDGE_READY: "orpc-bridge-ready",
-};
-
-
 export const faqs = [
     {
         question: () => i18n.t("faqs.0.question"),

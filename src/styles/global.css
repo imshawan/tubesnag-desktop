@@ -133,3 +133,16 @@
     -webkit-app-region: drag;
   }
 }
+
+@keyframes ios-spinner {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.15;
+  }
+}
+
+.animate-ios-spinner {
+  animation: ios-spinner 1s linear infinite;
+}

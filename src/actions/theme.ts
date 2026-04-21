@@ -1,5 +1,5 @@
-import { LOCAL_STORAGE_KEYS } from "@/constants";
 import { ipc } from "@/ipc/manager";
+import { AppSettingsKeys } from "@/lib/utils/enums";
 
 export interface ThemePreferences {
   system: ThemeMode;
@@ -9,7 +9,7 @@ export interface ThemePreferences {
 export async function getCurrentTheme(): Promise<ThemePreferences> {
   const currentTheme = await ipc.client.theme.getCurrentThemeMode();
   const localTheme = localStorage.getItem(
-    LOCAL_STORAGE_KEYS.THEME
+    AppSettingsKeys.THEME
   ) as ThemeMode | null;
 
   return {
@@ -21,7 +21,7 @@ export async function getCurrentTheme(): Promise<ThemePreferences> {
 export async function setTheme(newTheme: ThemeMode) {
   const isDarkMode = newTheme === "dark";
   await ipc.client.theme.setThemeMode(newTheme);
-  localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, newTheme);
+  localStorage.setItem(AppSettingsKeys.THEME, newTheme);
   updateDocumentTheme(isDarkMode);
 }
 
@@ -43,7 +43,7 @@ export async function toggleTheme() {
   }
 
   updateDocumentTheme(isDarkMode || (newTheme === "dark"));
-  localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, newTheme);
+  localStorage.setItem(AppSettingsKeys.THEME, newTheme);
 }
 
 export async function syncWithLocalTheme() {
@@ -62,7 +62,7 @@ export async function syncWithLocalTheme() {
 }
 
 function isDarkModeEnabled(): boolean {
-  const localTheme = localStorage.getItem(LOCAL_STORAGE_KEYS.THEME) as
+  const localTheme = localStorage.getItem(AppSettingsKeys.THEME) as
       | ThemeMode
       | null;
 

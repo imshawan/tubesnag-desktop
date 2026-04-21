@@ -5,7 +5,6 @@ import {ipcMain} from "electron/main";
 import {installExtension, REACT_DEVELOPER_TOOLS,} from "electron-devtools-installer";
 import {updateElectronApp, UpdateSourceType} from "update-electron-app";
 import {ipcContext} from "@/ipc/context";
-import {IPC_CHANNELS} from "./constants";
 import {
 	checkDependencies,
 	deleteDownloadedPlaylistResources,
@@ -25,6 +24,7 @@ import {
 import * as dbHandlers from "@/ipc/database/handlers";
 import {initDatabase} from "@/ipc/database";
 import IpcMainEvent = Electron.IpcMainEvent;
+import { IpcChannels } from "./lib/utils/enums";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -88,13 +88,13 @@ function checkForUpdates() {
 async function setupORPC() {
 	const {rpcHandler} = await import("./ipc/handler");
 
-	ipcMain.on(IPC_CHANNELS.START_ORPC_SERVER, (event: IpcMainEvent) => {
+	ipcMain.on(IpcChannels.START_ORPC_SERVER, (event: IpcMainEvent) => {
 		const [serverPort] = event.ports;
 
 		serverPort.start();
 		rpcHandler.upgrade(serverPort);
 
-		event.sender.send(IPC_CHANNELS.ORPC_BRIDGE_READY);
+		event.sender.send(IpcChannels.ORPC_BRIDGE_READY);
 	});
 }
 

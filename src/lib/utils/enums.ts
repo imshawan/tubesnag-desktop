@@ -4,7 +4,15 @@ export enum AppSettingsKeys {
 	AUTO_START = "autoStart",
 	SAVE_PLAYLIST_FOLDERS = "savePlaylistFolders",
 	ITEMS_PER_PAGE = "itemsPerPage",
-	RECENT_ITEMS_PER_PAGE = "recentItemsPerPage"
+	RECENT_ITEMS_PER_PAGE = "recentItemsPerPage",
+	FIRST_SPIN_UP = "first_spin_up",
+	LANGUAGE = "lang",
+    THEME = "theme",
+}
+
+export enum IpcChannels {
+	START_ORPC_SERVER = "start-orpc-server",
+    ORPC_BRIDGE_READY = "orpc-bridge-ready",
 }
 
 export enum Databases {

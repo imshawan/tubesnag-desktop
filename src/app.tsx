@@ -5,15 +5,17 @@ import { useTranslation } from "react-i18next";
 import { updateAppLanguage } from "./actions/language";
 import { syncWithLocalTheme } from "./actions/theme";
 import { router } from "@/lib/utils/routes";
-import "./localization/i18n";
 import { store } from "@/store";
 import { Provider } from "react-redux";
 import { checkSetupRequired } from "@/lib/utils/setup";
-import {useApp} from "@/hooks/useApp";
+import { useApp } from "@/hooks/useApp";
+import { ipc } from "./ipc/manager";
+import { Loader } from "./components/loader";
+import "./localization/i18n";
 
 function AppContent() {
   const { i18n } = useTranslation();
-  const {isAppStateSaving, setupComplete} = useApp();
+  const { isAppStateSaving, setupComplete } = useApp();
   const [setupRequired, setSetupRequired] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -36,11 +38,10 @@ function AppContent() {
     if (isAppStateSaving) {
       router.navigate({ to: "/closing" });
     }
-
   }, [isAppStateSaving]);
 
   useEffect(() => {
-    checkSetupRequired().then(setupRequired => {
+    checkSetupRequired().then((setupRequired) => {
       setSetupRequired(setupRequired);
       if (setupRequired) {
         router.navigate({ to: "/setup" });
@@ -67,6 +68,25 @@ function AppContent() {
 }
 
 function App() {
+  const [isAppReady, setIsAppReady] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      ipc.initialize();
+      setIsAppReady(true);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  if (!isAppReady) {
+    return (
+      <div className="flex items-center justify-center h-[100vh]">
+        <Loader />
+      </div>
+    );
+  }
+
   return <AppContent />;
 }
 
@@ -80,5 +100,5 @@ root.render(
     <Provider store={store}>
       <App />
     </Provider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

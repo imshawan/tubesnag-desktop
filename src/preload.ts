@@ -1,16 +1,16 @@
 import {contextBridge, ipcRenderer} from "electron";
-import {IPC_CHANNELS} from "./constants";
+import { IpcChannels } from "./lib/utils/enums";
 
 window.addEventListener("message", (event) => {
-	if (event.data === IPC_CHANNELS.START_ORPC_SERVER) {
+	if (event.data === IpcChannels.START_ORPC_SERVER) {
 		const [serverPort] = event.ports;
 
-		ipcRenderer.postMessage(IPC_CHANNELS.START_ORPC_SERVER, null, [serverPort]);
+		ipcRenderer.postMessage(IpcChannels.START_ORPC_SERVER, null, [serverPort]);
 	}
 });
 
 contextBridge.exposeInMainWorld('electron', {
-	onReadySignal: (callback: Function) => ipcRenderer.once(IPC_CHANNELS.ORPC_BRIDGE_READY, () => callback()),
+	onReadySignal: (callback: Function) => ipcRenderer.once(IpcChannels.ORPC_BRIDGE_READY, () => callback()),
 	selectFolder: () => ipcRenderer.invoke('dialog:selectFolder'),
 	getDiskUsage: (path: any) => ipcRenderer.invoke('meta:get-disk-usage', path),
 	checkDependencies: () => ipcRenderer.invoke('setup:check-dependencies'),

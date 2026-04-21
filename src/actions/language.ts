@@ -1,14 +1,14 @@
 import type { i18n } from "i18next";
-import { LOCAL_STORAGE_KEYS } from "@/constants";
+import { AppSettingsKeys } from "@/lib/utils/enums";
 
 export function setAppLanguage(lang: string, i18n: i18n) {
-  localStorage.setItem(LOCAL_STORAGE_KEYS.LANGUAGE, lang);
+  localStorage.setItem(AppSettingsKeys.LANGUAGE, lang);
   i18n.changeLanguage(lang);
   document.documentElement.lang = lang;
 }
 
 export function updateAppLanguage(i18n: i18n) {
-  const localLang = localStorage.getItem(LOCAL_STORAGE_KEYS.LANGUAGE);
+  const localLang = localStorage.getItem(AppSettingsKeys.LANGUAGE);
   if (!localLang) {
     return;
   }
