@@ -25,13 +25,13 @@ const getDownloadPath = () => {
 const parseBooleanFromLocalstorage = (key: string): boolean => {
 	const value = localStorage.getItem(key);
 	if (!value) {
-		return true;
+		return false;
 	}
 
 	try {
 		return JSON.parse(value.toString().toLowerCase().trim());
 	} catch {
-		return true;
+		return false;
 	}
 }
 
@@ -87,3 +87,13 @@ export const saveRecentItemsPerPage = (recentItemsPerPage: number): void => {
 export const getDefaultDownloadLocation = async () => {
 	return await getElectron().getDefaultDownloadLocation();
 }
+
+export const isFirstSpinUp = () => {
+	const firstSpinUp = localStorage.getItem(AppSettingsKeys.FIRST_SPIN_UP);
+	if (!firstSpinUp || parseBooleanFromLocalstorage(AppSettingsKeys.FIRST_SPIN_UP)) {
+		return true;
+	}
+	return false;
+}
+
+export const invalidateFirstSpinUp = () => localStorage.setItem(AppSettingsKeys.FIRST_SPIN_UP, "false");

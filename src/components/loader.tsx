@@ -2,9 +2,10 @@ import { cn } from "@/lib/utils/tailwind";
 
 interface LoaderProps {
   className?: string;
+  forceDark?: boolean;
 }
 
-export function Loader({ className }: LoaderProps) {
+export function Loader({ className, forceDark }: LoaderProps) {
   return (
     <div
       // animate-spin ensures Tailwind injects the rotation keyframes
@@ -25,7 +26,10 @@ export function Loader({ className }: LoaderProps) {
           <span
             // mx-auto perfectly centers the spoke at the top of the wrapper
             // Percentages ensure the loader scales flawlessly if you change the parent w/h classes
-            className="mx-auto block h-[28%] w-[8.5%] rounded-full bg-gray-500"
+            className={cn(
+              "mx-auto block h-[28%] w-[8.5%] rounded-full bg-gray-500 dark:bg-gray-200",
+              forceDark ? "bg-gray-200" : "bg-gray-500"
+            )}
             style={{
               opacity: (i + 1) / 12,
             }}

@@ -12,6 +12,7 @@ import { useApp } from "@/hooks/useApp";
 import { ipc } from "./ipc/manager";
 import { Loader } from "./components/loader";
 import "./localization/i18n";
+import { invalidateFirstSpinUp, isFirstSpinUp } from "./lib/utils/app";
 
 function AppContent() {
   const { i18n } = useTranslation();
@@ -71,18 +72,30 @@ function App() {
   const [isAppReady, setIsAppReady] = useState(false);
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const delayRequired = isFirstSpinUp() ? 5000 : 0;
+
+    const initIpc = () => {
       ipc.initialize();
       setIsAppReady(true);
-    }, 3000);
+    }
+
+    if (!delayRequired) {
+      initIpc();
+      return;
+    }
+    
+    const timeout = setTimeout(() => {
+      initIpc();
+      invalidateFirstSpinUp();
+    }, delayRequired);
 
     return () => clearTimeout(timeout);
   }, []);
 
   if (!isAppReady) {
     return (
-      <div className="flex items-center justify-center h-[100vh]">
-        <Loader />
+      <div className="flex items-center bg-black justify-center h-[100vh]">
+        <Loader forceDark={true} />
       </div>
     );
   }
