@@ -10,7 +10,7 @@ AppUpdatesURL=https://github.com/imshawan/tubesnag-desktop/releases
 AppContact=github@imshawan.dev
 AppComments=A modern desktop application for downloading content and playlists from YouTube
 
-DefaultDirName={pf}\TubeSnag
+DefaultDirName={localappdata}\TubeSnag
 DefaultGroupName=TubeSnag
 
 OutputDir=out/installer
@@ -27,7 +27,6 @@ DisableDirPage=no
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-
 
 VersionInfoVersion=1.0.0
 VersionInfoCompany=Shawan Mandal
