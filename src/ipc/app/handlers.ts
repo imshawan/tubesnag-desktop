@@ -30,12 +30,18 @@ let isDepsInstallationInProgress = false;
 
 export const getYtDlpConfig = () => {
 	const platform = process.platform;
-	return DEPENDENCY_CONFIG.ytDlp[platform === 'win32' ? 'win32' : 'unix'];
+	return DEPENDENCY_CONFIG.ytDlp[platform] || { 
+		url: DEPENDENCY_CONFIG.ytDlp.win32?.url || '',
+		filename: DEPENDENCY_CONFIG.ytDlp.win32?.filename || '',
+		size: DEPENDENCY_CONFIG.ytDlp.win32?.size || 0
+	};
 }
 
 export const getFfmpegConfig = () => {
 	const platform = process.platform;
-	return DEPENDENCY_CONFIG.ffmpeg[platform as 'win32' | 'linux' | 'darwin'];
+	return DEPENDENCY_CONFIG.ffmpeg[platform as 'win32' | 'linux' | 'darwin'] || {
+		filename: "ffmpeg.exe", size: 78 * 1024 * 1024, url: ""
+	}
 }
 
 export const checkDependencies = async () => {
@@ -44,7 +50,6 @@ export const checkDependencies = async () => {
 	const ytdlpPath = path.join(userDataPath, 'ytdlp');
 	const ffmpegPath = path.join(userDataPath, 'ytdlp');
 
-	const MIN_YTDLP_SIZE = 17 * 1024 * 1024; // 17MB
 	const MIN_FFMPEG_SIZE = 78 * 1024 * 1024; // 78MB
 
 	const ytDlpConfig = getYtDlpConfig();
@@ -69,8 +74,8 @@ export const checkDependencies = async () => {
 
 	return {
 		db: fsSync.existsSync(dbPath),
-		ytdlp: checkFileSize(path.join(ytdlpPath, ytDlpConfig.filename), MIN_YTDLP_SIZE),
-		ffmpeg: checkFileSize(path.join(ffmpegPath, ffmpegConfig.filename), MIN_FFMPEG_SIZE)
+		ytdlp: checkFileSize(path.join(ytdlpPath, ytDlpConfig.filename), ytDlpConfig.size),
+		ffmpeg: checkFileSize(path.join(ffmpegPath, ffmpegConfig.filename), ffmpegConfig.size)
 	};
 }
 

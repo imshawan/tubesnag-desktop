@@ -149,18 +149,20 @@ export const DOWNLOAD_FORMAT_TYPES: Record<FormatType, string> = {
 export const audioFormats: FormatType[] = Object.entries(DOWNLOAD_FORMAT_TYPES)
 	.filter(e => e[1] === "audio").map(e => e[0] as FormatType);
 
-export const DEPENDENCY_CONFIG = {
+export const DEPENDENCY_CONFIG: Record<string, Partial<Record<NodeJS.Platform, { url: string; filename: string; size: number; }>>> = {
 	ytDlp: {
 		win32: {
 			url: "https://github.com/yt-dlp/yt-dlp/releases/download/2026.03.03/yt-dlp.exe",
-			filename: "yt-dlp.exe"
+			filename: "yt-dlp.exe",
+			size: 17 * 1024 * 1024
 		},
-		unix: {url: "https://github.com/yt-dlp/yt-dlp/releases/download/2026.03.03/yt-dlp", filename: "yt-dlp"},
+		linux: {url: "https://github.com/yt-dlp/yt-dlp/releases/download/2026.03.03/yt-dlp_linux", filename: "yt-dlp_linux", size: 33 * 1024 * 1024},
+		darwin: {url: "https://github.com/yt-dlp/yt-dlp/releases/download/2026.03.03/yt-dlp_macos", filename: "yt-dlp_macos", size: 34 * 1024 * 1024},
 	},
 	ffmpeg: {
-		win32: {filename: "ffmpeg.exe"},
-		linux: {filename: "ffmpeg"},
-		darwin: {filename: "ffmpeg"},
+		win32: {filename: "ffmpeg.exe", url: "", size: 78 * 1024 * 1024},
+		linux: {filename: "ffmpeg", url: "", size: 3205440},
+		darwin: {filename: "ffmpeg", url: "", size: 3205440},
 	},
 };
 
